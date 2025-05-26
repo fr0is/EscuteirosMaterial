@@ -220,7 +220,7 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
 
       {/* Concluído */}
       {pedido.estado === "Concluído" && (
-        <p style={{ color: "green", fontWeight: "bold" }}>Pedido concluído!</p>
+        <p style={{ color: "green", fontWeight: "bold" }}>Pedido devolvido!</p>
       )}
     </div>
   );

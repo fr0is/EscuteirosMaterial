@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
@@ -10,10 +10,11 @@ export default function Configuracao() {
   const [novoNome, setNovoNome] = useState("");
   const [novoTipo, setNovoTipo] = useState("user");
 
-  if (!user.loggedIn || !user.isAdmin) {
-    navigate("/");
-    return null;
-  }
+  useEffect(() => {
+    if (!user.loggedIn || !user.isAdmin) {
+      navigate("/");
+    }
+  }, [user, navigate]);
 
   const handleAddUser = async () => {
     if (!novoUsername.trim() || !novoNome.trim()) {
@@ -33,6 +34,7 @@ export default function Configuracao() {
       setNovoUsername("");
       setNovoNome("");
       setNovoTipo("user");
+      alert("Usuário adicionado com sucesso!");
     } catch (error) {
       alert("Erro ao adicionar usuário.");
       console.error(error);
@@ -44,16 +46,19 @@ export default function Configuracao() {
       alert("O utilizador CA127 não pode ser removido.");
       return;
     }
+    if (username === user.username) {
+      alert("Você não pode remover a si mesmo.");
+      return;
+    }
     try {
-      // Remove do Supabase
       const { error } = await supabase.from("users").delete().eq("username", username);
       if (error) {
         alert("Erro ao remover usuário.");
         console.error(error);
         return;
       }
-      // Atualiza o estado local
       setUsers((u) => u.filter((user) => user.username !== username));
+      alert("Usuário removido com sucesso!");
     } catch (error) {
       alert("Erro ao remover usuário.");
       console.error(error);
@@ -159,7 +164,7 @@ export default function Configuracao() {
             <div style={{ flex: "1 1 auto", minWidth: 0 }}>
               <b>{u.username}</b> ({u.tipo}) - {u.nome}
             </div>
-            {u.username !== "CA127" ? (
+            {u.username !== "CA127" && u.username !== user.username ? (
               <button
                 onClick={() => handleRemoveUser(u.username)}
                 style={{
