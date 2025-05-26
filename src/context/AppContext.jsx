@@ -73,6 +73,16 @@ export function AppProvider({ children }) {
     return true;
   };
 
+  const cancelarPedido = async (id) => {
+  const { error } = await supabase.from("pedidos").delete().eq("id", id);
+  if (error) {
+    console.error("Erro ao apagar pedido:", error);
+    return false;
+  }
+  setPedidos((prev) => prev.filter((p) => p.id !== id));
+  return true;
+    };
+
   const setStock = async (novoStock) => {
     try {
       for (const item of novoStock) {
@@ -191,6 +201,7 @@ export function AppProvider({ children }) {
         removerMaterial,
         atualizarMaterial,
         adicionarPedido,
+        cancelarPedido,
       }}
     >
       {children}

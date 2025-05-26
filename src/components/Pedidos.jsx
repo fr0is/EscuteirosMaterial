@@ -1,7 +1,6 @@
 import React, { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
-import { supabase } from "../supabaseClient";
 
 export default function Pedidos() {
   const {
@@ -94,20 +93,20 @@ export default function Pedidos() {
     }
   };
 
-  const handleCancelar = async (id) => {
+  const { cancelarPedido } = useContext(AppContext);
+
+    const handleCancelar = async (id) => {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
     if (!user.isAdmin && pedido.nome !== user.nome) return;
 
-    const { error } = await supabase.from("pedidos").delete().eq("id", id);
-    if (error) {
-      alert("Erro ao cancelar pedido");
-      console.error(error);
-      return;
+    const success = await cancelarPedido(id);
+    if (!success) {
+        alert("Erro ao cancelar pedido");
+        return;
     }
-    setPedidos((prev) => prev.filter((p) => p.id !== id));
-  };
+    };
 
   const pedidosVisiveis = user.isAdmin
     ? pedidos
