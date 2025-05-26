@@ -95,7 +95,9 @@ export default function Material() {
       devolvido: {},
       patrulha,
       atividade,
+      user_id: user.id, // 👈 IMPORTANTE
     };
+
 
     const listaMateriais = Object.entries(materiaisPedido)
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
