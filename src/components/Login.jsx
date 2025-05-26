@@ -1,7 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import "../styles/Login.css"; // Ajuste o caminho conforme a localização real do arquivo CSS
+import "../styles/Login.css";
 
 export default function Login() {
   const { login } = useContext(AppContext);
@@ -25,12 +25,11 @@ export default function Login() {
   return (
     <div className="login-container">
       <h2>Login</h2>
-      <form onSubmit={handleSubmit} className="login-form">
+      <form className="login-form" onSubmit={handleSubmit}>
         <input
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          className="login-input"
           required
           autoFocus
           disabled={loading}
@@ -40,15 +39,10 @@ export default function Login() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="login-input"
           required
           disabled={loading}
         />
-        <button
-          type="submit"
-          className="login-button"
-          disabled={loading}
-        >
+        <button type="submit" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
