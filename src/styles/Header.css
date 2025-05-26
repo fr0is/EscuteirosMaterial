@@ -1,8 +1,8 @@
 .main-header {
-  display: flex;
-  justify-content: space-between;
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
   align-items: center;
-  padding: 12px 24px;
+  padding: 16px 24px;
   background-color: #004085;
   color: white;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
@@ -11,20 +11,27 @@
   z-index: 1000;
 }
 
-/* Logo visível */
 .logo-area {
   display: flex;
   align-items: center;
+  justify-content: flex-start;
+}
+
+.logo-area img {
+  height: 36px;
+  margin-right: 10px;
 }
 
 .site-title {
-  font-size: 1.25rem;
+  font-size: 1.5rem;
   font-weight: bold;
+  text-align: center;
+  grid-column: 2;
 }
 
-/* Links de navegação */
 .nav-links {
   display: flex;
+  justify-content: flex-end;
   gap: 16px;
 }
 
@@ -33,10 +40,41 @@
   text-decoration: none;
   font-weight: 500;
   padding: 8px 12px;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: background-color 0.2s ease;
 }
 
 .nav-links a:hover {
   background-color: rgba(255, 255, 255, 0.2);
+}
+
+/* RESPONSIVE DESIGN */
+@media (max-width: 768px) {
+  .main-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 12px 16px;
+    text-align: center;
+  }
+
+  .logo-area {
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+
+  .site-title {
+    font-size: 1.25rem;
+    margin-bottom: 10px;
+  }
+
+  .nav-links {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 12px;
+  }
+
+  .nav-links a {
+    padding: 6px 10px;
+  }
 }

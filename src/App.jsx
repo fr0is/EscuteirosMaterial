@@ -12,9 +12,10 @@ function Header() {
   return (
     <header className="main-header">
       <div className="logo-area">
-        {/* Usa uma imagem se tiveres: <img src="/logo.png" alt="Logo" /> */}
-        <span className="site-title">Depósito Material 127</span>
+        {/* Substituir pelo seu logo real se tiver */}
+        <img src="/logo.png" alt="Logo" />
       </div>
+      <h1 className="site-title">Depósito Material 127</h1>
       <nav className="nav-links">
         <Link to="/">Login</Link>
         <Link to="/material">Material</Link>
@@ -24,7 +25,6 @@ function Header() {
     </header>
   );
 }
-
 
 function App() {
   return (
