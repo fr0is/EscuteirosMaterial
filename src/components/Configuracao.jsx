@@ -12,11 +12,25 @@ export default function Configuracao() {
   const [novoNome, setNovoNome] = useState("");
   const [novoTipo, setNovoTipo] = useState("user");
 
+  // Estado para controlar qual seção está ativa no menu lateral
+  const [secaoAtiva, setSecaoAtiva] = useState("alterarPassword");
+
   useEffect(() => {
     if (!user.loggedIn || !user.isAdmin) {
       navigate("/");
     }
   }, [user, navigate]);
+
+  // Função para alterar a password do utilizador atual (exemplo simples)
+  const handleChangePassword = () => {
+    if (!novaPassword.trim()) {
+      alert("Insira a nova password.");
+      return;
+    }
+    // Aqui você faria a lógica para alterar a password no backend
+    alert("Password alterada com sucesso (simulação).");
+    setNovaPassword("");
+  };
 
   const handleAddUser = async () => {
     if (!novoUsername.trim() || !novoNome.trim() || !novaPassword.trim()) {
@@ -70,63 +84,110 @@ export default function Configuracao() {
   };
 
   return (
-    <div className="config-container">
-      <h2>Configuração de Utilizador</h2>
-
-      <h3>Adicionar Utilizador</h3>
-      <div className="form-group">
-        <input
-          placeholder="Username"
-          value={novoUsername}
-          onChange={(e) => setNovoUsername(e.target.value)}
-          className="input-field"
-        />
-        <input
-          type="password"
-          placeholder="Password"
-          value={novaPassword}
-          onChange={(e) => setNovaPassword(e.target.value)}
-          className="input-field"
-        />
-        <input
-          placeholder="Nome"
-          value={novoNome}
-          onChange={(e) => setNovoNome(e.target.value)}
-          className="input-field"
-        />
-        <select
-          value={novoTipo}
-          onChange={(e) => setNovoTipo(e.target.value)}
-          className="select-field"
-        >
-          <option value="user">User</option>
-          <option value="admin">Admin</option>
-        </select>
-        <button onClick={handleAddUser} className="btn btn-adicionar">
-          Adicionar
-        </button>
-      </div>
-
-      <h3>Utilizadores Registados</h3>
-      <ul className="user-list">
-        {users.map((u) => (
-          <li key={u.username} className="user-list-item">
-            <div className="user-info">
-              <b>{u.username}</b> ({u.tipo}) - {u.nome}
-            </div>
-            {u.username !== "CA127" && u.username !== user.username ? (
-              <button
-                onClick={() => handleRemoveUser(u.username)}
-                className="btn btn-remover"
-              >
-                Remover
-              </button>
-            ) : (
-              <span className="disabled-remover">(Não pode remover)</span>
-            )}
+    <div className="config-page">
+      <nav className="sidebar-menu">
+        <ul>
+          <li
+            className={secaoAtiva === "alterarPassword" ? "active" : ""}
+            onClick={() => setSecaoAtiva("alterarPassword")}
+          >
+            Alterar Password
           </li>
-        ))}
-      </ul>
+          <li
+            className={secaoAtiva === "utilizadoresRegistados" ? "active" : ""}
+            onClick={() => setSecaoAtiva("utilizadoresRegistados")}
+          >
+            Utilizadores Registados
+          </li>
+          <li
+            className={secaoAtiva === "adicionarUtilizador" ? "active" : ""}
+            onClick={() => setSecaoAtiva("adicionarUtilizador")}
+          >
+            Adicionar Utilizador
+          </li>
+        </ul>
+      </nav>
+
+      <main className="content-area">
+        {secaoAtiva === "alterarPassword" && (
+          <section>
+            <h2>Alterar Password</h2>
+            <input
+              type="password"
+              placeholder="Nova Password"
+              value={novaPassword}
+              onChange={(e) => setNovaPassword(e.target.value)}
+              className="input-field"
+            />
+            <button onClick={handleChangePassword} className="btn btn-adicionar">
+              Confirmar Alteração
+            </button>
+          </section>
+        )}
+
+        {secaoAtiva === "utilizadoresRegistados" && (
+          <section>
+            <h2>Utilizadores Registados</h2>
+            <ul className="user-list">
+              {users.map((u) => (
+                <li key={u.username} className="user-list-item">
+                  <div className="user-info">
+                    <b>{u.username}</b> ({u.tipo}) - {u.nome}
+                  </div>
+                  {u.username !== "CA127" && u.username !== user.username ? (
+                    <button
+                      onClick={() => handleRemoveUser(u.username)}
+                      className="btn btn-remover"
+                    >
+                      Remover
+                    </button>
+                  ) : (
+                    <span className="disabled-remover">(Não pode remover)</span>
+                  )}
+                </li>
+              ))}
+            </ul>
+          </section>
+        )}
+
+        {secaoAtiva === "adicionarUtilizador" && (
+          <section>
+            <h2>Adicionar Utilizador</h2>
+            <div className="form-group">
+              <input
+                placeholder="Username"
+                value={novoUsername}
+                onChange={(e) => setNovoUsername(e.target.value)}
+                className="input-field"
+              />
+              <input
+                type="password"
+                placeholder="Password"
+                value={novaPassword}
+                onChange={(e) => setNovaPassword(e.target.value)}
+                className="input-field"
+              />
+              <input
+                placeholder="Nome"
+                value={novoNome}
+                onChange={(e) => setNovoNome(e.target.value)}
+                className="input-field"
+              />
+              <select
+                value={novoTipo}
+                onChange={(e) => setNovoTipo(e.target.value)}
+                className="select-field"
+              >
+                <option value="user">User</option>
+                <option value="admin">Admin</option>
+              </select>
+              <button onClick={handleAddUser} className="btn btn-adicionar">
+                Adicionar
+              </button>
+            </div>
+          </section>
+        )}
+      </main>
     </div>
   );
 }
