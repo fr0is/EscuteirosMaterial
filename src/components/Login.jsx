@@ -53,8 +53,8 @@ export default function Login() {
           disabled={loading}
         />
         <input
-          type="password"
           placeholder="Password"
+          type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
           style={{
