@@ -12,10 +12,21 @@ export default function Material() {
     return null;
   }
 
+  // Calcula o total pendente por nome de material (somente pedidos pendentes)
+  const pendentesPorItem = {};
+  pedidos.forEach((p) => {
+    if (p.estado === "Pendente") {
+      Object.entries(p.materiais).forEach(([nome, q]) => {
+        pendentesPorItem[nome] = (pendentesPorItem[nome] || 0) + q;
+      });
+    }
+  });
+
   const handleIncrement = (nome) => {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
-      const max = stock.find((i) => i.nome === nome)?.disponivel || 0;
+      // Limitar incremento para o disponivel menos pendentes
+      const max = (stock.find((i) => i.nome === nome)?.disponivel || 0) - (pendentesPorItem[nome] || 0);
       if (atual < max) {
         return { ...q, [nome]: atual + 1 };
       }
@@ -62,30 +73,37 @@ export default function Material() {
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Olá, {user.nome}</h2>
       <h3>Stock disponível</h3>
-      {stock.map((item) => (
-        <div
-          key={item.id}
-          style={{
-            display: "flex",
-            alignItems: "center",
-            marginBottom: 8,
-            justifyContent: "space-between",
-            borderBottom: "1px solid #ddd",
-            paddingBottom: 6,
-          }}
-        >
-          <div>
-            <b>{item.nome}</b>: {item.disponivel} / {item.total}
+      {stock.map((item) => {
+        const pendente = pendentesPorItem[item.nome] || 0;
+        return (
+          <div
+            key={item.id}
+            style={{
+              display: "flex",
+              alignItems: "center",
+              marginBottom: 8,
+              justifyContent: "space-between",
+              borderBottom: "1px solid #ddd",
+              paddingBottom: 6,
+            }}
+          >
+            <div>
+              <b>
+                {item.nome} {pendente > 0 && <span style={{ color: "red" }}>*</span>}
+              </b>
+              : {item.disponivel} / {item.total}{" "}
+              {pendente > 0 && <em style={{ color: "red" }}>(Pendentes: {pendente})</em>}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button onClick={() => handleDecrement(item.nome)}>-</button>
+              <span style={{ minWidth: 20, textAlign: "center" }}>
+                {quantidades[item.nome] || 0}
+              </span>
+              <button onClick={() => handleIncrement(item.nome)}>+</button>
+            </div>
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <button onClick={() => handleDecrement(item.nome)}>-</button>
-            <span style={{ minWidth: 20, textAlign: "center" }}>
-              {quantidades[item.nome] || 0}
-            </span>
-            <button onClick={() => handleIncrement(item.nome)}>+</button>
-          </div>
-        </div>
-      ))}
+        );
+      })}
 
       {!user.isAdmin && (
         <button

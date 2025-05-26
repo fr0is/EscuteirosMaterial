@@ -188,13 +188,6 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, curren
         </button>
       )}
 
-      {/* Mensagem para usuário normal */}
-      {!isAdmin && (
-        <p style={{ fontStyle: "italic", color: "#555" }}>
-          Você pode visualizar seus pedidos, sem permissão para editar (exceto cancelar pedidos pendentes).
-        </p>
-      )}
-
       {pedido.estado === "Concluído" && <p>Pedido concluído!</p>}
     </div>
   );
