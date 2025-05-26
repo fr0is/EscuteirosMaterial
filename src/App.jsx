@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 
 const initialStock = [
   { id: 1, nome: "Tenda 4p", total: 10, disponivel: 10 },
