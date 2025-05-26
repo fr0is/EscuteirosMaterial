@@ -113,11 +113,11 @@ export default function Configuracao() {
           <section>
             <h2>Alterar Password</h2>
             <input
-              type="password"
-              placeholder="Nova Password"
-              value={novaPassword}
-              onChange={(e) => setNovaPassword(e.target.value)}
-              className="input-field"
+            type="password"
+            placeholder="Password"
+            value={novaPassword}
+            onChange={(e) => setNovaPassword(e.target.value)}
+            className="input-field"
             />
             <button onClick={handleChangePassword} className="btn btn-adicionar">
               Confirmar Alteração

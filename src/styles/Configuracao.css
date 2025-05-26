@@ -46,9 +46,7 @@
   overflow-y: auto;
 }
 
-/* Inputs e selects */
 .input-field, .select-field {
-  display: block;
   width: 100%;
   padding: 10px 12px;
   margin-bottom: 15px;
@@ -58,6 +56,7 @@
   box-sizing: border-box;
   transition: border-color 0.2s;
 }
+
 
 .input-field:focus, .select-field:focus {
   border-color: #1abc9c;
@@ -121,10 +120,11 @@
   user-select: none;
 }
 
-/* Formulários */
 .form-group {
-  max-width: 400px;
+  max-width: 400px; /* limite a largura do formulário */
+  margin-bottom: 20px;
 }
+
 
 /* Responsividade para mobile */
 @media (max-width: 768px) {
