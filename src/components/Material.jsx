@@ -124,7 +124,7 @@ export default function Material() {
         <>
           <div style={{ marginTop: 20 }}>
             <label>
-              Nome da Patrulha/Equipa/Bando/Tribo: <br />
+              Nome de Bando/Patrulha/Equipa/Tribo: <br />
               <input
                 type="text"
                 value={patrulha}

@@ -123,9 +123,9 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin }) {
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
 
-      {/* Exibir patrulha/equipa/bando/tribo e atividade */}
+      {/* Exibir patrulha/equipa/tribo e atividade */}
       <p>
-        <b>Patrulha/Equipa/Bando/Tribo:</b> {pedido.patrulha || "-"}
+        <b>Bando/Patrulha/Equipa/Tribo:</b> {pedido.patrulha || "-"}
       </p>
       <p>
         <b>Atividade:</b> {pedido.atividade || "-"}
