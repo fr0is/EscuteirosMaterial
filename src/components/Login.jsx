@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
+import "./styles/Login.css"; // Ajuste o caminho conforme a localização real do arquivo CSS
 
 export default function Login() {
   const { login } = useContext(AppContext);
@@ -22,32 +23,14 @@ export default function Login() {
   };
 
   return (
-    <div
-      style={{
-        padding: 20,
-        maxWidth: 400,
-        margin: "auto",
-        boxSizing: "border-box",
-      }}
-    >
+    <div className="login-container">
       <h2>Login</h2>
-      <form
-        onSubmit={handleSubmit}
-        style={{ display: "flex", flexDirection: "column" }}
-      >
+      <form onSubmit={handleSubmit} className="login-form">
         <input
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          style={{
-            width: "100%",
-            padding: 14,
-            fontSize: 18,
-            marginBottom: 16,
-            borderRadius: 6,
-            border: "1px solid #ccc",
-            boxSizing: "border-box",
-          }}
+          className="login-input"
           required
           autoFocus
           disabled={loading}
@@ -57,29 +40,13 @@ export default function Login() {
           type="password"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          style={{
-            width: "100%",
-            padding: 14,
-            fontSize: 18,
-            marginBottom: 16,
-            borderRadius: 6,
-            border: "1px solid #ccc",
-            boxSizing: "border-box",
-          }}
+          className="login-input"
           required
           disabled={loading}
         />
         <button
           type="submit"
-          style={{
-            padding: "14px 0",
-            fontSize: 18,
-            borderRadius: 6,
-            border: "none",
-            backgroundColor: "#007bff",
-            color: "white",
-            cursor: loading ? "not-allowed" : "pointer",
-          }}
+          className="login-button"
           disabled={loading}
         >
           {loading ? "Entrando..." : "Entrar"}

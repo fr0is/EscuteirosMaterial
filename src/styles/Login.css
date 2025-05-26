@@ -1,0 +1,36 @@
+.login-container {
+  padding: 20px;
+  max-width: 400px;
+  margin: auto;
+  box-sizing: border-box;
+}
+
+.login-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.login-input {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  margin-bottom: 16px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+}
+
+.login-button {
+  padding: 14px 0;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+}
+
+.login-button:disabled {
+  cursor: not-allowed;
+  background-color: #0056b3;
+}
