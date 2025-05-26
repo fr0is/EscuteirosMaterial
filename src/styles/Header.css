@@ -11,6 +11,32 @@
   z-index: 1000;
 }
 
+/* Logo visível */
 .logo-area {
-  display: none;
+  display: flex;
+  align-items: center;
+}
+
+.site-title {
+  font-size: 1.25rem;
+  font-weight: bold;
+}
+
+/* Links de navegação */
+.nav-links {
+  display: flex;
+  gap: 16px;
+}
+
+.nav-links a {
+  color: white;
+  text-decoration: none;
+  font-weight: 500;
+  padding: 8px 12px;
+  border-radius: 4px;
+  transition: background-color 0.2s ease;
+}
+
+.nav-links a:hover {
+  background-color: rgba(255, 255, 255, 0.2);
 }
