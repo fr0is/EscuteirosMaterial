@@ -3,7 +3,7 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Configuracao() {
-  const { user, users, adicionarUsuario, setUsers } = useContext(AppContext);
+  const { user, users, adicionarUtilizador, setUsers } = useContext(AppContext);
   const navigate = useNavigate();
 
   const [novoUsername, setNovoUsername] = useState("");
@@ -24,7 +24,7 @@ export default function Configuracao() {
       alert("Username já existe.");
       return;
     }
-    adicionarUsuario({
+    adicionarUtilizador({
       username: novoUsername.trim(),
       nome: novoNome.trim(),
       tipo: novoTipo,
@@ -36,7 +36,7 @@ export default function Configuracao() {
 
   const handleRemoveUser = (username) => {
     if (username === "CA127") {
-      alert("O usuário CA127 não pode ser removido.");
+      alert("O utilizador CA127 não pode ser removido.");
       return;
     }
     setUsers((u) => u.filter((user) => user.username !== username));
@@ -44,9 +44,9 @@ export default function Configuracao() {
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-      <h2>Configuração de Usuários</h2>
+      <h2>Configuração de Utilizador</h2>
 
-      <h3>Adicionar Usuário</h3>
+      <h3>Adicionar Utilizador</h3>
       <input
         placeholder="Username"
         value={novoUsername}
@@ -69,7 +69,7 @@ export default function Configuracao() {
       </select>
       <button onClick={handleAddUser}>Adicionar</button>
 
-      <h3 style={{ marginTop: 30 }}>Usuários Registados</h3>
+      <h3 style={{ marginTop: 30 }}>Utilizador Registados</h3>
       <ul>
         {users.map((u) => (
           <li key={u.username} style={{ marginBottom: 8 }}>
