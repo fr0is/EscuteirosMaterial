@@ -2,7 +2,7 @@ import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
-export default function Materiais() {
+export default function Material() {
   const { user, stock, setStock, pedidos, setPedidos } = useContext(AppContext);
   const navigate = useNavigate();
 
