@@ -1,14 +1,12 @@
-import React, { useContext } from "react";
+import React, { useContext, useState } from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { AppProvider, AppContext } from "./context/AppContext";
 import Login from "./components/Login";
 import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
 import Configuracao from "./components/Configuracao";
-import React, { useContext, useState } from "react";
-import { Link } from "react-router-dom";
-import { AppContext } from "./context/AppContext";
 import { FaBars } from "react-icons/fa";
+import "../styles/Header.css"; // <- CSS aqui (ver abaixo)
 
 function Header() {
   const { user } = useContext(AppContext);
@@ -17,7 +15,12 @@ function Header() {
   return (
     <header className="main-header">
       <div className="header-left">
-        <img src="/logo.png" alt="Logo" className="logo" />
+        <img
+          src="/logo.png"
+          alt="Logo"
+          className="logo"
+          onError={(e) => (e.target.style.display = "none")}
+        />
       </div>
 
       <h1 className="site-title">Depósito Material 127</h1>
@@ -53,6 +56,5 @@ function App() {
     </AppProvider>
   );
 }
-
 
 export default App;
