@@ -5,22 +5,34 @@ import Login from "./components/Login";
 import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
 import Configuracao from "./components/Configuracao";
+import React, { useContext, useState } from "react";
+import { Link } from "react-router-dom";
+import { AppContext } from "./context/AppContext";
+import { FaBars } from "react-icons/fa";
 
 function Header() {
   const { user } = useContext(AppContext);
+  const [menuOpen, setMenuOpen] = useState(false);
 
   return (
     <header className="main-header">
-      <div className="logo-area">
-        {/* Substituir pelo seu logo real se tiver */}
-        <img src="/logo.png" alt="Logo" />
+      <div className="header-left">
+        <img src="/logo.png" alt="Logo" className="logo" />
       </div>
+
       <h1 className="site-title">Depósito Material 127</h1>
-      <nav className="nav-links">
-        <Link to="/">Login</Link>
-        <Link to="/material">Material</Link>
-        <Link to="/pedidos">Pedidos</Link>
-        {user?.isAdmin && <Link to="/configuracao">Configuração</Link>}
+
+      <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
+        <FaBars />
+      </button>
+
+      <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
+        <Link to="/" onClick={() => setMenuOpen(false)}>Login</Link>
+        <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
+        <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
+        {user?.isAdmin && (
+          <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Configuração</Link>
+        )}
       </nav>
     </header>
   );
