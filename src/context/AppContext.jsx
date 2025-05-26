@@ -103,6 +103,36 @@ const login = async (username) => {
   });
  };
 
+ // Adicionar material
+const adicionarMaterial = async (material) => {
+  const { data, error } = await supabase.from("stock").insert([material]);
+  if (error) {
+    console.error("Erro ao adicionar material:", error);
+    throw error;
+  }
+  setStock((s) => [...s, data[0]]);
+};
+
+// Atualizar material
+const atualizarMaterial = async (id, updates) => {
+  const { data, error } = await supabase.from("stock").update(updates).eq("id", id);
+  if (error) {
+    console.error("Erro ao atualizar material:", error);
+    throw error;
+  }
+  setStock((prev) => prev.map((m) => (m.id === id ? { ...m, ...updates } : m)));
+};
+
+// Remover material
+const removerMaterial = async (id) => {
+  const { error } = await supabase.from("stock").delete().eq("id", id);
+  if (error) {
+    console.error("Erro ao remover material:", error);
+    throw error;
+  }
+  setStock((prev) => prev.filter((m) => m.id !== id));
+};
+
   return (
     <AppContext.Provider
       value={{
@@ -118,6 +148,9 @@ const login = async (username) => {
         adicionarUsuario,
         supabase,
         login,
+        adicionarMaterial,
+        removerMaterial,
+        atualizarMaterial,
       }}
     >
       {children}
