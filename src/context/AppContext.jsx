@@ -4,7 +4,9 @@ import { createClient } from "@supabase/supabase-js";
 export const AppContext = createContext();
 
 const supabaseUrl = "https://mwwyfsyjdgppvapkhkos.supabase.co";
-const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13d3lmc3lqZGdwcHZhcGtoa29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNjA4OTUsImV4cCI6MjA2MzgzNjg5NX0.Ntu1ypad2EDtx-lkeDHcrr1alwivQXbgRgD5cnl4AMU";
+const supabaseKey =
+  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13d3lmc3lqZGdwcHZhcGtoa29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNjA4OTUsImV4cCI6MjA2MzgzNjg5NX0.Ntu1ypad2EDtx-lkeDHcrr1alwivQXbgRgD5cnl4AMU";
+
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function AppProvider({ children }) {
@@ -45,18 +47,18 @@ export function AppProvider({ children }) {
   }, []);
 
   const adicionarUsuario = async (novoUser) => {
-  const { data, error } = await supabase
-    .from("users")
-    .insert([novoUser])
-    .select()
-    .single();
+    const { data, error } = await supabase
+      .from("users")
+      .insert([novoUser])
+      .select()
+      .single();
 
     if (error) {
-        console.error("Erro ao adicionar usuário:", error);
-        return;
+      console.error("Erro ao adicionar usuário:", error);
+      throw error;
     }
     setUsers((u) => [...u, data]);
-    };
+  };
 
   const updatePedido = async (pedidoId, updates) => {
     const { data, error } = await supabase
@@ -79,14 +81,14 @@ export function AppProvider({ children }) {
   };
 
   const cancelarPedido = async (id) => {
-  const { error } = await supabase.from("pedidos").delete().eq("id", id);
-  if (error) {
-    console.error("Erro ao apagar pedido:", error);
-    return false;
-  }
-  setPedidos((prev) => prev.filter((p) => p.id !== id));
-  return true;
-    };
+    const { error } = await supabase.from("pedidos").delete().eq("id", id);
+    if (error) {
+      console.error("Erro ao apagar pedido:", error);
+      return false;
+    }
+    setPedidos((prev) => prev.filter((p) => p.id !== id));
+    return true;
+  };
 
   const setStock = async (novoStock) => {
     try {
@@ -166,7 +168,9 @@ export function AppProvider({ children }) {
     return result;
   };
 
-  const login = async (username) => {
+  // Atualização principal: login agora recebe username e password
+  const login = async (username, password) => {
+    // Buscar o user com o username
     const { data: userEncontrado, error } = await supabase
       .from("users")
       .select("*")
@@ -175,6 +179,11 @@ export function AppProvider({ children }) {
 
     if (error || !userEncontrado) {
       throw new Error("Username não encontrado");
+    }
+
+    // Verificar password (simples texto plano)
+    if (userEncontrado.password !== password) {
+      throw new Error("Password incorreta");
     }
 
     setUser({
@@ -196,7 +205,8 @@ export function AppProvider({ children }) {
         pedidos,
         setPedidos,
         updatePedido,
-        setStock, // ✅ função adicionada
+        cancelarPedido,
+        setStock,
         users,
         setUsers,
         adicionarUsuario,
@@ -206,7 +216,6 @@ export function AppProvider({ children }) {
         removerMaterial,
         atualizarMaterial,
         adicionarPedido,
-        cancelarPedido,
       }}
     >
       {children}

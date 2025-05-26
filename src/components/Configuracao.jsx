@@ -6,6 +6,7 @@ export default function Configuracao() {
   const { user, users, setUsers, adicionarUsuario, supabase } = useContext(AppContext);
   const navigate = useNavigate();
 
+  const [novaPassword, setNovaPassword] = useState("");
   const [novoUsername, setNovoUsername] = useState("");
   const [novoNome, setNovoNome] = useState("");
   const [novoTipo, setNovoTipo] = useState("user");
@@ -17,29 +18,31 @@ export default function Configuracao() {
   }, [user, navigate]);
 
   const handleAddUser = async () => {
-    if (!novoUsername.trim() || !novoNome.trim()) {
-      alert("Preencha todos os campos.");
-      return;
-    }
-    if (users.some((u) => u.username === novoUsername.trim())) {
-      alert("Username já existe.");
-      return;
-    }
-    try {
-      await adicionarUsuario({
-        username: novoUsername.trim(),
-        nome: novoNome.trim(),
-        tipo: novoTipo,
-      });
-      setNovoUsername("");
-      setNovoNome("");
-      setNovoTipo("user");
-      alert("Usuário adicionado com sucesso!");
-    } catch (error) {
-      alert("Erro ao adicionar usuário.");
-      console.error(error);
-    }
-  };
+  if (!novoUsername.trim() || !novoNome.trim() || !novaPassword.trim()) {
+    alert("Preencha todos os campos.");
+    return;
+  }
+  if (users.some((u) => u.username === novoUsername.trim())) {
+    alert("Username já existe.");
+    return;
+  }
+  try {
+    await adicionarUsuario({
+      username: novoUsername.trim(),
+      nome: novoNome.trim(),
+      tipo: novoTipo,
+      password: novaPassword.trim(),
+    });
+    setNovoUsername("");
+    setNovoNome("");
+    setNovaPassword("");
+    setNovoTipo("user");
+    alert("Usuário adicionado com sucesso!");
+  } catch (error) {
+    alert("Erro ao adicionar usuário.");
+    console.error(error);
+  }
+};
 
   const handleRemoveUser = async (username) => {
     if (username === "CA127") {
@@ -97,6 +100,20 @@ export default function Configuracao() {
             border: "1px solid #ccc",
             boxSizing: "border-box",
           }}
+        />
+        <input
+        type="password"
+        placeholder="Password"
+        value={novaPassword}
+        onChange={(e) => setNovaPassword(e.target.value)}
+        style={{
+            flex: "1 1 100%",
+            padding: 10,
+            fontSize: 16,
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            boxSizing: "border-box",
+        }}
         />
         <input
           placeholder="Nome"

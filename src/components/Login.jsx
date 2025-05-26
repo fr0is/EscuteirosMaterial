@@ -5,6 +5,7 @@ import { AppContext } from "../context/AppContext";
 export default function Login() {
   const { login } = useContext(AppContext);
   const [username, setUsername] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -12,7 +13,7 @@ export default function Login() {
     e.preventDefault();
     setLoading(true);
     try {
-      await login(username);
+      await login(username, password);
       navigate("/material");
     } catch (error) {
       alert(error.message);
@@ -49,6 +50,23 @@ export default function Login() {
           }}
           required
           autoFocus
+          disabled={loading}
+        />
+        <input
+          type="password"
+          placeholder="Password"
+          value={password}
+          onChange={(e) => setPassword(e.target.value)}
+          style={{
+            width: "100%",
+            padding: 14,
+            fontSize: 18,
+            marginBottom: 16,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+            boxSizing: "border-box",
+          }}
+          required
           disabled={loading}
         />
         <button
