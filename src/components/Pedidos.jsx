@@ -10,6 +10,7 @@ export default function Pedidos() {
     stock,
     setStock,
     updatePedido,
+    cancelarPedido,
   } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -92,8 +93,6 @@ export default function Pedidos() {
       return;
     }
   };
-
-  const { cancelarPedido } = useContext(AppContext);
 
     const handleCancelar = async (id) => {
     const pedido = pedidos.find((p) => p.id === id);
