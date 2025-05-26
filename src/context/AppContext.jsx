@@ -45,13 +45,18 @@ export function AppProvider({ children }) {
   }, []);
 
   const adicionarUsuario = async (novoUser) => {
-    const { data, error } = await supabase.from("users").insert([novoUser]);
+  const { data, error } = await supabase
+    .from("users")
+    .insert([novoUser])
+    .select()
+    .single();
+
     if (error) {
-      console.error("Erro ao adicionar usuário:", error);
-      return;
+        console.error("Erro ao adicionar usuário:", error);
+        return;
     }
-    setUsers((u) => [...u, data[0]]);
-  };
+    setUsers((u) => [...u, data]);
+    };
 
   const updatePedido = async (pedidoId, updates) => {
     const { data, error } = await supabase
