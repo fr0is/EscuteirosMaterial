@@ -1,13 +1,54 @@
-import { useState } from "react";
+import React, { useContext, useState } from "react";
+import { AppContext } from "../context/AppContext";
+import { useNavigate } from "react-router-dom";
 
-export default function Materiais({ stock, setStock, isChefe }) {
-  const [novoNome, setNovoNome] = useState("");
-  const [novoTotal, setNovoTotal] = useState("");
+export default function Materiais() {
+  const { user, stock, setStock, pedidos, setPedidos } = useContext(AppContext);
+  const navigate = useNavigate();
 
-  // Atualizar total e ajustar disponível automaticamente
+  const [dataPedido, setDataPedido] = useState("");
+  const [quantidades, setQuantidades] = useState({});
+
+  // Estados para chefe gerir stock
+  const [novoItemNome, setNovoItemNome] = useState("");
+  const [novoItemTotal, setNovoItemTotal] = useState("");
+
+  if (!user.loggedIn) {
+    navigate("/");
+    return null;
+  }
+
+  const handleChangeQuantidade = (nome, value) => {
+    const disponivel = stock.find((i) => i.nome === nome)?.disponivel || 0;
+    const val = Math.max(0, Math.min(value || 0, disponivel));
+    setQuantidades((q) => ({ ...q, [nome]: val }));
+  };
+
+  const handleSubmitPedido = () => {
+    if (!dataPedido) return alert("Escolha uma data");
+    const materiais = Object.fromEntries(
+      Object.entries(quantidades).filter(([_, q]) => q > 0)
+    );
+    if (Object.keys(materiais).length === 0)
+      return alert("Selecione algum material");
+
+    const novoPedido = {
+      id: Date.now(),
+      nome: user.nome,
+      data: dataPedido,
+      materiais,
+      estado: "Pendente",
+      devolvido: {},
+    };
+    setPedidos([...pedidos, novoPedido]);
+    setQuantidades({});
+    setDataPedido("");
+    alert("Pedido enviado!");
+  };
+
+  // Função para atualizar o total e o disponível (adicionar ou remover stock)
   const handleAtualizarTotal = (id, novoTotal) => {
     if (isNaN(novoTotal) || novoTotal < 0) return;
-
     setStock((prevStock) =>
       prevStock.map((item) => {
         if (item.id === id) {
@@ -25,108 +66,131 @@ export default function Materiais({ stock, setStock, isChefe }) {
     );
   };
 
-  // Adicionar unidades ao disponível (sem alterar total)
-  const handleAdicionarStock = (id, qtd) => {
-    if (qtd <= 0) return;
-    setStock((prevStock) =>
-      prevStock.map((item) => {
-        if (item.id === id) {
-          // Disponível não pode ultrapassar total
-          const disponivelNovo = Math.min(item.disponivel + qtd, item.total);
-          return { ...item, disponivel: disponivelNovo };
-        }
-        return item;
-      })
-    );
-  };
-
-  // Remover unidades do disponível (sem alterar total)
-  const handleRemoverStock = (id, qtd) => {
-    if (qtd <= 0) return;
-    setStock((prevStock) =>
-      prevStock.map((item) => {
-        if (item.id === id) {
-          const disponivelNovo = Math.max(item.disponivel - qtd, 0);
-          return { ...item, disponivel: disponivelNovo };
-        }
-        return item;
-      })
-    );
-  };
-
-  // Adicionar novo item
+  // Adicionar novo item ao stock
   const handleAdicionarItem = () => {
-    if (!novoNome.trim() || !novoTotal || isNaN(novoTotal) || novoTotal <= 0) {
-      alert("Preencha um nome e quantidade total válida!");
+    if (!novoItemNome.trim() || !novoItemTotal || isNaN(novoItemTotal)) {
+      alert("Preencha nome e quantidade válida.");
       return;
     }
-    if (stock.find((i) => i.nome.toLowerCase() === novoNome.toLowerCase())) {
-      alert("Já existe um item com esse nome!");
+    if (
+      stock.find(
+        (item) => item.nome.toLowerCase() === novoItemNome.trim().toLowerCase()
+      )
+    ) {
+      alert("Já existe um item com esse nome.");
       return;
     }
     const novoItem = {
       id: Date.now(),
-      nome: novoNome.trim(),
-      total: parseInt(novoTotal, 10),
-      disponivel: parseInt(novoTotal, 10),
+      nome: novoItemNome.trim(),
+      total: parseInt(novoItemTotal),
+      disponivel: parseInt(novoItemTotal),
     };
     setStock([...stock, novoItem]);
-    setNovoNome("");
-    setNovoTotal("");
+    setNovoItemNome("");
+    setNovoItemTotal("");
+  };
+
+  // Eliminar item do stock
+  const handleEliminarItem = (id) => {
+    if (window.confirm("Tem a certeza que quer eliminar este item?")) {
+      setStock(stock.filter((item) => item.id !== id));
+    }
   };
 
   return (
-    <div>
-      <h2>Material</h2>
+    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+      <h2>Olá, {user.nome}</h2>
+
+      <h3>Stock disponível</h3>
+      {stock.length === 0 && <p>Nenhum item no stock.</p>}
       {stock.map((item) => (
-        <div key={item.id} style={{ marginBottom: 12, borderBottom: "1px solid #ccc", paddingBottom: 6 }}>
-          <b>{item.nome}</b>
-          <div>
-            Total:{" "}
-            <input
-              type="number"
-              min="0"
-              value={item.total}
-              onChange={(e) => handleAtualizarTotal(item.id, parseInt(e.target.value, 10))}
-              disabled={!isChefe}
-              style={{ width: 60 }}
-            />
-          </div>
-          <div>
-            Disponível: {item.disponivel}
-            {isChefe && (
-              <>
-                <button onClick={() => handleAdicionarStock(item.id, 1)} style={{ marginLeft: 10 }}>
-                  +1
+        <div
+          key={item.id}
+          style={{
+            marginBottom: 12,
+            borderBottom: "1px solid #ccc",
+            paddingBottom: 6,
+          }}
+        >
+          <b>{item.nome}</b>: {item.disponivel} / {item.total}
+          {user.isChefe && (
+            <>
+              <div style={{ marginTop: 6 }}>
+                <label>
+                  Total:{" "}
+                  <input
+                    type="number"
+                    min="0"
+                    value={item.total}
+                    onChange={(e) =>
+                      handleAtualizarTotal(item.id, parseInt(e.target.value))
+                    }
+                    style={{ width: 70 }}
+                  />
+                </label>
+                <button
+                  style={{ marginLeft: 10 }}
+                  onClick={() => handleEliminarItem(item.id)}
+                >
+                  Eliminar
                 </button>
-                <button onClick={() => handleRemoverStock(item.id, 1)} style={{ marginLeft: 5 }}>
-                  -1
-                </button>
-              </>
-            )}
-          </div>
+              </div>
+            </>
+          )}
         </div>
       ))}
 
-      {isChefe && (
-        <div style={{ marginTop: 20 }}>
-          <h3>Adicionar Novo Item</h3>
+      {!user.isChefe && (
+        <>
+          <h3>Fazer pedido</h3>
           <input
-            placeholder="Nome do material"
-            value={novoNome}
-            onChange={(e) => setNovoNome(e.target.value)}
-            style={{ marginRight: 10 }}
+            type="date"
+            value={dataPedido}
+            onChange={(e) => setDataPedido(e.target.value)}
+            style={{ marginBottom: 10 }}
+          />
+          {stock.map((item) => (
+            <div key={item.id} style={{ marginBottom: 6 }}>
+              <label>
+                {item.nome}:{" "}
+                <input
+                  type="number"
+                  min={0}
+                  max={item.disponivel}
+                  value={quantidades[item.nome] || ""}
+                  onChange={(e) =>
+                    handleChangeQuantidade(item.nome, Number(e.target.value))
+                  }
+                />
+              </label>
+            </div>
+          ))}
+          <button onClick={handleSubmitPedido} style={{ marginTop: 10 }}>
+            Enviar Pedido
+          </button>
+        </>
+      )}
+
+      {user.isChefe && (
+        <>
+          <h3>Adicionar novo item ao stock</h3>
+          <input
+            placeholder="Nome do novo item"
+            value={novoItemNome}
+            onChange={(e) => setNovoItemNome(e.target.value)}
+            style={{ marginRight: 6 }}
           />
           <input
             type="number"
-            min="1"
             placeholder="Quantidade total"
-            value={novoTotal}
-            onChange={(e) => setNovoTotal(e.target.value)}
-            style={{ width: 140, marginRight: 10 }}
+            value={novoItemTotal}
+            onChange={(e) => setNovoItemTotal(e.target.value)}
+            style={{ width: 120, marginRight: 6 }}
+            min="0"
           />
-          <button onClick={handleAdicionarItem}>Adicionar</button>
-        </div>
+          <button onClick={handleAdicionarItem}>Adicionar Item</button>
+        </>
       )}
     </div>
   );
