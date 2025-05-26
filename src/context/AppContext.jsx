@@ -151,23 +151,29 @@ export function AppProvider({ children }) {
   patrulha,
   atividade,
     }) => {
-    const { data: result, error } = await supabase.from("pedidos").insert([
+    const { data: result, error } = await supabase
+        .from("pedidos")
+        .insert([
         {
-        nome,
-        data,
-        materiais,
-        estado,
-        devolvido,
-        patrulha,
-        atividade,
+            nome,
+            data,
+            materiais,
+            estado,
+            devolvido,
+            patrulha,
+            atividade,
         },
-    ]);
+        ])
+        .select();
+
     if (error) {
-    console.error("Erro ao adicionar pedido:", JSON.stringify(error, null, 2));
-    throw error;
+        console.error("Erro ao adicionar pedido:", error);
+        throw error;
     }
+
     return result[0];
     };
+
 
   return (
     <AppContext.Provider
