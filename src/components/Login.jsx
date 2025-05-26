@@ -12,7 +12,7 @@ export default function Login() {
     e.preventDefault();
     if (!nome.trim()) return alert("Insira seu nome");
     setUser({ nome: nome.trim(), isChefe, loggedIn: true });
-    navigate("/materiais");
+    navigate("/material");
   };
 
   return (
