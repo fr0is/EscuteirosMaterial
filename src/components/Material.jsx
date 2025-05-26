@@ -87,7 +87,7 @@ export default function Material() {
     emailjs
       .send(
         "service_pnn1l65",          // seu service ID
-        "template_default",         // template genérico no EmailJS que só usa {{message}}
+        "template_siifk4y",         // template genérico no EmailJS que só usa {{message}}
         {
           to_email: "ruifr123@gmail.com",
           from_name: user.nome,
