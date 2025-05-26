@@ -178,24 +178,7 @@ export function AppProvider({ children }) {
     setPedidos((prev) => [...prev, result]);
     return result;
   };
-
-    async function atualizarSenhasUsuarios() {
-    const { data: usuarios, error } = await supabase.from("users").select("*");
-    if (error) return console.error(error);
-
-    for (const user of usuarios) {
-        // Se a senha atual não começa com $2, vamos hashar e atualizar
-        if (!user.password.startsWith("$2")) {
-        const hashedPassword = bcrypt.hashSync(user.password, 10);
-        await supabase
-            .from("users")
-            .update({ password: hashedPassword })
-            .eq("id", user.id);
-        console.log(`Senha do usuário ${user.username} atualizada.`);
-        }
-    }
-    }
-
+  
   // Atualização principal: login agora recebe username e password
   const login = async (username, password) => {
     const { data: userEncontrado, error } = await supabase
@@ -207,8 +190,6 @@ export function AppProvider({ children }) {
     if (error || !userEncontrado) {
         throw new Error("Username não encontrado");
     }
-
-    atualizarSenhasUsuarios();
 
     // Verificar password com bcrypt
     const passwordMatch = bcrypt.compareSync(password, userEncontrado.password);
