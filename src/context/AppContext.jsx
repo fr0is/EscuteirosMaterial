@@ -47,18 +47,28 @@ export function AppProvider({ children }) {
   }, []);
 
   const adicionarUsuario = async (novoUser) => {
+    // Criar hash da password
+    const salt = bcrypt.genSaltSync(10);
+    const hashedPassword = bcrypt.hashSync(novoUser.password, salt);
+
+    // Inserir user com password já hashada
     const { data, error } = await supabase
-      .from("users")
-      .insert([novoUser])
-      .select()
-      .single();
+        .from("users")
+        .insert([{ 
+        username: novoUser.username, 
+        nome: novoUser.nome, 
+        tipo: novoUser.tipo, 
+        password: hashedPassword 
+        }])
+        .select()
+        .single();
 
     if (error) {
-      console.error("Erro ao adicionar usuário:", error);
-      throw error;
+        console.error("Erro ao adicionar usuário:", error);
+        throw error;
     }
     setUsers((u) => [...u, data]);
-  };
+    };
 
   const updatePedido = async (pedidoId, updates) => {
     const { data, error } = await supabase
@@ -170,30 +180,32 @@ export function AppProvider({ children }) {
 
   // Atualização principal: login agora recebe username e password
   const login = async (username, password) => {
-    // Buscar o user com o username
     const { data: userEncontrado, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username.trim())
-      .single();
+        .from("users")
+        .select("*")
+        .eq("username", username.trim())
+        .single();
 
     if (error || !userEncontrado) {
-      throw new Error("Username não encontrado");
+        throw new Error("Username não encontrado");
     }
 
-    // Verificar password (simples texto plano)
-    if (userEncontrado.password !== password) {
-      throw new Error("Password incorreta");
+    // Verificar password com bcrypt
+    const passwordMatch = bcrypt.compareSync(password, userEncontrado.password);
+
+    if (!passwordMatch) {
+        throw new Error("Password incorreta");
     }
 
     setUser({
-      id: userEncontrado.id,
-      username: userEncontrado.username,
-      nome: userEncontrado.nome,
-      isAdmin: userEncontrado.tipo === "admin",
-      loggedIn: true,
+        id: userEncontrado.id,
+        username: userEncontrado.username,
+        nome: userEncontrado.nome,
+        isAdmin: userEncontrado.tipo === "admin",
+        loggedIn: true,
     });
-  };
+    };
+
 
   return (
     <AppContext.Provider
