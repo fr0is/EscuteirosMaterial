@@ -6,32 +6,31 @@ import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
 import Configuracao from "./components/Configuracao";
 
-function Menu() {
+function Header() {
   const { user } = useContext(AppContext);
 
   return (
-    <nav
-      style={{
-        padding: 10,
-        backgroundColor: "#eee",
-        marginBottom: 20,
-        display: "flex",
-        gap: 10,
-      }}
-    >
-      <Link to="/">Login</Link>
-      <Link to="/material">Material</Link>
-      <Link to="/pedidos">Pedidos</Link>
-      {user.isAdmin && <Link to="/configuracao">Configuração</Link>}
-    </nav>
+    <header className="main-header">
+      <div className="logo-area">
+        {/* Usa uma imagem se tiveres: <img src="/logo.png" alt="Logo" /> */}
+        <span className="site-title">Depósito Material 127</span>
+      </div>
+      <nav className="nav-links">
+        <Link to="/">Login</Link>
+        <Link to="/material">Material</Link>
+        <Link to="/pedidos">Pedidos</Link>
+        {user?.isAdmin && <Link to="/configuracao">Configuração</Link>}
+      </nav>
+    </header>
   );
 }
+
 
 function App() {
   return (
     <AppProvider>
       <Router>
-        <Menu />
+        <Header />
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/material" element={<Material />} />
@@ -42,5 +41,6 @@ function App() {
     </AppProvider>
   );
 }
+
 
 export default App;
