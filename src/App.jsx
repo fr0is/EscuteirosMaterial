@@ -2,7 +2,7 @@ import React from "react";
 import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
 import { AppProvider } from "./context/AppContext";
 import Login from "./components/Login";
-import Materiais from "./components/Materiais";
+import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
 
 function App() {
@@ -19,13 +19,13 @@ function App() {
           }}
         >
           <Link to="/">Login</Link>
-          <Link to="/materiais">Materiais</Link>
+          <Link to="/material">Material</Link>
           <Link to="/pedidos">Pedidos</Link>
         </nav>
 
         <Routes>
           <Route path="/" element={<Login />} />
-          <Route path="/materiais" element={<Materiais />} />
+          <Route path="/material" element={<Material />} />
           <Route path="/pedidos" element={<Pedidos />} />
         </Routes>
       </Router>
