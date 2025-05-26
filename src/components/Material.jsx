@@ -78,20 +78,11 @@ export default function Material() {
       atividade,
     };
 
-    // Monta string dos materiais para o email
     const listaMateriais = Object.entries(materiais)
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
       .join("\n");
 
-    // Envia email com EmailJS usando template genérico que usa {{message}}
-    emailjs
-      .send(
-        "service_pnn1l65",          // seu service ID
-        "template_siifk4y",         // template genérico no EmailJS que só usa {{message}}
-        {
-          to_email: "ruifr123@gmail.com",
-          from_name: user.nome,
-          message: `
+    const mensagem = `
 Pedido de material recebido:
 
 Nome: ${user.nome}
@@ -101,9 +92,17 @@ Data: ${hoje}
 
 Materiais solicitados:
 ${listaMateriais}
-          `,
+`;
+
+    // Envia o e-mail
+    emailjs
+      .send(
+        "service_pnn1l65",
+        "template_8ud9uk9",
+        {
+          message: mensagem,
         },
-        "sua_public_key_aqui"       // sua public key do EmailJS
+        "largUwzgW7L95dduo"
       )
       .then(() => {
         alert("Pedido enviado com sucesso e email enviado!");
@@ -112,9 +111,10 @@ ${listaMateriais}
         setPatrulha("");
         setAtividade("");
       })
-      .catch(() => {
+      .catch((error) => {
+        console.error("Erro ao enviar email:", error);
         alert(
-          "Pedido enviado, mas falha ao enviar email. Verifique sua conexão ou configuração."
+          "Pedido enviado, mas falha ao enviar email. Verifique sua conexão ou configuração do EmailJS."
         );
         setPedidos([...pedidos, novoPedido]);
         setQuantidades({});
@@ -143,10 +143,13 @@ ${listaMateriais}
           >
             <div>
               <b>
-                {item.nome} {pendente > 0 && <span style={{ color: "red" }}>*</span>}
+                {item.nome}{" "}
+                {pendente > 0 && <span style={{ color: "red" }}>*</span>}
               </b>
               : {item.disponivel} / {item.total}{" "}
-              {pendente > 0 && <em style={{ color: "red" }}>(Pendentes: {pendente})</em>}
+              {pendente > 0 && (
+                <em style={{ color: "red" }}>(Pendentes: {pendente})</em>
+              )}
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
               <button onClick={() => handleDecrement(item.nome)}>-</button>
@@ -160,37 +163,37 @@ ${listaMateriais}
       })}
 
       {!user.isAdmin && (
-        <>
-          <div style={{ marginTop: 20 }}>
-            <label>
-              Nome de Bando/Patrulha/Equipa/Tribo: <br />
-              <input
-                type="text"
-                value={patrulha}
-                onChange={(e) => setPatrulha(e.target.value)}
-                style={{ width: "100%", padding: 6, marginBottom: 10 }}
-              />
-            </label>
-            <label>
-              Atividade: <br />
-              <input
-                type="text"
-                value={atividade}
-                onChange={(e) => setAtividade(e.target.value)}
-                style={{ width: "100%", padding: 6, marginBottom: 10 }}
-              />
-            </label>
-            <button
-              onClick={handleSubmitPedido}
-              style={{ marginTop: 10, padding: "10px 20px", fontSize: 16 }}
-            >
-              Fazer Pedido
-            </button>
-          </div>
-        </>
+        <div style={{ marginTop: 20 }}>
+          <label>
+            Nome de Bando/Patrulha/Equipa/Tribo: <br />
+            <input
+              type="text"
+              value={patrulha}
+              onChange={(e) => setPatrulha(e.target.value)}
+              style={{ width: "100%", padding: 6, marginBottom: 10 }}
+            />
+          </label>
+          <label>
+            Atividade: <br />
+            <input
+              type="text"
+              value={atividade}
+              onChange={(e) => setAtividade(e.target.value)}
+              style={{ width: "100%", padding: 6, marginBottom: 10 }}
+            />
+          </label>
+          <button
+            onClick={handleSubmitPedido}
+            style={{ marginTop: 10, padding: "10px 20px", fontSize: 16 }}
+          >
+            Fazer Pedido
+          </button>
+        </div>
       )}
 
-      {user.isAdmin && <p>O chefe do material não pode fazer pedidos aqui.</p>}
+      {user.isAdmin && (
+        <p>O chefe do material não pode fazer pedidos aqui.</p>
+      )}
     </div>
   );
 }
