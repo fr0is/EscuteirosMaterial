@@ -8,9 +8,9 @@ export default function Pedidos() {
     pedidos,
     setPedidos,
     materiais,
-    setMateriais,
     updatePedido,
     cancelarPedido,
+    setStock, // adiciona aqui para atualizar banco
   } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -20,19 +20,24 @@ export default function Pedidos() {
   }
 
   const handleAprovar = async (id) => {
+    if (!pedidos || !materiais) {
+      alert("Dados ainda não carregados");
+      return;
+    }
+
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
-    // Verifica materiais disponível
+    // Verifica materiais disponíveis
     for (const [nome, qtd] of Object.entries(pedido.materiais)) {
       const itemmateriais = materiais.find((s) => s.nome === nome);
       if (!itemmateriais || itemmateriais.disponivel < qtd) {
-        alert(`materiais insuficiente para: ${nome}`);
+        alert(`Materiais insuficiente para: ${nome}`);
         return;
       }
     }
 
-    // Atualiza materiais
+    // Atualiza materiais no banco e estado local
     const novoMateriais = materiais.map((item) => {
       if (pedido.materiais[item.nome]) {
         return {
@@ -43,7 +48,7 @@ export default function Pedidos() {
       return item;
     });
 
-    const materiaisUpdated = await setMateriais(novoMateriais);
+    const materiaisUpdated = await setStock(novoMateriais);
     if (!materiaisUpdated) {
       alert("Erro ao atualizar materiais");
       return;
@@ -58,6 +63,11 @@ export default function Pedidos() {
   };
 
   const handleDevolver = async (pedidoId, devolucao) => {
+    if (!pedidos || !materiais) {
+      alert("Dados ainda não carregados");
+      return;
+    }
+
     const pedido = pedidos.find((p) => p.id === pedidoId);
     if (!pedido || pedido.estado !== "Aprovado") return;
 
@@ -71,7 +81,7 @@ export default function Pedidos() {
       return item;
     });
 
-    const materiaisUpdated = await setMateriais(novoMateriais);
+    const materiaisUpdated = await setStock(novoMateriais);
     if (!materiaisUpdated) {
       alert("Erro ao atualizar materiais");
       return;
@@ -94,7 +104,7 @@ export default function Pedidos() {
     }
   };
 
-    const handleCancelar = async (id) => {
+  const handleCancelar = async (id) => {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
@@ -102,10 +112,10 @@ export default function Pedidos() {
 
     const success = await cancelarPedido(id);
     if (!success) {
-        alert("Erro ao cancelar pedido");
-        return;
+      alert("Erro ao cancelar pedido");
+      return;
     }
-    };
+  };
 
   const pedidosVisiveis = user.isAdmin
     ? pedidos
