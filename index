@@ -1,0 +1,5 @@
+/* Estilos base, pode estar vazio inicialmente */
+body {
+  margin: 0;
+  font-family: Arial, sans-serif;
+}
