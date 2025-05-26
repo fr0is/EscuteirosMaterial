@@ -15,7 +15,6 @@ export default function Pedidos() {
     setPedidos((prev) =>
       prev.map((p) => {
         if (p.id === id && p.estado === "Pendente") {
-          // Atualizar stock
           const novoStock = stock.map((item) => {
             if (p.materiais[item.nome]) {
               return {
@@ -37,7 +36,6 @@ export default function Pedidos() {
     setPedidos((prev) =>
       prev.map((p) => {
         if (p.id === pedidoId && p.estado === "Aprovado") {
-          // Atualizar stock garantindo que disponivel <= total
           const novoStock = stock.map((item) => {
             if (devolucao[item.nome]) {
               const disponivelAtualizado = Math.min(
@@ -53,7 +51,6 @@ export default function Pedidos() {
           });
           setStock(novoStock);
 
-          // Verificar se a devolução está completa
           const devolucaoCompleta = Object.entries(p.materiais).every(
             ([nome, q]) => (devolucao[nome] || 0) === q
           );
@@ -69,18 +66,16 @@ export default function Pedidos() {
     );
   };
 
-  // Função para cancelar pedido pendente
   const handleCancelar = (id) => {
     setPedidos((prev) => prev.filter((p) => p.id !== id));
   };
 
-  // Se o user não é admin, filtra para mostrar só os pedidos do user
   const pedidosVisiveis = user.isAdmin
     ? pedidos
     : pedidos.filter((p) => p.nome === user.nome);
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+    <div style={{ padding: 20, maxWidth: 600, margin: "auto", boxSizing: "border-box" }}>
       <h2>Pedidos</h2>
       {pedidosVisiveis.length === 0 && <p>Nenhum pedido registado.</p>}
 
@@ -111,82 +106,141 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
     setDevolucao((d) => ({ ...d, [nome]: val }));
   };
 
-  // Pode cancelar se pendente e (admin ou dono do pedido)
   const podeCancelar = pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
 
   return (
     <div
       style={{
         border: "1px solid #ccc",
-        padding: 12,
-        marginBottom: 12,
-        borderRadius: 6,
+        padding: 16,
+        marginBottom: 16,
+        borderRadius: 8,
+        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
+        backgroundColor: "#fff",
       }}
     >
       <p>
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
-
       <p>
         <b>Bando/Patrulha/Equipa/Tribo:</b> {pedido.patrulha || "-"}
       </p>
       <p>
         <b>Atividade:</b> {pedido.atividade || "-"}
       </p>
-
       <p>
         <b>Estado:</b> {pedido.estado}
       </p>
       <p>
         <b>Materiais:</b>
       </p>
-      <ul>
+      <ul style={{ paddingLeft: 20, marginBottom: 12 }}>
         {Object.entries(pedido.materiais).map(([nome, q]) => (
-          <li key={nome}>
+          <li key={nome} style={{ marginBottom: 6 }}>
             {nome}: {q} (Devolvido: {pedido.devolvido?.[nome] || 0})
           </li>
         ))}
       </ul>
 
-      {pedido.estado === "Pendente" && isAdmin && (
-        <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
-      )}
+      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
+        {pedido.estado === "Pendente" && isAdmin && (
+          <button
+            onClick={() => onAprovar(pedido.id)}
+            style={{
+              flex: "1 1 auto",
+              padding: 14,
+              fontSize: 16,
+              backgroundColor: "#28a745",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            Aprovar Pedido
+          </button>
+        )}
 
-      {podeCancelar && (
-        <button
-          onClick={() => onCancelar(pedido.id)}
-          style={{ marginLeft: 10, backgroundColor: "red", color: "white" }}
-        >
-          Cancelar Pedido
-        </button>
-      )}
+        {podeCancelar && (
+          <button
+            onClick={() => onCancelar(pedido.id)}
+            style={{
+              flex: "1 1 auto",
+              padding: 14,
+              fontSize: 16,
+              backgroundColor: "#dc3545",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+            }}
+          >
+            Cancelar Pedido
+          </button>
+        )}
+      </div>
 
       {pedido.estado === "Aprovado" && isAdmin && (
         <>
           <p>Registar devolução:</p>
           {Object.entries(pedido.materiais).map(([nome, q]) => (
-            <div key={nome} style={{ marginBottom: 6 }}>
-              <label>
-                {nome}:{" "}
+            <div
+              key={nome}
+              style={{
+                marginBottom: 12,
+                display: "flex",
+                alignItems: "center",
+                gap: 12,
+                flexWrap: "wrap",
+              }}
+            >
+              <label style={{ flex: "1 1 150px", fontSize: 16 }}>
+                {nome}:
                 <input
                   type="number"
                   min={0}
                   max={q}
                   value={devolucao[nome] || 0}
-                  onChange={(e) =>
-                    handleChangeDevolucao(nome, Number(e.target.value))
-                  }
+                  onChange={(e) => handleChangeDevolucao(nome, Number(e.target.value))}
+                  style={{
+                    marginLeft: 8,
+                    padding: 8,
+                    fontSize: 16,
+                    width: "80px",
+                    borderRadius: 6,
+                    border: "1px solid #ccc",
+                  }}
                 />
+                <span style={{ marginLeft: 8, fontSize: 14, color: "#666" }}>
+                  / {q}
+                </span>
               </label>
             </div>
           ))}
-          <button onClick={() => onDevolver(pedido.id, devolucao)}>
+          <button
+            onClick={() => onDevolver(pedido.id, devolucao)}
+            style={{
+              padding: 14,
+              fontSize: 16,
+              backgroundColor: "#007bff",
+              color: "white",
+              border: "none",
+              borderRadius: 6,
+              cursor: "pointer",
+              width: "100%",
+              marginTop: 10,
+            }}
+          >
             Confirmar Devolução
           </button>
         </>
       )}
 
-      {pedido.estado === "Concluído" && <p>Pedido concluído!</p>}
+      {pedido.estado === "Concluído" && (
+        <p style={{ color: "green", fontWeight: "bold", marginTop: 12 }}>
+          Pedido concluído!
+        </p>
+      )}
     </div>
   );
 }

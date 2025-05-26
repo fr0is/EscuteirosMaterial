@@ -43,46 +43,132 @@ export default function Configuracao() {
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 600,
+        margin: "auto",
+        boxSizing: "border-box",
+      }}
+    >
       <h2>Configuração de Utilizador</h2>
 
       <h3>Adicionar Utilizador</h3>
-      <input
-        placeholder="Username"
-        value={novoUsername}
-        onChange={(e) => setNovoUsername(e.target.value)}
-        style={{ marginRight: 10 }}
-      />
-      <input
-        placeholder="Nome"
-        value={novoNome}
-        onChange={(e) => setNovoNome(e.target.value)}
-        style={{ marginRight: 10 }}
-      />
-      <select
-        value={novoTipo}
-        onChange={(e) => setNovoTipo(e.target.value)}
-        style={{ marginRight: 10 }}
+      <div
+        style={{
+          display: "flex",
+          flexWrap: "wrap",
+          gap: 10,
+          marginBottom: 20,
+        }}
       >
-        <option value="user">User</option>
-        <option value="admin">Admin</option>
-      </select>
-      <button onClick={handleAddUser}>Adicionar</button>
+        <input
+          placeholder="Username"
+          value={novoUsername}
+          onChange={(e) => setNovoUsername(e.target.value)}
+          style={{
+            flex: "1 1 100%",
+            padding: 10,
+            fontSize: 16,
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            boxSizing: "border-box",
+          }}
+        />
+        <input
+          placeholder="Nome"
+          value={novoNome}
+          onChange={(e) => setNovoNome(e.target.value)}
+          style={{
+            flex: "1 1 100%",
+            padding: 10,
+            fontSize: 16,
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            boxSizing: "border-box",
+          }}
+        />
+        <select
+          value={novoTipo}
+          onChange={(e) => setNovoTipo(e.target.value)}
+          style={{
+            flex: "1 1 100%",
+            padding: 10,
+            fontSize: 16,
+            borderRadius: 4,
+            border: "1px solid #ccc",
+            boxSizing: "border-box",
+          }}
+        >
+          <option value="user">User</option>
+          <option value="admin">Admin</option>
+        </select>
+        <button
+          onClick={handleAddUser}
+          style={{
+            flex: "1 1 100%",
+            padding: "12px 0",
+            fontSize: 18,
+            borderRadius: 4,
+            border: "none",
+            backgroundColor: "#007bff",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
+          Adicionar
+        </button>
+      </div>
 
-      <h3 style={{ marginTop: 30 }}>Utilizador Registados</h3>
-      <ul>
+      <h3>Utilizadores Registados</h3>
+      <ul style={{ padding: 0, listStyle: "none" }}>
         {users.map((u) => (
-          <li key={u.username} style={{ marginBottom: 8 }}>
-            <b>{u.username}</b> ({u.tipo}) - {u.nome}{" "}
-            {u.username !== "CA127" && (
+          <li
+            key={u.username}
+            style={{
+              marginBottom: 12,
+              padding: 10,
+              border: "1px solid #ddd",
+              borderRadius: 6,
+              display: "flex",
+              flexWrap: "wrap",
+              alignItems: "center",
+              justifyContent: "space-between",
+              gap: 8,
+              fontSize: 16,
+            }}
+          >
+            <div style={{ flex: "1 1 auto", minWidth: 0 }}>
+              <b>{u.username}</b> ({u.tipo}) - {u.nome}
+            </div>
+            {u.username !== "CA127" ? (
               <button
                 onClick={() => handleRemoveUser(u.username)}
-                style={{ marginLeft: 10 }}
+                style={{
+                  padding: "6px 12px",
+                  fontSize: 14,
+                  borderRadius: 4,
+                  border: "none",
+                  backgroundColor: "#dc3545",
+                  color: "white",
+                  cursor: "pointer",
+                  flexShrink: 0,
+                }}
               >
                 Remover
               </button>
+            ) : (
+              <span
+                style={{
+                  marginLeft: 10,
+                  color: "gray",
+                  fontStyle: "italic",
+                  flexShrink: 0,
+                }}
+              >
+                (Não pode remover)
+              </span>
             )}
-            {u.username === "CA127" && <span style={{ marginLeft: 10, color: "gray" }}>(Não pode remover)</span>}
           </li>
         ))}
       </ul>

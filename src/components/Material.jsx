@@ -14,7 +14,7 @@ export default function Material() {
     return null;
   }
 
-  // Calcula pendentes por item (igual antes)
+  // Calcula pendentes por item
   const pendentesPorItem = {};
   pedidos.forEach((p) => {
     if (p.estado === "Pendente") {
@@ -46,7 +46,6 @@ export default function Material() {
   };
 
   const handleSubmitPedido = () => {
-    // Validar campos obrigatórios
     if (patrulha.trim() === "") {
       alert("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
       return;
@@ -64,7 +63,7 @@ export default function Material() {
       return;
     }
 
-    const hoje = new Date().toISOString().split("T")[0]; // yyyy-mm-dd
+    const hoje = new Date().toISOString().split("T")[0];
 
     const novoPedido = {
       id: Date.now(),
@@ -73,8 +72,8 @@ export default function Material() {
       materiais,
       estado: "Pendente",
       devolvido: {},
-      patrulha, // adiciona campo patrulha
-      atividade, // adiciona campo atividade
+      patrulha,
+      atividade,
     };
 
     setPedidos([...pedidos, novoPedido]);
@@ -85,7 +84,14 @@ export default function Material() {
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 600,
+        margin: "auto",
+        boxSizing: "border-box",
+      }}
+    >
       <h2>Olá, {user.nome}</h2>
       <h3>Stock disponível</h3>
       {stock.map((item) => {
@@ -96,59 +102,121 @@ export default function Material() {
             style={{
               display: "flex",
               alignItems: "center",
-              marginBottom: 8,
+              marginBottom: 12,
               justifyContent: "space-between",
               borderBottom: "1px solid #ddd",
-              paddingBottom: 6,
+              paddingBottom: 8,
             }}
           >
-            <div>
+            <div style={{ flex: 1, minWidth: 0 }}>
               <b>
                 {item.nome} {pendente > 0 && <span style={{ color: "red" }}>*</span>}
               </b>
               : {item.disponivel} / {item.total}{" "}
-              {pendente > 0 && <em style={{ color: "red" }}>(Pendentes: {pendente})</em>}
+              {pendente > 0 && (
+                <em style={{ color: "red", display: "block", marginTop: 4 }}>
+                  (Pendentes: {pendente})
+                </em>
+              )}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-              <button onClick={() => handleDecrement(item.nome)}>-</button>
-              <span style={{ minWidth: 20, textAlign: "center" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+              <button
+                onClick={() => handleDecrement(item.nome)}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: 20,
+                  borderRadius: 6,
+                  border: "1px solid #ccc",
+                  backgroundColor: "#f0f0f0",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+                aria-label={`Diminuir quantidade de ${item.nome}`}
+              >
+                −
+              </button>
+              <span
+                style={{
+                  minWidth: 30,
+                  textAlign: "center",
+                  fontSize: 18,
+                  fontWeight: "bold",
+                }}
+              >
                 {quantidades[item.nome] || 0}
               </span>
-              <button onClick={() => handleIncrement(item.nome)}>+</button>
+              <button
+                onClick={() => handleIncrement(item.nome)}
+                style={{
+                  padding: "8px 12px",
+                  fontSize: 20,
+                  borderRadius: 6,
+                  border: "1px solid #ccc",
+                  backgroundColor: "#f0f0f0",
+                  cursor: "pointer",
+                  userSelect: "none",
+                }}
+                aria-label={`Aumentar quantidade de ${item.nome}`}
+              >
+                +
+              </button>
             </div>
           </div>
         );
       })}
 
       {!user.isAdmin && (
-        <>
-          <div style={{ marginTop: 20 }}>
-            <label>
-              Nome de Bando/Patrulha/Equipa/Tribo: <br />
-              <input
-                type="text"
-                value={patrulha}
-                onChange={(e) => setPatrulha(e.target.value)}
-                style={{ width: "100%", padding: 6, marginBottom: 10 }}
-              />
-            </label>
-            <label>
-              Atividade: <br />
-              <input
-                type="text"
-                value={atividade}
-                onChange={(e) => setAtividade(e.target.value)}
-                style={{ width: "100%", padding: 6, marginBottom: 10 }}
-              />
-            </label>
-            <button
-              onClick={handleSubmitPedido}
-              style={{ marginTop: 10, padding: "10px 20px", fontSize: 16 }}
-            >
-              Fazer Pedido
-            </button>
-          </div>
-        </>
+        <div style={{ marginTop: 30 }}>
+          <label style={{ display: "block", marginBottom: 12 }}>
+            Nome de Bando/Patrulha/Equipa/Tribo: <br />
+            <input
+              type="text"
+              value={patrulha}
+              onChange={(e) => setPatrulha(e.target.value)}
+              style={{
+                width: "100%",
+                padding: 10,
+                fontSize: 16,
+                borderRadius: 6,
+                border: "1px solid #ccc",
+                boxSizing: "border-box",
+              }}
+              placeholder="Ex: Bando Lobo"
+            />
+          </label>
+          <label style={{ display: "block", marginBottom: 20 }}>
+            Atividade: <br />
+            <input
+              type="text"
+              value={atividade}
+              onChange={(e) => setAtividade(e.target.value)}
+              style={{
+                width: "100%",
+                padding: 10,
+                fontSize: 16,
+                borderRadius: 6,
+                border: "1px solid #ccc",
+                boxSizing: "border-box",
+              }}
+              placeholder="Ex: Acampamento de Verão"
+            />
+          </label>
+          <button
+            onClick={handleSubmitPedido}
+            style={{
+              width: "100%",
+              padding: 14,
+              fontSize: 18,
+              borderRadius: 6,
+              border: "none",
+              backgroundColor: "#007bff",
+              color: "white",
+              cursor: "pointer",
+            }}
+          >
+            Fazer Pedido
+          </button>
+        </div>
       )}
 
       {user.isAdmin && <p>O chefe do material não pode fazer pedidos aqui.</p>}

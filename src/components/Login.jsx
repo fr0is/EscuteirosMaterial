@@ -26,17 +26,44 @@ export default function Login() {
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 400, margin: "auto" }}>
+    <div
+      style={{
+        padding: 20,
+        maxWidth: 400,
+        margin: "auto",
+        boxSizing: "border-box",
+      }}
+    >
       <h2>Login</h2>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
         <input
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
-          style={{ width: "100%", padding: 8, marginBottom: 10 }}
+          style={{
+            width: "100%",
+            padding: 14,
+            fontSize: 18,
+            marginBottom: 16,
+            borderRadius: 6,
+            border: "1px solid #ccc",
+            boxSizing: "border-box",
+          }}
           required
+          autoFocus
         />
-        <button type="submit" style={{ marginTop: 10, padding: "8px 16px" }}>
+        <button
+          type="submit"
+          style={{
+            padding: "14px 0",
+            fontSize: 18,
+            borderRadius: 6,
+            border: "none",
+            backgroundColor: "#007bff",
+            color: "white",
+            cursor: "pointer",
+          }}
+        >
           Entrar
         </button>
       </form>
