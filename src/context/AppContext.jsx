@@ -151,7 +151,7 @@ export function AppProvider({ children }) {
   patrulha,
   atividade,
     }) => {
-    const { data: result, error } = await supabase.from("pedido").insert([
+    const { data: result, error } = await supabase.from("pedidos").insert([
         {
         nome,
         data,
