@@ -163,8 +163,8 @@ export function AppProvider({ children }) {
         },
     ]);
     if (error) {
-        console.error("Erro ao adicionar pedido:", error);
-        throw error;
+    console.error("Erro ao adicionar pedido:", JSON.stringify(error, null, 2));
+    throw error;
     }
     return result[0];
     };
