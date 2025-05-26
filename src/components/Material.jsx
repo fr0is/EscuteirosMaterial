@@ -83,11 +83,11 @@ export default function Material() {
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
       .join("\n");
 
-    // Envia email com EmailJS
+    // Envia email com EmailJS usando template genérico que usa {{message}}
     emailjs
       .send(
-        "service_pnn1l65",          // Substituir pelo seu service ID do EmailJS
-        "template_default",        // Usar um template padrão (ex: 'template_default')
+        "service_pnn1l65",          // seu service ID
+        "template_default",         // template genérico no EmailJS que só usa {{message}}
         {
           to_email: "ruifr123@gmail.com",
           from_name: user.nome,
@@ -103,7 +103,7 @@ Materiais solicitados:
 ${listaMateriais}
           `,
         },
-        "largUwzgW7L95dduo"            // Substituir pela sua public key do EmailJS
+        "sua_public_key_aqui"       // sua public key do EmailJS
       )
       .then(() => {
         alert("Pedido enviado com sucesso e email enviado!");
