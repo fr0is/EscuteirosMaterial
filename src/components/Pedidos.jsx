@@ -230,7 +230,7 @@ function PedidoItem({
               </label>
             </div>
           ))}
-          <button onClick={() => onDevolver(pedido.id, devolucao)}>
+          <button className="btn-aprovar" onClick={() => onDevolver(pedido.id, devolucao)}>
             Confirmar Devolução
           </button>
         </div>
