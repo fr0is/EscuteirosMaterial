@@ -55,13 +55,8 @@
   cursor: pointer;
   border-radius: 6px;
   border: none;
-  background-color: #007bff;
   color: white;
   transition: background-color 0.2s ease;
-}
-
-.pedido-buttons button:hover {
-  background-color: #0056b3;
 }
 
 .devolucao-container {
