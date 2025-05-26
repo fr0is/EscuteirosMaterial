@@ -6,13 +6,15 @@ export default function Material() {
   const { user, stock, pedidos, setPedidos } = useContext(AppContext);
   const navigate = useNavigate();
   const [quantidades, setQuantidades] = useState({});
+  const [patrulha, setPatrulha] = useState("");
+  const [atividade, setAtividade] = useState("");
 
   if (!user.loggedIn) {
     navigate("/");
     return null;
   }
 
-  // Calcula o total pendente por nome de material (somente pedidos pendentes)
+  // Calcula pendentes por item (igual antes)
   const pendentesPorItem = {};
   pedidos.forEach((p) => {
     if (p.estado === "Pendente") {
@@ -25,7 +27,6 @@ export default function Material() {
   const handleIncrement = (nome) => {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
-      // Limitar incremento para o disponivel menos pendentes
       const max = (stock.find((i) => i.nome === nome)?.disponivel || 0) - (pendentesPorItem[nome] || 0);
       if (atual < max) {
         return { ...q, [nome]: atual + 1 };
@@ -45,6 +46,16 @@ export default function Material() {
   };
 
   const handleSubmitPedido = () => {
+    // Validar campos obrigatórios
+    if (patrulha.trim() === "") {
+      alert("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
+      return;
+    }
+    if (atividade.trim() === "") {
+      alert("Por favor, informe a atividade.");
+      return;
+    }
+
     const materiais = Object.fromEntries(
       Object.entries(quantidades).filter(([_, q]) => q > 0)
     );
@@ -62,10 +73,14 @@ export default function Material() {
       materiais,
       estado: "Pendente",
       devolvido: {},
+      patrulha, // adiciona campo patrulha
+      atividade, // adiciona campo atividade
     };
 
     setPedidos([...pedidos, novoPedido]);
     setQuantidades({});
+    setPatrulha("");
+    setAtividade("");
     alert("Pedido enviado com sucesso!");
   };
 
@@ -106,12 +121,34 @@ export default function Material() {
       })}
 
       {!user.isAdmin && (
-        <button
-          onClick={handleSubmitPedido}
-          style={{ marginTop: 20, padding: "10px 20px", fontSize: 16 }}
-        >
-          Fazer Pedido
-        </button>
+        <>
+          <div style={{ marginTop: 20 }}>
+            <label>
+              Nome da Patrulha/Equipa/Bando/Tribo: <br />
+              <input
+                type="text"
+                value={patrulha}
+                onChange={(e) => setPatrulha(e.target.value)}
+                style={{ width: "100%", padding: 6, marginBottom: 10 }}
+              />
+            </label>
+            <label>
+              Atividade: <br />
+              <input
+                type="text"
+                value={atividade}
+                onChange={(e) => setAtividade(e.target.value)}
+                style={{ width: "100%", padding: 6, marginBottom: 10 }}
+              />
+            </label>
+            <button
+              onClick={handleSubmitPedido}
+              style={{ marginTop: 10, padding: "10px 20px", fontSize: 16 }}
+            >
+              Fazer Pedido
+            </button>
+          </div>
+        </>
       )}
 
       {user.isAdmin && <p>O chefe do material não pode fazer pedidos aqui.</p>}
