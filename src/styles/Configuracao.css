@@ -48,8 +48,8 @@
 
 .input-field, .select-field {
   width: 100%;
+  max-width: 100%; /* para garantir que não ultrapasse o container */
   padding: 10px 12px;
-  margin-bottom: 15px;
   font-size: 16px;
   border: 1px solid #ccc;
   border-radius: 4px;
@@ -121,8 +121,10 @@
 }
 
 .form-group {
-  max-width: 400px; /* limite a largura do formulário */
-  margin-bottom: 20px;
+  display: flex;
+  flex-direction: column;
+  max-width: 400px; /* largura máxima do formulário */
+  gap: 12px; /* espaço entre inputs */
 }
 
 
