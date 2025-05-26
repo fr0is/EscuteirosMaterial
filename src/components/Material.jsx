@@ -93,7 +93,7 @@ Data: ${hoje}
 Materiais solicitados:
 ${listaMateriais}
 `;
-
+    console.log("Mensagem para envio:\n", mensagem);
     // Envia o e-mail
     emailjs
       .send(
