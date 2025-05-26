@@ -92,13 +92,14 @@ export default function Pedidos() {
           onDevolver={handleDevolver}
           onCancelar={handleCancelar}
           isAdmin={user.isAdmin}
+          userNome={user.nome}
         />
       ))}
     </div>
   );
 }
 
-function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin }) {
+function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNome }) {
   const [devolucao, setDevolucao] = React.useState({});
 
   React.useEffect(() => {
@@ -109,6 +110,9 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin }) {
     val = Math.min(Math.max(val, 0), pedido.materiais[nome]);
     setDevolucao((d) => ({ ...d, [nome]: val }));
   };
+
+  // Pode cancelar se pendente e (admin ou dono do pedido)
+  const podeCancelar = pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
 
   return (
     <div
@@ -123,7 +127,6 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin }) {
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
 
-      {/* Exibir patrulha/equipa/tribo e atividade */}
       <p>
         <b>Bando/Patrulha/Equipa/Tribo:</b> {pedido.patrulha || "-"}
       </p>
@@ -146,15 +149,16 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin }) {
       </ul>
 
       {pedido.estado === "Pendente" && isAdmin && (
-        <>
-          <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
-          <button
-            onClick={() => onCancelar(pedido.id)}
-            style={{ marginLeft: 10, backgroundColor: "red", color: "white" }}
-          >
-            Cancelar Pedido
-          </button>
-        </>
+        <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
+      )}
+
+      {podeCancelar && (
+        <button
+          onClick={() => onCancelar(pedido.id)}
+          style={{ marginLeft: 10, backgroundColor: "red", color: "white" }}
+        >
+          Cancelar Pedido
+        </button>
       )}
 
       {pedido.estado === "Aprovado" && isAdmin && (
@@ -183,9 +187,6 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin }) {
       )}
 
       {pedido.estado === "Concluído" && <p>Pedido concluído!</p>}
-
-      {/* Usuário normal só vê o estado e os dados, sem botões de ação */}
-      {!isAdmin && <p>Estado do seu pedido: {pedido.estado}</p>}
     </div>
   );
 }
