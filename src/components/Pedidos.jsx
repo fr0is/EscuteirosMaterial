@@ -196,12 +196,18 @@ function PedidoItem({
 
       <div className="pedido-buttons">
         {pedido.estado === "Pendente" && isAdmin && (
-          <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
+            <button className="btn-aprovar" onClick={() => onAprovar(pedido.id)}>
+                Aprovar Pedido
+            </button>
         )}
 
+
         {podeCancelar && (
-          <button onClick={() => onCancelar(pedido.id)}>Cancelar Pedido</button>
+            <button className="btn-cancelar" onClick={() => onCancelar(pedido.id)}>
+                Cancelar Pedido
+            </button>
         )}
+
       </div>
 
       {pedido.estado === "Aprovado" && isAdmin && (

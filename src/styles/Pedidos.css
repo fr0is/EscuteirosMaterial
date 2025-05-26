@@ -93,6 +93,25 @@
   text-align: center;
 }
 
+.btn-aprovar {
+  background-color: #28a745; /* verde */
+  color: white;
+}
+
+.btn-aprovar:hover {
+  background-color: #218838;
+}
+
+.btn-cancelar {
+  background-color: #dc3545; /* vermelho */
+  color: white;
+}
+
+.btn-cancelar:hover {
+  background-color: #c82333;
+}
+
+
 /* Responsividade */
 @media (max-width: 480px) {
   .pedido-buttons {
