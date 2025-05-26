@@ -163,7 +163,7 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
 
       {pedido.estado === "Aprovado" && isAdmin && (
         <>
-          <p>Registrar devolução:</p>
+          <p>Registar devolução:</p>
           {Object.entries(pedido.materiais).map(([nome, q]) => (
             <div key={nome} style={{ marginBottom: 6 }}>
               <label>
