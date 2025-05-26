@@ -1,6 +1,7 @@
-import React, { useContext } from "react";
+import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import "../styles/Pedidos.css";
 
 export default function Pedidos() {
   const {
@@ -10,12 +11,17 @@ export default function Pedidos() {
     materiais,
     updatePedido,
     cancelarPedido,
-    setStock, // adiciona aqui para atualizar banco
+    setStock,
   } = useContext(AppContext);
   const navigate = useNavigate();
 
+  useEffect(() => {
+    if (!user.loggedIn) {
+      navigate("/");
+    }
+  }, [user.loggedIn, navigate]);
+
   if (!user.loggedIn) {
-    navigate("/");
     return null;
   }
 
@@ -28,7 +34,6 @@ export default function Pedidos() {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
-    // Verifica materiais disponíveis
     for (const [nome, qtd] of Object.entries(pedido.materiais)) {
       const itemmateriais = materiais.find((s) => s.nome === nome);
       if (!itemmateriais || itemmateriais.disponivel < qtd) {
@@ -37,7 +42,6 @@ export default function Pedidos() {
       }
     }
 
-    // Atualiza materiais no banco e estado local
     const novoMateriais = materiais.map((item) => {
       if (pedido.materiais[item.nome]) {
         return {
@@ -54,7 +58,6 @@ export default function Pedidos() {
       return;
     }
 
-    // Atualiza estado do pedido
     const pedidoUpdated = await updatePedido(id, { estado: "Aprovado" });
     if (!pedidoUpdated) {
       alert("Erro ao aprovar pedido");
@@ -75,7 +78,10 @@ export default function Pedidos() {
       if (devolucao[item.nome]) {
         return {
           ...item,
-          disponivel: Math.min(item.disponivel + devolucao[item.nome], item.total),
+          disponivel: Math.min(
+            item.disponivel + devolucao[item.nome],
+            item.total
+          ),
         };
       }
       return item;
@@ -122,7 +128,7 @@ export default function Pedidos() {
     : pedidos.filter((p) => p.nome === user.nome);
 
   return (
-    <div>
+    <div className="pedidos-container">
       <h2>Pedidos</h2>
       {pedidosVisiveis.length === 0 && <p>Nenhum pedido registado.</p>}
 
@@ -141,10 +147,17 @@ export default function Pedidos() {
   );
 }
 
-function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNome }) {
-  const [devolucao, setDevolucao] = React.useState({});
+function PedidoItem({
+  pedido,
+  onAprovar,
+  onDevolver,
+  onCancelar,
+  isAdmin,
+  userNome,
+}) {
+  const [devolucao, setDevolucao] = useState({});
 
-  React.useEffect(() => {
+  useEffect(() => {
     setDevolucao(pedido.devolvido || {});
   }, [pedido]);
 
@@ -157,7 +170,7 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
     pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
 
   return (
-    <div>
+    <div className="pedido-item">
       <p>
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
@@ -181,24 +194,23 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
         ))}
       </ul>
 
-      {/* Admin: Aprovar */}
-      {pedido.estado === "Pendente" && isAdmin && (
-        <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
-      )}
+      <div className="pedido-buttons">
+        {pedido.estado === "Pendente" && isAdmin && (
+          <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
+        )}
 
-      {/* User/Admin: Cancelar */}
-      {podeCancelar && (
-        <button onClick={() => onCancelar(pedido.id)}>Cancelar Pedido</button>
-      )}
+        {podeCancelar && (
+          <button onClick={() => onCancelar(pedido.id)}>Cancelar Pedido</button>
+        )}
+      </div>
 
-      {/* Admin: Devolução */}
       {pedido.estado === "Aprovado" && isAdmin && (
-        <>
+        <div className="devolucao-container">
           <p>Registar devolução:</p>
           {Object.entries(pedido.materiais).map(([nome, q]) => (
-            <div key={nome}>
+            <div key={nome} className="devolucao-item">
               <label>
-                {nome}:{" "}
+                {nome}:
                 <input
                   type="number"
                   min={0}
@@ -215,12 +227,11 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
           <button onClick={() => onDevolver(pedido.id, devolucao)}>
             Confirmar Devolução
           </button>
-        </>
+        </div>
       )}
 
-      {/* Concluído */}
       {pedido.estado === "Concluído" && (
-        <p style={{ color: "green", fontWeight: "bold" }}>Pedido devolvido!</p>
+        <p className="pedido-concluido">Pedido devolvido!</p>
       )}
     </div>
   );
