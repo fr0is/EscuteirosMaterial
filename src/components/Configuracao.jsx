@@ -69,7 +69,7 @@ export default function Configuracao() {
       </select>
       <button onClick={handleAddUser}>Adicionar</button>
 
-      <h3 style={{ marginTop: 30 }}>Usuários Cadastrados</h3>
+      <h3 style={{ marginTop: 30 }}>Usuários Registados</h3>
       <ul>
         {users.map((u) => (
           <li key={u.username} style={{ marginBottom: 8 }}>
