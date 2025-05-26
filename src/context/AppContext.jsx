@@ -4,8 +4,7 @@ import { createClient } from "@supabase/supabase-js";
 export const AppContext = createContext();
 
 const supabaseUrl = "https://mwwyfsyjdgppvapkhkos.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13d3lmc3lqZGdwcHZhcGtoa29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNjA4OTUsImV4cCI6MjA2MzgzNjg5NX0.Ntu1ypad2EDtx-lkeDHcrr1alwivQXbgRgD5cnl4AMU";
+const supabaseKey = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13d3lmc3lqZGdwcHZhcGtoa29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNjA4OTUsImV4cCI6MjA2MzgzNjg5NX0.Ntu1ypad2EDtx-lkeDHcrr1alwivQXbgRgD5cnl4AMU";
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function AppProvider({ children }) {
@@ -16,35 +15,27 @@ export function AppProvider({ children }) {
     isAdmin: false,
     loggedIn: false,
   });
+
   const [materiais, setMateriais] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [users, setUsers] = useState([]);
 
   const fetchMateriais = async () => {
     const { data, error } = await supabase.from("materiais").select("*");
-    if (error) {
-      console.error("Erro ao buscar materiais:", error);
-    } else {
-      setMateriais(data);
-    }
+    if (error) console.error("Erro ao buscar materiais:", error);
+    else setMateriais(data);
   };
 
   const fetchPedidos = async () => {
     const { data, error } = await supabase.from("pedidos").select("*");
-    if (error) {
-      console.error("Erro ao buscar pedidos:", error);
-    } else {
-      setPedidos(data);
-    }
+    if (error) console.error("Erro ao buscar pedidos:", error);
+    else setPedidos(data);
   };
 
   const fetchUsers = async () => {
     const { data, error } = await supabase.from("users").select("*");
-    if (error) {
-      console.error("Erro ao buscar usuários:", error);
-    } else {
-      setUsers(data);
-    }
+    if (error) console.error("Erro ao buscar usuários:", error);
+    else setUsers(data);
   };
 
   useEffect(() => {
@@ -66,15 +57,38 @@ export function AppProvider({ children }) {
     const { data, error } = await supabase
       .from("pedidos")
       .update(updates)
-      .eq("id", pedidoId);
+      .eq("id", pedidoId)
+      .select()
+      .single();
+
     if (error) {
       console.error("Erro ao atualizar pedido:", error);
       return false;
     }
+
     setPedidos((prev) =>
-      prev.map((p) => (p.id === pedidoId ? { ...p, ...updates } : p))
+      prev.map((p) => (p.id === pedidoId ? { ...p, ...data } : p))
     );
+
     return true;
+  };
+
+  const setStock = async (novoStock) => {
+    try {
+      for (const item of novoStock) {
+        await supabase
+          .from("materiais")
+          .update({
+            disponivel: item.disponivel,
+          })
+          .eq("id", item.id);
+      }
+      setMateriais(novoStock);
+      return true;
+    } catch (error) {
+      console.error("Erro ao atualizar stock:", error);
+      return false;
+    }
   };
 
   const atualizarMaterial = async (id, updates) => {
@@ -82,10 +96,7 @@ export function AppProvider({ children }) {
       .from("materiais")
       .update(updates)
       .eq("id", id);
-    if (error) {
-      console.error("Erro ao atualizar material:", error);
-      throw error;
-    }
+    if (error) throw error;
     setMateriais((prev) =>
       prev.map((m) => (m.id === id ? { ...m, ...updates } : m))
     );
@@ -93,31 +104,8 @@ export function AppProvider({ children }) {
 
   const removerMaterial = async (id) => {
     const { error } = await supabase.from("materiais").delete().eq("id", id);
-    if (error) {
-      console.error("Erro ao remover material:", error);
-      throw error;
-    }
+    if (error) throw error;
     setMateriais((prev) => prev.filter((m) => m.id !== id));
-  };
-
-  const login = async (username) => {
-    const { data: userEncontrado, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username.trim())
-      .single();
-
-    if (error || !userEncontrado) {
-      throw new Error("Username não encontrado");
-    }
-
-    setUser({
-      id: userEncontrado.id, // 👈 ADICIONADO!
-      username: userEncontrado.username,
-      nome: userEncontrado.nome,
-      isAdmin: userEncontrado.tipo === "admin",
-      loggedIn: true,
-    });
   };
 
   const adicionarMaterial = async ({ nome, total }) => {
@@ -127,11 +115,7 @@ export function AppProvider({ children }) {
       .select()
       .single();
 
-    if (error) {
-      console.error("Erro ao adicionar material:", error);
-      throw error;
-    }
-
+    if (error) throw error;
     setMateriais((m) => [...m, data]);
   };
 
@@ -143,7 +127,7 @@ export function AppProvider({ children }) {
     devolvido = {},
     patrulha,
     atividade,
-    user_id, // 👈 necessário
+    user_id,
   }) => {
     const { data: result, error } = await supabase
       .from("pedidos")
@@ -162,13 +146,29 @@ export function AppProvider({ children }) {
       .select()
       .single();
 
-    if (error) {
-      console.error("Erro ao adicionar pedido:", error);
-      throw error;
-    }
-
+    if (error) throw error;
     setPedidos((prev) => [...prev, result]);
     return result;
+  };
+
+  const login = async (username) => {
+    const { data: userEncontrado, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username.trim())
+      .single();
+
+    if (error || !userEncontrado) {
+      throw new Error("Username não encontrado");
+    }
+
+    setUser({
+      id: userEncontrado.id,
+      username: userEncontrado.username,
+      nome: userEncontrado.nome,
+      isAdmin: userEncontrado.tipo === "admin",
+      loggedIn: true,
+    });
   };
 
   return (
@@ -181,6 +181,7 @@ export function AppProvider({ children }) {
         pedidos,
         setPedidos,
         updatePedido,
+        setStock, // ✅ função adicionada
         users,
         setUsers,
         adicionarUsuario,

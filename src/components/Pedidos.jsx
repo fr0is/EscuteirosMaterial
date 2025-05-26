@@ -1,9 +1,17 @@
 import React, { useContext } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { supabase } from "../supabaseClient";
 
 export default function Pedidos() {
-  const { user, pedidos, setPedidos, stock, setStock, updatePedido } = useContext(AppContext);
+  const {
+    user,
+    pedidos,
+    setPedidos,
+    stock,
+    setStock,
+    updatePedido,
+  } = useContext(AppContext);
   const navigate = useNavigate();
 
   if (!user.loggedIn) {
@@ -15,6 +23,16 @@ export default function Pedidos() {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
+    // Verifica stock disponível
+    for (const [nome, qtd] of Object.entries(pedido.materiais)) {
+      const itemStock = stock.find((s) => s.nome === nome);
+      if (!itemStock || itemStock.disponivel < qtd) {
+        alert(`Stock insuficiente para: ${nome}`);
+        return;
+      }
+    }
+
+    // Atualiza stock
     const novoStock = stock.map((item) => {
       if (pedido.materiais[item.nome]) {
         return {
@@ -31,9 +49,10 @@ export default function Pedidos() {
       return;
     }
 
+    // Atualiza estado do pedido
     const pedidoUpdated = await updatePedido(id, { estado: "Aprovado" });
     if (!pedidoUpdated) {
-      alert("Erro ao atualizar pedido");
+      alert("Erro ao aprovar pedido");
       return;
     }
   };
@@ -64,7 +83,11 @@ export default function Pedidos() {
 
     const novoEstado = devolucaoCompleta ? "Concluído" : "Aprovado";
 
-    const pedidoUpdated = await updatePedido(pedidoId, { estado: novoEstado, devolvido: devolucao });
+    const pedidoUpdated = await updatePedido(pedidoId, {
+      estado: novoEstado,
+      devolvido: devolucao,
+    });
+
     if (!pedidoUpdated) {
       alert("Erro ao atualizar pedido");
       return;
@@ -72,6 +95,11 @@ export default function Pedidos() {
   };
 
   const handleCancelar = async (id) => {
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido || pedido.estado !== "Pendente") return;
+
+    if (!user.isAdmin && pedido.nome !== user.nome) return;
+
     const { error } = await supabase.from("pedidos").delete().eq("id", id);
     if (error) {
       alert("Erro ao cancelar pedido");
@@ -81,10 +109,12 @@ export default function Pedidos() {
     setPedidos((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const pedidosVisiveis = user.isAdmin ? pedidos : pedidos.filter((p) => p.nome === user.nome);
+  const pedidosVisiveis = user.isAdmin
+    ? pedidos
+    : pedidos.filter((p) => p.nome === user.nome);
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto", boxSizing: "border-box" }}>
+    <div>
       <h2>Pedidos</h2>
       {pedidosVisiveis.length === 0 && <p>Nenhum pedido registado.</p>}
 
@@ -115,24 +145,16 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
     setDevolucao((d) => ({ ...d, [nome]: val }));
   };
 
-  const podeCancelar = pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
+  const podeCancelar =
+    pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
 
   return (
-    <div
-      style={{
-        border: "1px solid #ccc",
-        padding: 16,
-        marginBottom: 16,
-        borderRadius: 8,
-        boxShadow: "0 2px 6px rgba(0,0,0,0.1)",
-        backgroundColor: "#fff",
-      }}
-    >
+    <div>
       <p>
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
       <p>
-        <b>Bando/Patrulha/Equipa/Tribo:</b> {pedido.patrulha || "-"}
+        <b>Patrulha:</b> {pedido.patrulha || "-"}
       </p>
       <p>
         <b>Atividade:</b> {pedido.atividade || "-"}
@@ -143,112 +165,54 @@ function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, userNo
       <p>
         <b>Materiais:</b>
       </p>
-      <ul style={{ paddingLeft: 20, marginBottom: 12 }}>
+      <ul>
         {Object.entries(pedido.materiais).map(([nome, q]) => (
-          <li key={nome} style={{ marginBottom: 6 }}>
+          <li key={nome}>
             {nome}: {q} (Devolvido: {pedido.devolvido?.[nome] || 0})
           </li>
         ))}
       </ul>
 
-      <div style={{ display: "flex", flexWrap: "wrap", gap: 12, marginBottom: 12 }}>
-        {pedido.estado === "Pendente" && isAdmin && (
-          <button
-            onClick={() => onAprovar(pedido.id)}
-            style={{
-              flex: "1 1 auto",
-              padding: 14,
-              fontSize: 16,
-              backgroundColor: "#28a745",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            Aprovar Pedido
-          </button>
-        )}
+      {/* Admin: Aprovar */}
+      {pedido.estado === "Pendente" && isAdmin && (
+        <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
+      )}
 
-        {podeCancelar && (
-          <button
-            onClick={() => onCancelar(pedido.id)}
-            style={{
-              flex: "1 1 auto",
-              padding: 14,
-              fontSize: 16,
-              backgroundColor: "#dc3545",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-            }}
-          >
-            Cancelar Pedido
-          </button>
-        )}
-      </div>
+      {/* User/Admin: Cancelar */}
+      {podeCancelar && (
+        <button onClick={() => onCancelar(pedido.id)}>Cancelar Pedido</button>
+      )}
 
+      {/* Admin: Devolução */}
       {pedido.estado === "Aprovado" && isAdmin && (
         <>
           <p>Registar devolução:</p>
           {Object.entries(pedido.materiais).map(([nome, q]) => (
-            <div
-              key={nome}
-              style={{
-                marginBottom: 12,
-                display: "flex",
-                alignItems: "center",
-                gap: 12,
-                flexWrap: "wrap",
-              }}
-            >
-              <label style={{ flex: "1 1 150px", fontSize: 16 }}>
-                {nome}:
+            <div key={nome}>
+              <label>
+                {nome}:{" "}
                 <input
                   type="number"
                   min={0}
                   max={q}
                   value={devolucao[nome] || 0}
-                  onChange={(e) => handleChangeDevolucao(nome, Number(e.target.value))}
-                  style={{
-                    marginLeft: 8,
-                    padding: 8,
-                    fontSize: 16,
-                    width: "80px",
-                    borderRadius: 6,
-                    border: "1px solid #ccc",
-                  }}
-                />
-                <span style={{ marginLeft: 8, fontSize: 14, color: "#666" }}>
-                  / {q}
-                </span>
+                  onChange={(e) =>
+                    handleChangeDevolucao(nome, Number(e.target.value))
+                  }
+                />{" "}
+                / {q}
               </label>
             </div>
           ))}
-          <button
-            onClick={() => onDevolver(pedido.id, devolucao)}
-            style={{
-              padding: 14,
-              fontSize: 16,
-              backgroundColor: "#007bff",
-              color: "white",
-              border: "none",
-              borderRadius: 6,
-              cursor: "pointer",
-              width: "100%",
-              marginTop: 10,
-            }}
-          >
+          <button onClick={() => onDevolver(pedido.id, devolucao)}>
             Confirmar Devolução
           </button>
         </>
       )}
 
+      {/* Concluído */}
       {pedido.estado === "Concluído" && (
-        <p style={{ color: "green", fontWeight: "bold", marginTop: 12 }}>
-          Pedido concluído!
-        </p>
+        <p style={{ color: "green", fontWeight: "bold" }}>Pedido concluído!</p>
       )}
     </div>
   );
