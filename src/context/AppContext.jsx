@@ -1,5 +1,6 @@
 import React, { createContext, useState, useEffect } from "react";
 import { createClient } from "@supabase/supabase-js";
+import bcrypt from "bcryptjs";
 
 export const AppContext = createContext();
 
