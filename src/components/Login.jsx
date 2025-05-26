@@ -1,10 +1,9 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
-import { supabase } from "../supabaseClient"; // import da instância do Supabase
 
 export default function Login() {
-  const { setUser } = useContext(AppContext);
+  const { login } = useContext(AppContext);
   const [username, setUsername] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -12,29 +11,13 @@ export default function Login() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-
-    // Consulta à tabela users no Supabase pelo username
-    const { data: userEncontrado, error } = await supabase
-      .from("users")
-      .select("*")
-      .eq("username", username.trim())
-      .single();
-
-    setLoading(false);
-
-    if (error || !userEncontrado) {
-      alert("Username não encontrado");
-      return;
+    try {
+      await login(username);
+      navigate("/material");
+    } catch (error) {
+      alert(error.message);
     }
-
-    setUser({
-      username: userEncontrado.username,
-      nome: userEncontrado.nome,
-      isAdmin: userEncontrado.tipo === "admin",
-      loggedIn: true,
-    });
-
-    navigate("/material");
+    setLoading(false);
   };
 
   return (

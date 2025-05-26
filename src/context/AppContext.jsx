@@ -83,6 +83,26 @@ export function AppProvider({ children }) {
     return true;
   };
 
+// Função login no AppContext
+const login = async (username) => {
+  const { data: userEncontrado, error } = await supabase
+    .from("users")
+    .select("*")
+    .eq("username", username.trim())
+    .single();
+
+  if (error || !userEncontrado) {
+    throw new Error("Username não encontrado");
+  }
+
+  setUser({
+    username: userEncontrado.username,
+    nome: userEncontrado.nome,
+    isAdmin: userEncontrado.tipo === "admin",
+    loggedIn: true,
+  });
+ };
+
   return (
     <AppContext.Provider
       value={{
@@ -97,6 +117,7 @@ export function AppProvider({ children }) {
         setUsers,
         adicionarUsuario,
         supabase,
+        login,
       }}
     >
       {children}
