@@ -142,17 +142,16 @@ export function AppProvider({ children }) {
     setMateriais((m) => [...m, data]);
   };
 
-  // Adicionar pedido na tabela pedido
-    const adicionarPedido = async ({
-    nome,
-    data,
-    materiais,  // objeto, será salvo como JSONB
-    estado = "Pendente",
-    devolvido = {}, // objeto JSONB
-    patrulha,
-    atividade,
+  const adicionarPedido = async ({
+  nome,
+  data,
+  materiais,
+  estado = "Pendente",
+  devolvido = {},
+  patrulha,
+  atividade,
     }) => {
-    const { data, error } = await supabase.from("pedido").insert([
+    const { data: result, error } = await supabase.from("pedido").insert([
         {
         nome,
         data,
@@ -167,7 +166,7 @@ export function AppProvider({ children }) {
         console.error("Erro ao adicionar pedido:", error);
         throw error;
     }
-    return data[0]; // retorna o pedido criado
+    return result[0];
     };
 
   return (
