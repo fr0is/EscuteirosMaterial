@@ -3,15 +3,25 @@ import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 
 export default function Login() {
-  const { setUser } = useContext(AppContext);
-  const [nome, setNome] = useState("");
-  const [isChefe, setIsChefe] = useState(false);
+  const { users, setUser } = useContext(AppContext);
+  const [username, setUsername] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    if (!nome.trim()) return alert("Insira seu nome");
-    setUser({ nome: nome.trim(), isChefe, loggedIn: true });
+
+    const userEncontrado = users.find((u) => u.username === username.trim());
+    if (!userEncontrado) {
+      alert("Username não encontrado");
+      return;
+    }
+
+    setUser({
+      username: userEncontrado.username,
+      nome: userEncontrado.nome,
+      isAdmin: userEncontrado.tipo === "admin",
+      loggedIn: true,
+    });
     navigate("/material");
   };
 
@@ -20,19 +30,12 @@ export default function Login() {
       <h2>Login</h2>
       <form onSubmit={handleSubmit}>
         <input
-          placeholder="Nome"
-          value={nome}
-          onChange={(e) => setNome(e.target.value)}
+          placeholder="Username"
+          value={username}
+          onChange={(e) => setUsername(e.target.value)}
           style={{ width: "100%", padding: 8, marginBottom: 10 }}
+          required
         />
-        <label>
-          <input
-            type="checkbox"
-            checked={isChefe}
-            onChange={() => setIsChefe(!isChefe)}
-          />{" "}
-          Sou chefe do material
-        </label>
         <button type="submit" style={{ marginTop: 10, padding: "8px 16px" }}>
           Entrar
         </button>

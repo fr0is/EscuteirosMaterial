@@ -35,42 +35,41 @@ export default function Pedidos() {
 
   const handleDevolver = (pedidoId, devolucao) => {
     setPedidos((prev) =>
-        prev.map((p) => {
+      prev.map((p) => {
         if (p.id === pedidoId && p.estado === "Aprovado") {
-            // Atualizar stock garantindo que disponivel <= total
-            const novoStock = stock.map((item) => {
+          // Atualizar stock garantindo que disponivel <= total
+          const novoStock = stock.map((item) => {
             if (devolucao[item.nome]) {
-                const disponivelAtualizado = Math.min(
+              const disponivelAtualizado = Math.min(
                 item.disponivel + devolucao[item.nome],
                 item.total
-                );
-                return {
+              );
+              return {
                 ...item,
                 disponivel: disponivelAtualizado,
-                };
+              };
             }
             return item;
-            });
-            setStock(novoStock);
+          });
+          setStock(novoStock);
 
-            // Verificar se a devolução está completa
-            const devolucaoCompleta = Object.entries(p.materiais).every(
+          // Verificar se a devolução está completa
+          const devolucaoCompleta = Object.entries(p.materiais).every(
             ([nome, q]) => (devolucao[nome] || 0) === q
-            );
+          );
 
-            return {
+          return {
             ...p,
             estado: devolucaoCompleta ? "Concluído" : "Aprovado",
             devolvido: devolucao,
-            };
+          };
         }
         return p;
-        })
+      })
     );
-    };
+  };
 
-
-  if (!user.isChefe) {
+  if (!user.isAdmin) {
     return (
       <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
         <h2>Pedidos</h2>

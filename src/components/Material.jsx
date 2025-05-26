@@ -87,7 +87,7 @@ export default function Material() {
         </div>
       ))}
 
-      {!user.isChefe && (
+      {!user.isAdmin && (
         <button
           onClick={handleSubmitPedido}
           style={{ marginTop: 20, padding: "10px 20px", fontSize: 16 }}
@@ -96,7 +96,7 @@ export default function Material() {
         </button>
       )}
 
-      {user.isChefe && <p>O chefe do material não pode fazer pedidos aqui.</p>}
+      {user.isAdmin && <p>O chefe do material não pode fazer pedidos aqui.</p>}
     </div>
   );
 }
