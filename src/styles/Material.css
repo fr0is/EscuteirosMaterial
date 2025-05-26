@@ -1,0 +1,156 @@
+.material-container {
+  padding: 20px;
+  max-width: 600px;
+  margin: auto;
+  font-family: Arial, sans-serif;
+  color: #333;
+}
+
+.material-container h2,
+.material-container h3 {
+  font-weight: normal;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+.material-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #ddd;
+  padding-bottom: 6px;
+  gap: 10px;
+}
+
+.material-info {
+  flex: 1;
+}
+
+.material-info b {
+  font-weight: 600;
+}
+
+.material-info em {
+  color: red;
+  font-style: italic;
+}
+
+.material-actions button {
+  margin-left: 6px;
+  padding: 6px 10px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.material-actions button:hover {
+  background-color: #e6e6e6;
+}
+
+.material-editing input {
+  padding: 6px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  margin-right: 6px;
+}
+
+.material-editing input[type="number"] {
+  width: 80px;
+}
+
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.quantity-controls button {
+  width: 28px;
+  height: 28px;
+  font-size: 18px;
+  line-height: 1;
+  padding: 0;
+  text-align: center;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  background-color: #f9f9f9;
+  cursor: pointer;
+  user-select: none;
+}
+
+.quantity-controls span {
+  min-width: 20px;
+  text-align: center;
+  font-weight: 600;
+}
+
+.add-material,
+.pedido-form {
+  margin-top: 20px;
+  display: flex;
+  flex-direction: column;
+}
+
+.add-material input,
+.pedido-form input {
+  padding: 8px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  font-size: 16px;
+}
+
+.add-material button,
+.pedido-form button {
+  padding: 12px 0;
+  font-size: 18px;
+  border-radius: 6px;
+  border: none;
+  background-color: #007bff;
+  color: white;
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.add-material button:hover,
+.pedido-form button:hover {
+  background-color: #0056b3;
+}
+
+.chefe-aviso {
+  margin-top: 20px;
+  font-style: italic;
+  color: #666;
+  text-align: center;
+}
+
+/* Responsividade para mobile */
+@media (max-width: 480px) {
+  .material-container {
+    padding: 15px 10px;
+  }
+
+  .material-editing input[type="number"] {
+    width: 60px;
+  }
+
+  .add-material input,
+  .pedido-form input {
+    font-size: 14px;
+    padding: 6px;
+  }
+
+  .add-material button,
+  .pedido-form button {
+    font-size: 16px;
+    padding: 10px 0;
+  }
+
+  .material-actions button {
+    padding: 5px 8px;
+    font-size: 14px;
+  }
+}

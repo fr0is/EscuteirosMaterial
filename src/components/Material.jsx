@@ -2,25 +2,24 @@ import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
+import "../styles/Material.css";
 
 export default function Material() {
   const {
     user,
-    materiais,             // Corrigi de 'stock' para 'materiais'
+    materiais,
     pedidos,
-    adicionarPedido,       // Esta função não está no teu contexto, tens que adicionar lá ou implementar aqui
+    adicionarPedido,
     adicionarMaterial,
     atualizarMaterial,
     removerMaterial,
   } = useContext(AppContext);
   const navigate = useNavigate();
 
-  // Estados para pedido (user normal)
   const [quantidades, setQuantidades] = useState({});
   const [patrulha, setPatrulha] = useState("");
   const [atividade, setAtividade] = useState("");
 
-  // Estados para admin editar/gerir materiais
   const [novoMaterialNome, setNovoMaterialNome] = useState("");
   const [novoMaterialTotal, setNovoMaterialTotal] = useState(0);
   const [editandoMaterialId, setEditandoMaterialId] = useState(null);
@@ -32,7 +31,6 @@ export default function Material() {
     return null;
   }
 
-  // Pendente por item para calcular stock disponível descontando pedidos pendentes
   const pendentesPorItem = {};
   pedidos.forEach((p) => {
     if (p.estado === "Pendente") {
@@ -42,7 +40,6 @@ export default function Material() {
     }
   });
 
-  // Funções para o user normal incrementar/decrementar quantidades do pedido
   const handleIncrement = (nome) => {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
@@ -66,7 +63,6 @@ export default function Material() {
     });
   };
 
-  // Enviar pedido (user normal)
   const handleSubmitPedido = async () => {
     if (patrulha.trim() === "") {
       alert("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
@@ -95,9 +91,8 @@ export default function Material() {
       devolvido: {},
       patrulha,
       atividade,
-      user_id: user.id, // 👈 IMPORTANTE
+      user_id: user.id,
     };
-
 
     const listaMateriais = Object.entries(materiaisPedido)
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
@@ -142,7 +137,6 @@ ${listaMateriais}
     }
   };
 
-  // Funções admin para criar novo material
   const handleCriarMaterial = async () => {
     if (!novoMaterialNome.trim() || novoMaterialTotal <= 0) {
       alert("Informe nome e quantidade total válidos para o material.");
@@ -161,7 +155,6 @@ ${listaMateriais}
     }
   };
 
-  // Editar material
   const iniciarEdicao = (item) => {
     setEditandoMaterialId(item.id);
     setEditandoNome(item.nome);
@@ -203,7 +196,6 @@ ${listaMateriais}
     }
   };
 
-  // Remover material
   const handleRemoverMaterial = async (id) => {
     if (
       window.confirm(
@@ -219,7 +211,7 @@ ${listaMateriais}
   };
 
   return (
-    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
+    <div className="material-container">
       <h2>Olá, {user.nome}</h2>
       <h3>Stock disponível</h3>
 
@@ -228,25 +220,13 @@ ${listaMateriais}
         const isEditing = editandoMaterialId === item.id;
 
         return (
-          <div
-            key={item.id}
-            style={{
-              display: "flex",
-              alignItems: "center",
-              marginBottom: 8,
-              justifyContent: "space-between",
-              borderBottom: "1px solid #ddd",
-              paddingBottom: 6,
-              gap: 10,
-            }}
-          >
+          <div key={item.id} className="material-item">
             {user.isAdmin ? (
               isEditing ? (
-                <>
+                <div className="material-editing">
                   <input
                     value={editandoNome}
                     onChange={(e) => setEditandoNome(e.target.value)}
-                    style={{ flex: 1, padding: 6 }}
                   />
                   <input
                     type="number"
@@ -254,27 +234,28 @@ ${listaMateriais}
                     onChange={(e) =>
                       setEditandoTotal(parseInt(e.target.value) || 0)
                     }
-                    style={{ width: 80, padding: 6 }}
                   />
                   <button onClick={salvarEdicao}>Salvar</button>
                   <button onClick={cancelarEdicao}>Cancelar</button>
-                </>
+                </div>
               ) : (
                 <>
-                  <div style={{ flex: 1 }}>
+                  <div className="material-info">
                     <b>
                       {item.nome}{" "}
                       {pendente > 0 && <span style={{ color: "red" }}>*</span>}
                     </b>
                     : {item.disponivel} / {item.total}{" "}
                     {pendente > 0 && (
-                      <em style={{ color: "red" }}>(Pendentes: {pendente})</em>
+                      <em>(Pendentes: {pendente})</em>
                     )}
                   </div>
-                  <button onClick={() => iniciarEdicao(item)}>Editar</button>
-                  <button onClick={() => handleRemoverMaterial(item.id)}>
-                    Remover
-                  </button>
+                  <div className="material-actions">
+                    <button onClick={() => iniciarEdicao(item)}>Editar</button>
+                    <button onClick={() => handleRemoverMaterial(item.id)}>
+                      Remover
+                    </button>
+                  </div>
                 </>
               )
             ) : (
@@ -283,25 +264,22 @@ ${listaMateriais}
                   flex: 1,
                   display: "flex",
                   justifyContent: "space-between",
+                  alignItems: "center",
                 }}
               >
-                <div>
+                <div className="material-info" style={{ flex: 1 }}>
                   <b>
                     {item.nome}{" "}
                     {pendente > 0 && <span style={{ color: "red" }}>*</span>}
                   </b>
                   : {item.disponivel} / {item.total}{" "}
                   {pendente > 0 && (
-                    <em style={{ color: "red" }}>(Pendentes: {pendente})</em>
+                    <em>(Pendentes: {pendente})</em>
                   )}
                 </div>
-                <div
-                  style={{ display: "flex", alignItems: "center", gap: 8 }}
-                >
+                <div className="quantity-controls">
                   <button onClick={() => handleDecrement(item.nome)}>-</button>
-                  <span style={{ minWidth: 20, textAlign: "center" }}>
-                    {quantidades[item.nome] || 0}
-                  </span>
+                  <span>{quantidades[item.nome] || 0}</span>
                   <button onClick={() => handleIncrement(item.nome)}>+</button>
                 </div>
               </div>
@@ -311,58 +289,41 @@ ${listaMateriais}
       })}
 
       {user.isAdmin && (
-        <div style={{ marginTop: 20 }}>
+        <div className="add-material">
           <h3>Adicionar novo material</h3>
           <input
             placeholder="Nome do material"
             value={novoMaterialNome}
             onChange={(e) => setNovoMaterialNome(e.target.value)}
-            style={{ width: "100%", padding: 6, marginBottom: 10 }}
           />
           <input
             type="number"
             placeholder="Quantidade total"
             value={novoMaterialTotal}
             onChange={(e) => setNovoMaterialTotal(parseInt(e.target.value) || 0)}
-            style={{ width: "100%", padding: 6, marginBottom: 10 }}
           />
-          <button onClick={handleCriarMaterial}>Adicionar Material</button>
+          <button onClick={handleCriarMaterial}>Adicionar material</button>
         </div>
       )}
 
       {!user.isAdmin && (
-        <div style={{ marginTop: 20 }}>
-          <label>
-            Nome de Bando/Patrulha/Equipa/Tribo: <br />
-            <input
-              type="text"
-              value={patrulha}
-              onChange={(e) => setPatrulha(e.target.value)}
-              style={{ width: "100%", padding: 6, marginBottom: 10 }}
-            />
-          </label>
-          <label>
-            Atividade: <br />
-            <input
-              type="text"
-              value={atividade}
-              onChange={(e) => setAtividade(e.target.value)}
-              style={{ width: "100%", padding: 6, marginBottom: 10 }}
-            />
-          </label>
-          <button
-            onClick={handleSubmitPedido}
-            style={{ marginTop: 10, padding: "10px 20px", fontSize: 16 }}
-          >
-            Fazer Pedido
-          </button>
+        <div className="pedido-form">
+          <h3>Pedido de material</h3>
+          <input
+            placeholder="Patrulha/Equipa/Bando/Tribo"
+            value={patrulha}
+            onChange={(e) => setPatrulha(e.target.value)}
+          />
+          <input
+            placeholder="Atividade"
+            value={atividade}
+            onChange={(e) => setAtividade(e.target.value)}
+          />
+          <button onClick={handleSubmitPedido}>Enviar pedido</button>
+          <p className="chefe-aviso">
+            * Itens com "*" têm pedidos pendentes.
+          </p>
         </div>
-      )}
-
-      {user.isAdmin && (
-        <p style={{ marginTop: 20 }}>
-          O chefe do material não pode fazer pedidos aqui.
-        </p>
       )}
     </div>
   );
