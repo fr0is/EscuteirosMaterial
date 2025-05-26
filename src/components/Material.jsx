@@ -1,6 +1,7 @@
 import React, { useContext, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import emailjs from "@emailjs/browser";
 
 export default function Material() {
   const { user, stock, pedidos, setPedidos } = useContext(AppContext);
@@ -14,7 +15,6 @@ export default function Material() {
     return null;
   }
 
-  // Calcula pendentes por item
   const pendentesPorItem = {};
   pedidos.forEach((p) => {
     if (p.estado === "Pendente") {
@@ -27,7 +27,9 @@ export default function Material() {
   const handleIncrement = (nome) => {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
-      const max = (stock.find((i) => i.nome === nome)?.disponivel || 0) - (pendentesPorItem[nome] || 0);
+      const max =
+        (stock.find((i) => i.nome === nome)?.disponivel || 0) -
+        (pendentesPorItem[nome] || 0);
       if (atual < max) {
         return { ...q, [nome]: atual + 1 };
       }
@@ -76,22 +78,53 @@ export default function Material() {
       atividade,
     };
 
-    setPedidos([...pedidos, novoPedido]);
-    setQuantidades({});
-    setPatrulha("");
-    setAtividade("");
-    alert("Pedido enviado com sucesso!");
+    // Monta string dos materiais para o email
+    const listaMateriais = Object.entries(materiais)
+      .map(([nome, qtd]) => `${nome}: ${qtd}`)
+      .join("\n");
+
+    // Envia email com EmailJS
+    emailjs
+      .send(
+        "service_pnn1l65",          // Substituir pelo seu service ID do EmailJS
+        "template_default",        // Usar um template padrão (ex: 'template_default')
+        {
+          to_email: "ruifr123@gmail.com",
+          from_name: user.nome,
+          message: `
+Pedido de material recebido:
+
+Nome: ${user.nome}
+Patrulha/Equipa/Bando/Tribo: ${patrulha}
+Atividade: ${atividade}
+Data: ${hoje}
+
+Materiais solicitados:
+${listaMateriais}
+          `,
+        },
+        "largUwzgW7L95dduo"            // Substituir pela sua public key do EmailJS
+      )
+      .then(() => {
+        alert("Pedido enviado com sucesso e email enviado!");
+        setPedidos([...pedidos, novoPedido]);
+        setQuantidades({});
+        setPatrulha("");
+        setAtividade("");
+      })
+      .catch(() => {
+        alert(
+          "Pedido enviado, mas falha ao enviar email. Verifique sua conexão ou configuração."
+        );
+        setPedidos([...pedidos, novoPedido]);
+        setQuantidades({});
+        setPatrulha("");
+        setAtividade("");
+      });
   };
 
   return (
-    <div
-      style={{
-        padding: 20,
-        maxWidth: 600,
-        margin: "auto",
-        boxSizing: "border-box",
-      }}
-    >
+    <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Olá, {user.nome}</h2>
       <h3>Stock disponível</h3>
       {stock.map((item) => {
@@ -102,121 +135,59 @@ export default function Material() {
             style={{
               display: "flex",
               alignItems: "center",
-              marginBottom: 12,
+              marginBottom: 8,
               justifyContent: "space-between",
               borderBottom: "1px solid #ddd",
-              paddingBottom: 8,
+              paddingBottom: 6,
             }}
           >
-            <div style={{ flex: 1, minWidth: 0 }}>
+            <div>
               <b>
                 {item.nome} {pendente > 0 && <span style={{ color: "red" }}>*</span>}
               </b>
               : {item.disponivel} / {item.total}{" "}
-              {pendente > 0 && (
-                <em style={{ color: "red", display: "block", marginTop: 4 }}>
-                  (Pendentes: {pendente})
-                </em>
-              )}
+              {pendente > 0 && <em style={{ color: "red" }}>(Pendentes: {pendente})</em>}
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-              <button
-                onClick={() => handleDecrement(item.nome)}
-                style={{
-                  padding: "8px 12px",
-                  fontSize: 20,
-                  borderRadius: 6,
-                  border: "1px solid #ccc",
-                  backgroundColor: "#f0f0f0",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-                aria-label={`Diminuir quantidade de ${item.nome}`}
-              >
-                −
-              </button>
-              <span
-                style={{
-                  minWidth: 30,
-                  textAlign: "center",
-                  fontSize: 18,
-                  fontWeight: "bold",
-                }}
-              >
+            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+              <button onClick={() => handleDecrement(item.nome)}>-</button>
+              <span style={{ minWidth: 20, textAlign: "center" }}>
                 {quantidades[item.nome] || 0}
               </span>
-              <button
-                onClick={() => handleIncrement(item.nome)}
-                style={{
-                  padding: "8px 12px",
-                  fontSize: 20,
-                  borderRadius: 6,
-                  border: "1px solid #ccc",
-                  backgroundColor: "#f0f0f0",
-                  cursor: "pointer",
-                  userSelect: "none",
-                }}
-                aria-label={`Aumentar quantidade de ${item.nome}`}
-              >
-                +
-              </button>
+              <button onClick={() => handleIncrement(item.nome)}>+</button>
             </div>
           </div>
         );
       })}
 
       {!user.isAdmin && (
-        <div style={{ marginTop: 30 }}>
-          <label style={{ display: "block", marginBottom: 12 }}>
-            Nome de Bando/Patrulha/Equipa/Tribo: <br />
-            <input
-              type="text"
-              value={patrulha}
-              onChange={(e) => setPatrulha(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 10,
-                fontSize: 16,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-                boxSizing: "border-box",
-              }}
-              placeholder="Ex: Bando Lobo"
-            />
-          </label>
-          <label style={{ display: "block", marginBottom: 20 }}>
-            Atividade: <br />
-            <input
-              type="text"
-              value={atividade}
-              onChange={(e) => setAtividade(e.target.value)}
-              style={{
-                width: "100%",
-                padding: 10,
-                fontSize: 16,
-                borderRadius: 6,
-                border: "1px solid #ccc",
-                boxSizing: "border-box",
-              }}
-              placeholder="Ex: Acampamento de Verão"
-            />
-          </label>
-          <button
-            onClick={handleSubmitPedido}
-            style={{
-              width: "100%",
-              padding: 14,
-              fontSize: 18,
-              borderRadius: 6,
-              border: "none",
-              backgroundColor: "#007bff",
-              color: "white",
-              cursor: "pointer",
-            }}
-          >
-            Fazer Pedido
-          </button>
-        </div>
+        <>
+          <div style={{ marginTop: 20 }}>
+            <label>
+              Nome de Bando/Patrulha/Equipa/Tribo: <br />
+              <input
+                type="text"
+                value={patrulha}
+                onChange={(e) => setPatrulha(e.target.value)}
+                style={{ width: "100%", padding: 6, marginBottom: 10 }}
+              />
+            </label>
+            <label>
+              Atividade: <br />
+              <input
+                type="text"
+                value={atividade}
+                onChange={(e) => setAtividade(e.target.value)}
+                style={{ width: "100%", padding: 6, marginBottom: 10 }}
+              />
+            </label>
+            <button
+              onClick={handleSubmitPedido}
+              style={{ marginTop: 10, padding: "10px 20px", fontSize: 16 }}
+            >
+              Fazer Pedido
+            </button>
+          </div>
+        </>
       )}
 
       {user.isAdmin && <p>O chefe do material não pode fazer pedidos aqui.</p>}
