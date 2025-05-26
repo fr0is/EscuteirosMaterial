@@ -12,6 +12,7 @@ export default function Pedidos() {
   }
 
   const handleAprovar = (id) => {
+    if (!user.isAdmin) return; // só admin aprova
     setPedidos((prev) =>
       prev.map((p) => {
         if (p.id === id && p.estado === "Pendente") {
@@ -34,6 +35,7 @@ export default function Pedidos() {
   };
 
   const handleDevolver = (pedidoId, devolucao) => {
+    if (!user.isAdmin) return; // só admin devolve
     setPedidos((prev) =>
       prev.map((p) => {
         if (p.id === pedidoId && p.estado === "Aprovado") {
@@ -69,37 +71,40 @@ export default function Pedidos() {
     );
   };
 
-  if (!user.isAdmin) {
-    return (
-      <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
-        <h2>Pedidos</h2>
-        <p>Você não tem permissão para gerir pedidos.</p>
-      </div>
-    );
-  }
+  const handleCancelar = (id) => {
+    // Apenas o dono do pedido pode cancelar e só se estiver pendente
+    setPedidos((prev) => prev.filter((p) => !(p.id === id && p.nome === user.nome && p.estado === "Pendente")));
+  };
+
+  // Pedidos a mostrar:
+  const pedidosExibir = user.isAdmin
+    ? pedidos // admin vê tudo
+    : pedidos.filter((p) => p.nome === user.nome); // user normal só os seus
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto" }}>
       <h2>Pedidos</h2>
-      {pedidos.length === 0 && <p>Nenhum pedido registado.</p>}
+      {pedidosExibir.length === 0 && <p>Nenhum pedido registado.</p>}
 
-      {pedidos.map((p) => (
+      {pedidosExibir.map((p) => (
         <PedidoItem
           key={p.id}
           pedido={p}
           onAprovar={handleAprovar}
           onDevolver={handleDevolver}
+          onCancelar={handleCancelar}
+          isAdmin={user.isAdmin}
+          currentUserName={user.nome}
         />
       ))}
     </div>
   );
 }
 
-function PedidoItem({ pedido, onAprovar, onDevolver }) {
+function PedidoItem({ pedido, onAprovar, onDevolver, onCancelar, isAdmin, currentUserName }) {
   const [devolucao, setDevolucao] = React.useState({});
 
   React.useEffect(() => {
-    // Reset devolução quando muda o pedido
     setDevolucao(pedido.devolvido || {});
   }, [pedido]);
 
@@ -134,11 +139,13 @@ function PedidoItem({ pedido, onAprovar, onDevolver }) {
         ))}
       </ul>
 
-      {pedido.estado === "Pendente" && (
+      {/* Botão Aprovar para Admin */}
+      {isAdmin && pedido.estado === "Pendente" && (
         <button onClick={() => onAprovar(pedido.id)}>Aprovar Pedido</button>
       )}
 
-      {pedido.estado === "Aprovado" && (
+      {/* Botão Devolver para Admin */}
+      {isAdmin && pedido.estado === "Aprovado" && (
         <>
           <p>Registrar devolução:</p>
           {Object.entries(pedido.materiais).map(([nome, q]) => (
@@ -161,6 +168,31 @@ function PedidoItem({ pedido, onAprovar, onDevolver }) {
             Confirmar Devolução
           </button>
         </>
+      )}
+
+      {/* Botão Cancelar para usuário dono do pedido, se ainda pendente */}
+      {!isAdmin && pedido.estado === "Pendente" && pedido.nome === currentUserName && (
+        <button
+          style={{ marginTop: 8, backgroundColor: "#f44336", color: "white" }}
+          onClick={() => {
+            if (
+              window.confirm(
+                "Tem certeza que deseja cancelar este pedido?"
+              )
+            ) {
+              onCancelar(pedido.id);
+            }
+          }}
+        >
+          Cancelar Pedido
+        </button>
+      )}
+
+      {/* Mensagem para usuário normal */}
+      {!isAdmin && (
+        <p style={{ fontStyle: "italic", color: "#555" }}>
+          Você pode visualizar seus pedidos, sem permissão para editar (exceto cancelar pedidos pendentes).
+        </p>
       )}
 
       {pedido.estado === "Concluído" && <p>Pedido concluído!</p>}
