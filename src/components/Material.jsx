@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
 
 export default function Material() {
-  const { user, stock, pedidos, setPedidos } = useContext(AppContext);
+  const { user, stock, pedidos, adicionarPedido } = useContext(AppContext);
   const navigate = useNavigate();
   const [quantidades, setQuantidades] = useState({});
   const [patrulha, setPatrulha] = useState("");
@@ -47,7 +47,7 @@ export default function Material() {
     });
   };
 
-  const handleSubmitPedido = () => {
+  const handleSubmitPedido = async () => {
     if (patrulha.trim() === "") {
       alert("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
       return;
@@ -68,7 +68,6 @@ export default function Material() {
     const hoje = new Date().toISOString().split("T")[0];
 
     const novoPedido = {
-      id: Date.now(),
       nome: user.nome,
       data: hoje,
       materiais,
@@ -93,34 +92,27 @@ Data: ${hoje}
 Materiais solicitados:
 ${listaMateriais}
 `;
-    console.log("Mensagem para envio:\n", mensagem);
-    // Envia o e-mail
-    emailjs
-      .send(
+
+    try {
+      await adicionarPedido(novoPedido);
+
+      await emailjs.send(
         "service_pnn1l65",
         "template_8ud9uk9",
-        {
-          message: mensagem,
-        },
+        { message: mensagem },
         "largUwzgW7L95dduo"
-      )
-      .then(() => {
-        alert("Pedido enviado com sucesso e email enviado!");
-        setPedidos([...pedidos, novoPedido]);
-        setQuantidades({});
-        setPatrulha("");
-        setAtividade("");
-      })
-      .catch((error) => {
-        console.error("Erro ao enviar email:", error);
-        alert(
-          "Pedido enviado, mas falha ao enviar email. Verifique sua conexão ou configuração do EmailJS."
-        );
-        setPedidos([...pedidos, novoPedido]);
-        setQuantidades({});
-        setPatrulha("");
-        setAtividade("");
-      });
+      );
+
+      alert("Pedido enviado com sucesso e email enviado!");
+      setQuantidades({});
+      setPatrulha("");
+      setAtividade("");
+    } catch (error) {
+      console.error("Erro ao enviar pedido:", error);
+      alert(
+        "Falha ao enviar pedido ou email. Verifique sua conexão ou configuração."
+      );
+    }
   };
 
   return (

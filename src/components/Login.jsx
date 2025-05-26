@@ -1,17 +1,28 @@
 import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
+import { supabase } from "../supabaseClient"; // import da instância do Supabase
 
 export default function Login() {
-  const { users, setUser } = useContext(AppContext);
+  const { setUser } = useContext(AppContext);
   const [username, setUsername] = useState("");
+  const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleSubmit = (e) => {
+  const handleSubmit = async (e) => {
     e.preventDefault();
+    setLoading(true);
 
-    const userEncontrado = users.find((u) => u.username === username.trim());
-    if (!userEncontrado) {
+    // Consulta à tabela users no Supabase pelo username
+    const { data: userEncontrado, error } = await supabase
+      .from("users")
+      .select("*")
+      .eq("username", username.trim())
+      .single();
+
+    setLoading(false);
+
+    if (error || !userEncontrado) {
       alert("Username não encontrado");
       return;
     }
@@ -22,6 +33,7 @@ export default function Login() {
       isAdmin: userEncontrado.tipo === "admin",
       loggedIn: true,
     });
+
     navigate("/material");
   };
 
@@ -35,7 +47,10 @@ export default function Login() {
       }}
     >
       <h2>Login</h2>
-      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column" }}>
+      <form
+        onSubmit={handleSubmit}
+        style={{ display: "flex", flexDirection: "column" }}
+      >
         <input
           placeholder="Username"
           value={username}
@@ -51,6 +66,7 @@ export default function Login() {
           }}
           required
           autoFocus
+          disabled={loading}
         />
         <button
           type="submit"
@@ -61,10 +77,11 @@ export default function Login() {
             border: "none",
             backgroundColor: "#007bff",
             color: "white",
-            cursor: "pointer",
+            cursor: loading ? "not-allowed" : "pointer",
           }}
+          disabled={loading}
         >
-          Entrar
+          {loading ? "Entrando..." : "Entrar"}
         </button>
       </form>
     </div>

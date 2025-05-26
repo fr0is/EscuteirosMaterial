@@ -3,7 +3,7 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Pedidos() {
-  const { user, pedidos, setPedidos, stock, setStock } = useContext(AppContext);
+  const { user, pedidos, setPedidos, stock, setStock, updatePedido } = useContext(AppContext);
   const navigate = useNavigate();
 
   if (!user.loggedIn) {
@@ -11,68 +11,77 @@ export default function Pedidos() {
     return null;
   }
 
-  const handleAprovar = (id) => {
-    setPedidos((prev) =>
-      prev.map((p) => {
-        if (p.id === id && p.estado === "Pendente") {
-          const novoStock = stock.map((item) => {
-            if (p.materiais[item.nome]) {
-              return {
-                ...item,
-                disponivel: item.disponivel - p.materiais[item.nome],
-              };
-            }
-            return item;
-          });
-          setStock(novoStock);
-          return { ...p, estado: "Aprovado" };
-        }
-        return p;
-      })
-    );
+  const handleAprovar = async (id) => {
+    const pedido = pedidos.find((p) => p.id === id);
+    if (!pedido || pedido.estado !== "Pendente") return;
+
+    const novoStock = stock.map((item) => {
+      if (pedido.materiais[item.nome]) {
+        return {
+          ...item,
+          disponivel: item.disponivel - pedido.materiais[item.nome],
+        };
+      }
+      return item;
+    });
+
+    const stockUpdated = await setStock(novoStock);
+    if (!stockUpdated) {
+      alert("Erro ao atualizar stock");
+      return;
+    }
+
+    const pedidoUpdated = await updatePedido(id, { estado: "Aprovado" });
+    if (!pedidoUpdated) {
+      alert("Erro ao atualizar pedido");
+      return;
+    }
   };
 
-  const handleDevolver = (pedidoId, devolucao) => {
-    setPedidos((prev) =>
-      prev.map((p) => {
-        if (p.id === pedidoId && p.estado === "Aprovado") {
-          const novoStock = stock.map((item) => {
-            if (devolucao[item.nome]) {
-              const disponivelAtualizado = Math.min(
-                item.disponivel + devolucao[item.nome],
-                item.total
-              );
-              return {
-                ...item,
-                disponivel: disponivelAtualizado,
-              };
-            }
-            return item;
-          });
-          setStock(novoStock);
+  const handleDevolver = async (pedidoId, devolucao) => {
+    const pedido = pedidos.find((p) => p.id === pedidoId);
+    if (!pedido || pedido.estado !== "Aprovado") return;
 
-          const devolucaoCompleta = Object.entries(p.materiais).every(
-            ([nome, q]) => (devolucao[nome] || 0) === q
-          );
+    const novoStock = stock.map((item) => {
+      if (devolucao[item.nome]) {
+        return {
+          ...item,
+          disponivel: Math.min(item.disponivel + devolucao[item.nome], item.total),
+        };
+      }
+      return item;
+    });
 
-          return {
-            ...p,
-            estado: devolucaoCompleta ? "Concluído" : "Aprovado",
-            devolvido: devolucao,
-          };
-        }
-        return p;
-      })
+    const stockUpdated = await setStock(novoStock);
+    if (!stockUpdated) {
+      alert("Erro ao atualizar stock");
+      return;
+    }
+
+    const devolucaoCompleta = Object.entries(pedido.materiais).every(
+      ([nome, q]) => (devolucao[nome] || 0) === q
     );
+
+    const novoEstado = devolucaoCompleta ? "Concluído" : "Aprovado";
+
+    const pedidoUpdated = await updatePedido(pedidoId, { estado: novoEstado, devolvido: devolucao });
+    if (!pedidoUpdated) {
+      alert("Erro ao atualizar pedido");
+      return;
+    }
   };
 
-  const handleCancelar = (id) => {
+  const handleCancelar = async (id) => {
+    const { error } = await supabase.from("pedidos").delete().eq("id", id);
+    if (error) {
+      alert("Erro ao cancelar pedido");
+      console.error(error);
+      return;
+    }
     setPedidos((prev) => prev.filter((p) => p.id !== id));
   };
 
-  const pedidosVisiveis = user.isAdmin
-    ? pedidos
-    : pedidos.filter((p) => p.nome === user.nome);
+  const pedidosVisiveis = user.isAdmin ? pedidos : pedidos.filter((p) => p.nome === user.nome);
 
   return (
     <div style={{ padding: 20, maxWidth: 600, margin: "auto", boxSizing: "border-box" }}>

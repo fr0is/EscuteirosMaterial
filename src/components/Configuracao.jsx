@@ -3,7 +3,7 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 
 export default function Configuracao() {
-  const { user, users, adicionarUtilizador, setUsers } = useContext(AppContext);
+  const { user, users, setUsers, adicionarUsuario, supabase } = useContext(AppContext);
   const navigate = useNavigate();
 
   const [novoUsername, setNovoUsername] = useState("");
@@ -15,7 +15,7 @@ export default function Configuracao() {
     return null;
   }
 
-  const handleAddUser = () => {
+  const handleAddUser = async () => {
     if (!novoUsername.trim() || !novoNome.trim()) {
       alert("Preencha todos os campos.");
       return;
@@ -24,22 +24,40 @@ export default function Configuracao() {
       alert("Username já existe.");
       return;
     }
-    adicionarUtilizador({
-      username: novoUsername.trim(),
-      nome: novoNome.trim(),
-      tipo: novoTipo,
-    });
-    setNovoUsername("");
-    setNovoNome("");
-    setNovoTipo("user");
+    try {
+      await adicionarUsuario({
+        username: novoUsername.trim(),
+        nome: novoNome.trim(),
+        tipo: novoTipo,
+      });
+      setNovoUsername("");
+      setNovoNome("");
+      setNovoTipo("user");
+    } catch (error) {
+      alert("Erro ao adicionar usuário.");
+      console.error(error);
+    }
   };
 
-  const handleRemoveUser = (username) => {
+  const handleRemoveUser = async (username) => {
     if (username === "CA127") {
       alert("O utilizador CA127 não pode ser removido.");
       return;
     }
-    setUsers((u) => u.filter((user) => user.username !== username));
+    try {
+      // Remove do Supabase
+      const { error } = await supabase.from("users").delete().eq("username", username);
+      if (error) {
+        alert("Erro ao remover usuário.");
+        console.error(error);
+        return;
+      }
+      // Atualiza o estado local
+      setUsers((u) => u.filter((user) => user.username !== username));
+    } catch (error) {
+      alert("Erro ao remover usuário.");
+      console.error(error);
+    }
   };
 
   return (
