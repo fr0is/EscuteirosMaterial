@@ -6,9 +6,9 @@ import emailjs from "@emailjs/browser";
 export default function Material() {
   const {
     user,
-    stock,
+    materiais,             // Corrigi de 'stock' para 'materiais'
     pedidos,
-    adicionarPedido,
+    adicionarPedido,       // Esta função não está no teu contexto, tens que adicionar lá ou implementar aqui
     adicionarMaterial,
     atualizarMaterial,
     removerMaterial,
@@ -47,7 +47,7 @@ export default function Material() {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
       const max =
-        (stock.find((i) => i.nome === nome)?.disponivel || 0) -
+        (materiais.find((i) => i.nome === nome)?.disponivel || 0) -
         (pendentesPorItem[nome] || 0);
       if (atual < max) {
         return { ...q, [nome]: atual + 1 };
@@ -77,10 +77,10 @@ export default function Material() {
       return;
     }
 
-    const materiais = Object.fromEntries(
+    const materiaisPedido = Object.fromEntries(
       Object.entries(quantidades).filter(([_, q]) => q > 0)
     );
-    if (Object.keys(materiais).length === 0) {
+    if (Object.keys(materiaisPedido).length === 0) {
       alert("Selecione algum material para pedir.");
       return;
     }
@@ -90,14 +90,14 @@ export default function Material() {
     const novoPedido = {
       nome: user.nome,
       data: hoje,
-      materiais,
+      materiais: materiaisPedido,
       estado: "Pendente",
       devolvido: {},
       patrulha,
       atividade,
     };
 
-    const listaMateriais = Object.entries(materiais)
+    const listaMateriais = Object.entries(materiaisPedido)
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
       .join("\n");
 
@@ -114,6 +114,11 @@ ${listaMateriais}
 `;
 
     try {
+      if (!adicionarPedido) {
+        alert("Função para adicionar pedido não implementada.");
+        return;
+      }
+
       await adicionarPedido(novoPedido);
 
       await emailjs.send(
@@ -173,7 +178,7 @@ ${listaMateriais}
       return;
     }
 
-    const materialAtual = stock.find((m) => m.id === editandoMaterialId);
+    const materialAtual = materiais.find((m) => m.id === editandoMaterialId);
     const diferencaTotal = editandoTotal - materialAtual.total;
     const novoDisponivel = materialAtual.disponivel + diferencaTotal;
 
@@ -216,7 +221,7 @@ ${listaMateriais}
       <h2>Olá, {user.nome}</h2>
       <h3>Stock disponível</h3>
 
-      {stock.map((item) => {
+      {materiais.map((item) => {
         const pendente = pendentesPorItem[item.nome] || 0;
         const isEditing = editandoMaterialId === item.id;
 
@@ -271,7 +276,13 @@ ${listaMateriais}
                 </>
               )
             ) : (
-              <div style={{ flex: 1, display: "flex", justifyContent: "space-between" }}>
+              <div
+                style={{
+                  flex: 1,
+                  display: "flex",
+                  justifyContent: "space-between",
+                }}
+              >
                 <div>
                   <b>
                     {item.nome}{" "}
@@ -282,7 +293,9 @@ ${listaMateriais}
                     <em style={{ color: "red" }}>(Pendentes: {pendente})</em>
                   )}
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                <div
+                  style={{ display: "flex", alignItems: "center", gap: 8 }}
+                >
                   <button onClick={() => handleDecrement(item.nome)}>-</button>
                   <span style={{ minWidth: 20, textAlign: "center" }}>
                     {quantidades[item.nome] || 0}

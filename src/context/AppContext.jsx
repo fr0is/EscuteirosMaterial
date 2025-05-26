@@ -15,39 +15,21 @@ export function AppProvider({ children }) {
     isAdmin: false,
     loggedIn: false,
   });
-  const [stock, setStock] = useState([]);
+  const [materiais, setMateriais] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [users, setUsers] = useState([]);
 
-  // Carregar stock com join para pegar nome do material
-  const fetchStock = async () => {
-    const { data, error } = await supabase
-      .from("stock")
-      .select(`
-        id,
-        total,
-        disponivel,
-        material_id,
-        materiais (
-          id,
-          nome
-        )
-      `);
+  // Buscar materiais
+  const fetchMateriais = async () => {
+    const { data, error } = await supabase.from("materiais").select("*");
     if (error) {
-      console.error("Erro ao buscar stock:", error);
+      console.error("Erro ao buscar materiais:", error);
     } else {
-      const stockComNome = data.map((item) => ({
-        id: item.id,
-        total: item.total,
-        disponivel: item.disponivel,
-        material_id: item.material_id,
-        nome: item.materiais.nome,
-      }));
-      setStock(stockComNome);
+      setMateriais(data);
     }
   };
 
-  // Carregar pedidos
+  // Buscar pedidos
   const fetchPedidos = async () => {
     const { data, error } = await supabase.from("pedidos").select("*");
     if (error) {
@@ -57,18 +39,18 @@ export function AppProvider({ children }) {
     }
   };
 
-  // Carregar usuários
+  // Buscar usuários
   const fetchUsers = async () => {
     const { data, error } = await supabase.from("users").select("*");
     if (error) {
-      console.error("Erro ao buscar users:", error);
+      console.error("Erro ao buscar usuários:", error);
     } else {
       setUsers(data);
     }
   };
 
   useEffect(() => {
-    fetchStock();
+    fetchMateriais();
     fetchPedidos();
     fetchUsers();
   }, []);
@@ -99,20 +81,29 @@ export function AppProvider({ children }) {
     return true;
   };
 
-  // Atualizar stock (disponivel)
-  const updateStock = async (updatedStock) => {
-    for (const item of updatedStock) {
-      const { error } = await supabase
-        .from("stock")
-        .update({ disponivel: item.disponivel })
-        .eq("id", item.id);
-      if (error) {
-        console.error("Erro ao atualizar stock:", error);
-        return false;
-      }
+  // Atualizar materiais
+  const atualizarMaterial = async (id, updates) => {
+    const { data, error } = await supabase
+      .from("materiais")
+      .update(updates)
+      .eq("id", id);
+    if (error) {
+      console.error("Erro ao atualizar material:", error);
+      throw error;
     }
-    setStock(updatedStock);
-    return true;
+    setMateriais((prev) =>
+      prev.map((m) => (m.id === id ? { ...m, ...updates } : m))
+    );
+  };
+
+  // Remover material
+  const removerMaterial = async (id) => {
+    const { error } = await supabase.from("materiais").delete().eq("id", id);
+    if (error) {
+      console.error("Erro ao remover material:", error);
+      throw error;
+    }
+    setMateriais((prev) => prev.filter((m) => m.id !== id));
   };
 
   // Login
@@ -135,60 +126,20 @@ export function AppProvider({ children }) {
     });
   };
 
-  // Adicionar material: cria primeiro na tabela materiais, depois no stock
+  // Adicionar material
   const adicionarMaterial = async ({ nome, total }) => {
-    // Inserir na tabela materiais
-    const { data: novoMaterial, error: errMaterial } = await supabase
-      .from("materiais")
-      .insert([{ nome }])
-      .select()
-      .single();
-
-    if (errMaterial) {
-      console.error("Erro ao adicionar material:", errMaterial);
-      throw errMaterial;
-    }
-
-    // Criar registro na tabela stock com material_id e total
-    const { data: novoStock, error: errStock } = await supabase
-      .from("stock")
-      .insert([
-        { material_id: novoMaterial.id, total, disponivel: total },
-      ])
-      .select()
-      .single();
-
-    if (errStock) {
-      console.error("Erro ao criar stock:", errStock);
-      throw errStock;
-    }
-
-    setStock((s) => [...s, { ...novoStock, nome: novoMaterial.nome }]);
-  };
-
-  // Atualizar material no stock
-  const atualizarMaterial = async (id, updates) => {
     const { data, error } = await supabase
-      .from("stock")
-      .update(updates)
-      .eq("id", id);
-    if (error) {
-      console.error("Erro ao atualizar material:", error);
-      throw error;
-    }
-    setStock((prev) =>
-      prev.map((m) => (m.id === id ? { ...m, ...updates } : m))
-    );
-  };
+      .from("materiais")
+      .insert([{ nome, total, disponivel: total }])
+      .select()
+      .single();
 
-  // Remover material do stock
-  const removerMaterial = async (id) => {
-    const { error } = await supabase.from("stock").delete().eq("id", id);
     if (error) {
-      console.error("Erro ao remover material:", error);
+      console.error("Erro ao adicionar material:", error);
       throw error;
     }
-    setStock((prev) => prev.filter((m) => m.id !== id));
+
+    setMateriais((m) => [...m, data]);
   };
 
   return (
@@ -196,8 +147,8 @@ export function AppProvider({ children }) {
       value={{
         user,
         setUser,
-        stock,
-        setStock: updateStock,
+        materiais,
+        setMateriais,
         pedidos,
         setPedidos,
         updatePedido,
