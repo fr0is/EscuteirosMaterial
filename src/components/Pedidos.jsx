@@ -7,8 +7,8 @@ export default function Pedidos() {
     user,
     pedidos,
     setPedidos,
-    stock,
-    setStock,
+    materiais,
+    setMateriais,
     updatePedido,
     cancelarPedido,
   } = useContext(AppContext);
@@ -23,17 +23,17 @@ export default function Pedidos() {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
-    // Verifica stock disponível
+    // Verifica materiais disponível
     for (const [nome, qtd] of Object.entries(pedido.materiais)) {
-      const itemStock = stock.find((s) => s.nome === nome);
-      if (!itemStock || itemStock.disponivel < qtd) {
-        alert(`Stock insuficiente para: ${nome}`);
+      const itemmateriais = materiais.find((s) => s.nome === nome);
+      if (!itemmateriais || itemmateriais.disponivel < qtd) {
+        alert(`materiais insuficiente para: ${nome}`);
         return;
       }
     }
 
-    // Atualiza stock
-    const novoStock = stock.map((item) => {
+    // Atualiza materiais
+    const novoMateriais = materiais.map((item) => {
       if (pedido.materiais[item.nome]) {
         return {
           ...item,
@@ -43,9 +43,9 @@ export default function Pedidos() {
       return item;
     });
 
-    const stockUpdated = await setStock(novoStock);
-    if (!stockUpdated) {
-      alert("Erro ao atualizar stock");
+    const materiaisUpdated = await setMateriais(novoMateriais);
+    if (!materiaisUpdated) {
+      alert("Erro ao atualizar materiais");
       return;
     }
 
@@ -61,7 +61,7 @@ export default function Pedidos() {
     const pedido = pedidos.find((p) => p.id === pedidoId);
     if (!pedido || pedido.estado !== "Aprovado") return;
 
-    const novoStock = stock.map((item) => {
+    const novoMateriais = materiais.map((item) => {
       if (devolucao[item.nome]) {
         return {
           ...item,
@@ -71,9 +71,9 @@ export default function Pedidos() {
       return item;
     });
 
-    const stockUpdated = await setStock(novoStock);
-    if (!stockUpdated) {
-      alert("Erro ao atualizar stock");
+    const materiaisUpdated = await setMateriais(novoMateriais);
+    if (!materiaisUpdated) {
+      alert("Erro ao atualizar materiais");
       return;
     }
 
