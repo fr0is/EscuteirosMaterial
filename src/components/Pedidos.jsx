@@ -2,7 +2,11 @@ import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
+import { ToastContainer, toast } from "react-toastify"; // Importando o Toast
+import "react-toastify/dist/ReactToastify.css"; // Estilo do Toast
 import "../styles/Pedidos.css";
+import "../styles/utilities.css";
+import "../styles/variables.css";
 
 export default function Pedidos() {
   const {
@@ -18,7 +22,6 @@ export default function Pedidos() {
   } = useContext(AppContext);
   const navigate = useNavigate();
 
-  // Estado para armazenar a data de levantamento por pedido (chave: id do pedido)
   const [datasLevantamento, setDatasLevantamento] = useState({});
 
   useEffect(() => {
@@ -31,7 +34,6 @@ export default function Pedidos() {
 
   const getUserById = (id) => users?.find((u) => u.id === id);
 
-  // Atualiza a data de levantamento de um pedido específico
   const handleDataLevantamentoChange = (id, novaData) => {
     setDatasLevantamento((prev) => ({
       ...prev,
@@ -42,7 +44,7 @@ export default function Pedidos() {
   const handleAprovar = async (id) => {
     const dataLevant = datasLevantamento[id];
     if (!dataLevant || !dataLevant.trim()) {
-      alert("Indique a data de levantamento antes de aprovar.");
+      toast.error("Indique a data de levantamento antes de aprovar.");
       return;
     }
 
@@ -52,7 +54,7 @@ export default function Pedidos() {
     for (const [nome, qtd] of Object.entries(pedido.materiais)) {
       const item = materiais.find((m) => m.nome === nome);
       if (!item || item.disponivel < qtd) {
-        alert(`Material insuficientes para: ${nome}`);
+        toast.error(`Material insuficiente para: ${nome}`);
         return;
       }
     }
@@ -69,7 +71,7 @@ export default function Pedidos() {
 
     const materiaisUpdated = await setStock(novoMateriais);
     if (!materiaisUpdated) {
-      alert("Erro ao atualizar materiais");
+      toast.error("Erro ao atualizar materiais");
       return;
     }
 
@@ -79,14 +81,14 @@ export default function Pedidos() {
     });
 
     if (!pedidoUpdated) {
-      alert("Erro ao aprovar pedido");
+      toast.error("Erro ao aprovar pedido");
       return;
     }
 
     const autor = getUserById(pedido.user_id);
 
     if (!autor?.email) {
-      alert("Email do autor não está definido. Não foi possível enviar o email.");
+      toast.error("Email do autor não está definido. Não foi possível enviar o email.");
       return;
     }
 
@@ -107,9 +109,6 @@ ${listaMateriais}
 Boa atividade!
 `.trim();
 
-    console.log("Autor:", autor);
-    console.log("Email do autor:", autor?.email);
-
     try {
       await emailjs.send(
         "service_pnn1l65",
@@ -120,13 +119,11 @@ Boa atividade!
         },
         "largUwzgW7L95dduo"
       );
-      alert("Pedido aprovado e email enviado.");
+      toast.success("Pedido aprovado e email enviado.");
     } catch (err) {
-      console.error(err);
-      alert("Pedido aprovado, mas falha no envio de email.");
+      toast.error("Pedido aprovado, mas falha no envio de email.");
     }
 
-    // Limpa a data de levantamento do pedido aprovado
     setDatasLevantamento((prev) => {
       const copy = { ...prev };
       delete copy[id];
@@ -138,6 +135,7 @@ Boa atividade!
     const pedido = pedidos.find((p) => p.id === pedidoId);
     if (!pedido || pedido.estado !== "Aprovado") return;
 
+    // Atualizando os materiais
     const novoMateriais = materiais.map((item) => {
       if (devolucao[item.nome]) {
         return {
@@ -150,14 +148,16 @@ Boa atividade!
 
     const materiaisUpdated = await setStock(novoMateriais);
     if (!materiaisUpdated) {
-      alert("Erro ao atualizar materiais");
+      toast.error("Erro ao atualizar materiais");
       return;
     }
 
+    // Verificar se todos os materiais foram devolvidos
     const devolucaoCompleta = Object.entries(pedido.materiais).every(
       ([nome, q]) => (devolucao[nome] || 0) === q
     );
 
+    // Se todos os materiais foram devolvidos, atualiza o estado para "Concluído"
     const novoEstado = devolucaoCompleta ? "Concluído" : "Aprovado";
 
     const pedidoUpdated = await updatePedido(pedidoId, {
@@ -166,7 +166,12 @@ Boa atividade!
     });
 
     if (!pedidoUpdated) {
-      alert("Erro ao atualizar pedido");
+      toast.error("Erro ao atualizar pedido");
+      return;
+    }
+
+    if (devolucaoCompleta) {
+      toast.success("Pedido devolvido completamente e concluído!");
     }
   };
 
@@ -178,20 +183,76 @@ Boa atividade!
 
     const success = await cancelarPedido(id);
     if (!success) {
-      alert("Erro ao cancelar pedido");
+      toast.error("Erro ao cancelar pedido");
     }
   };
 
-  const handleEliminar = async (id) => {
-    if (!window.confirm("Tem certeza que deseja eliminar este pedido?")) return;
+  const handleEliminar = (id) => {
+    // Cria o Toast e retorna seu ID para usarmos para atualizá-lo
+    const confirmDeleteToast = toast.warn("Tem certeza que deseja eliminar este pedido?", {
+      autoClose: false, // Não fecha automaticamente
+      closeOnClick: false,
+      position: "top-center", // Exibe no topo, centralizado
+    });
 
-    const sucesso = await eliminarPedido(id);
-    if (!sucesso) {
-      alert("Erro ao eliminar pedido");
-      return;
-    }
-    setPedidos((prev) => prev.filter((p) => p.id !== id));
-  };
+    // Atualiza o Toast com os botões "Sim" e "Não" após a sua criação
+    toast.update(confirmDeleteToast, {
+      render: (
+        <div style={{ textAlign: 'center', padding: '10px' }}>
+          <p style={{ marginBottom: '20px', fontSize: '16px' }}>
+            Tem certeza que deseja eliminar este pedido?
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+            <button
+              onClick={async () => {
+                const sucesso = await eliminarPedido(id);
+                if (!sucesso) {
+                  toast.error("Erro ao eliminar pedido");
+                } else {
+                  toast.success("Pedido eliminado com sucesso!");
+                  setPedidos((prev) => prev.filter((p) => p.id !== id));
+                }
+                toast.dismiss(confirmDeleteToast); // Fecha o Toast após a ação
+              }}
+              style={{
+                backgroundColor: 'green',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                width: '100px',
+              }}
+            >
+              Sim
+            </button>
+            <button
+              onClick={() => toast.dismiss(confirmDeleteToast)} // Fecha o Toast
+              style={{
+                backgroundColor: 'red',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                width: '100px',
+              }}
+            >
+              Não
+            </button>
+          </div>
+        </div>
+      ),
+      style: {
+        backgroundColor: '#fff',
+        color: '#333',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        padding: '20px',
+        borderRadius: '8px',
+      }
+    });
+};
+
 
   const pedidosVisiveis = (user.isAdmin
     ? pedidos
@@ -205,8 +266,8 @@ Boa atividade!
       {pedidosVisiveis.length === 0 && <p>Nenhum pedido registado.</p>}
 
       {pedidosVisiveis.map((p) => {
-        const autor = getUserById(p.user_id); // Obter o usuário pelo user_id associado ao pedido
-        const seccao = autor ? autor.seccao : "Não disponível"; // Obter a secção ou valor padrão
+        const autor = getUserById(p.user_id);
+        const seccao = autor ? autor.seccao : "Não disponível";
 
         return (
           <PedidoItem
@@ -222,10 +283,22 @@ Boa atividade!
             setDataLevantamento={(novaData) =>
               handleDataLevantamentoChange(p.id, novaData)
             }
-            seccao={seccao} // Passar a secção para o componente PedidoItem
+            seccao={seccao}
           />
         );
       })}
+
+      <ToastContainer 
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }
@@ -240,7 +313,7 @@ function PedidoItem({
   userNome,
   dataLevantamento,
   setDataLevantamento,
-  seccao, // Recebe a secção como prop
+  seccao,
 }) {
   const [devolucao, setDevolucao] = useState({});
 
@@ -278,26 +351,14 @@ function PedidoItem({
       <p>
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
-      <p>
-        <b>Secção:</b> {seccao} {/* Exibir a secção do usuário */}
-      </p>
-      <p>
-        <b>{grupoLabel}:</b> {pedido.patrulha || "-"}
-      </p>
-      <p>
-        <b>Atividade:</b> {pedido.atividade || "-"}
-      </p>
-      <p>
-        <b>Estado:</b> {pedido.estado}
-      </p>
+      <p><b>Secção:</b> {seccao}</p>
+      <p><b>{grupoLabel}:</b> {pedido.patrulha || "-"}</p>
+      <p><b>Atividade:</b> {pedido.atividade || "-"}</p>
+      <p><b>Estado:</b> {pedido.estado}</p>
       {pedido.data_levantamento && (
-        <p>
-          <b>Levantamento:</b> {pedido.data_levantamento}
-        </p>
+        <p><b>Levantamento:</b> {pedido.data_levantamento}</p>
       )}
-      <p>
-        <b>Material:</b>
-      </p>
+      <p><b>Material:</b></p>
       <ul>
         {Object.entries(pedido.materiais).map(([nome, q]) => (
           <li key={nome}>

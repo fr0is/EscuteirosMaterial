@@ -1,6 +1,6 @@
 /* index.css */
-@import url('src/styles/variables.css'); /* Importa variáveis antes de tudo */
-@import url('src/styles/utilities.css'); /* Estilos comuns globais */
+@import url('./styles/variables.css'); /* Importa variáveis antes de tudo */
+@import url('./styles/utilities.css'); /* Estilos comuns globais */
 
 body {
   margin: 0;

@@ -1,7 +1,11 @@
 import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import { toast, ToastContainer } from "react-toastify";  // Importando o toast e o ToastContainer
+import "react-toastify/dist/ReactToastify.css";  // Importando os estilos do Toast
 import "../styles/Configuracao.css";
+import "../styles/utilities.css";
+import "../styles/variables.css";
 
 export default function Configuracao() {
   const { user, setUser, users, setUsers, adicionarUsuario, supabase } = useContext(AppContext);
@@ -11,7 +15,7 @@ export default function Configuracao() {
   const [novoUsername, setNovoUsername] = useState("");
   const [novoNome, setNovoNome] = useState("");
   const [novoEmail, setNovoEmail] = useState(""); 
-  const [novaSeccao, setNovaSeccao] = useState("Lobitos");  // Ajuste para nova variável
+  const [novaSeccao, setNovaSeccao] = useState("Lobitos");
   const [novoTipo, setNovoTipo] = useState("user");
 
   const [secaoAtiva, setSecaoAtiva] = useState("alterarPassword");
@@ -24,20 +28,20 @@ export default function Configuracao() {
 
   const handleChangePassword = () => {
     if (!novaPassword.trim()) {
-      alert("Insira a nova password.");
+      toast.warn("Insira a nova password.");
       return;
     }
-    alert("Password alterada com sucesso (simulação).");
+    toast.success("Password alterada com sucesso!");
     setNovaPassword("");
   };
 
   const handleAddUser = async () => {
     if (!novoUsername.trim() || !novoNome.trim() || !novaPassword.trim() || !novoEmail.trim()) {
-      alert("Preencha todos os campos.");
+      toast.warn("Preencha todos os campos.");
       return;
     }
     if (users.some((u) => u.username === novoUsername.trim())) {
-      alert("Username já existe.");
+      toast.warn("Username já existe.");
       return;
     }
     try {
@@ -46,8 +50,8 @@ export default function Configuracao() {
         nome: novoNome.trim(),
         tipo: novoTipo,
         password: novaPassword.trim(),
-        email: novoEmail.trim(), // Envia o email junto
-        seccao: novaSeccao.trim(),  // Envia a nova seção
+        email: novoEmail.trim(), 
+        seccao: novaSeccao.trim(),
       });
       setNovoUsername("");
       setNovoNome("");
@@ -55,35 +59,90 @@ export default function Configuracao() {
       setNovoEmail("");
       setNovaSeccao("Lobitos"); 
       setNovoTipo("user");
-      alert("Usuário adicionado com sucesso!");
+      toast.success("Utilizador adicionado com sucesso!");
     } catch (error) {
-      alert("Erro ao adicionar usuário.");
+      toast.error("Erro ao adicionar utilizador.");
       console.error(error);
     }
   };
 
-  const handleRemoveUser = async (username) => {
+  const handleRemoveUser = (username) => {
     if (username === "CA127") {
-      alert("O utilizador CA127 não pode ser removido.");
+      toast.warn("O utilizador CA127 não pode ser removido.");
       return;
     }
     if (username === user.username) {
-      alert("Você não pode remover a si mesmo.");
+      toast.warn("Você não pode remover a si mesmo.");
       return;
     }
-    try {
-      const { error } = await supabase.from("users").delete().eq("username", username);
-      if (error) {
-        alert("Erro ao remover usuário.");
-        console.error(error);
-        return;
+
+    const confirmDeleteToast = toast.warn("Tem certeza que deseja remover este utilizador?", {
+      autoClose: false, 
+      closeOnClick: false,
+      position: "top-center",
+    });
+
+    toast.update(confirmDeleteToast, {
+      render: (
+        <div style={{ textAlign: 'center', padding: '10px' }}>
+          <p style={{ marginBottom: '20px', fontSize: '16px' }}>
+            Tem certeza que deseja remover este utilizador?
+          </p>
+          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
+            <button
+              onClick={async () => {
+                try {
+                  const { error } = await supabase.from("users").delete().eq("username", username);
+                  if (error) {
+                    toast.error("Erro ao remover utilizador.");
+                    console.error(error);
+                    return;
+                  }
+                  setUsers((u) => u.filter((user) => user.username !== username));
+                  toast.success("Utilizador removido com sucesso!");
+                } catch (error) {
+                  toast.error("Erro ao remover utilizador.");
+                  console.error(error);
+                }
+                toast.dismiss(confirmDeleteToast); // Fecha o Toast após a ação
+              }}
+              style={{
+                backgroundColor: 'green',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                width: '100px',
+              }}
+            >
+              Sim
+            </button>
+            <button
+              onClick={() => toast.dismiss(confirmDeleteToast)} // Fecha o Toast
+              style={{
+                backgroundColor: 'red',
+                color: 'white',
+                padding: '10px 20px',
+                border: 'none',
+                borderRadius: '5px',
+                cursor: 'pointer',
+                width: '100px',
+              }}
+            >
+              Não
+            </button>
+          </div>
+        </div>
+      ),
+      style: {
+        backgroundColor: '#fff',
+        color: '#333',
+        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
+        padding: '20px',
+        borderRadius: '8px',
       }
-      setUsers((u) => u.filter((user) => user.username !== username));
-      alert("Usuário removido com sucesso!");
-    } catch (error) {
-      alert("Erro ao remover usuário.");
-      console.error(error);
-    }
+    });
   };
 
   const handleLogout = () => {
@@ -197,10 +256,7 @@ export default function Configuracao() {
               />
               <select
                 value={novaSeccao}
-                onChange={(e) => {
-                  console.log("Valor da Seção Selecionada:", e.target.value);
-                  setNovaSeccao(e.target.value);
-                }}
+                onChange={(e) => setNovaSeccao(e.target.value)}
                 className="select-field"
               >
                 <option value="Lobitos">Lobitos</option>
@@ -224,6 +280,18 @@ export default function Configuracao() {
           </section>
         )}
       </main>
+
+      <ToastContainer
+              position="top-center"
+              autoClose={5000}
+              hideProgressBar={false}
+              newestOnTop={false}
+              closeOnClick
+              rtl={false}
+              pauseOnFocusLoss
+              draggable
+              pauseOnHover
+            />
     </div>
   );
 }

@@ -3,6 +3,10 @@ import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
 import "../styles/Material.css";
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
+import "../styles/utilities.css";
+import "../styles/variables.css";
 
 export default function Material() {
   const {
@@ -64,20 +68,22 @@ export default function Material() {
   };
 
   const handleSubmitPedido = async () => {
+    // Verificar se a patrulha e a atividade estão preenchidas
     if (patrulha.trim() === "") {
-      alert("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
+      toast.error("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
       return;
     }
     if (atividade.trim() === "") {
-      alert("Por favor, informe a atividade.");
+      toast.error("Por favor, informe a atividade.");
       return;
     }
 
     const materiaisPedido = Object.fromEntries(
       Object.entries(quantidades).filter(([_, q]) => q > 0)
     );
+    
     if (Object.keys(materiaisPedido).length === 0) {
-      alert("Selecione algum material para pedir.");
+      toast.error("Selecione algum material para pedir.");
       return;
     }
 
@@ -101,36 +107,35 @@ export default function Material() {
       Caminheiros: "Tribo",
     };
 
-    const nomePatrulha = tipoPatrulha[user.seccao] || "Patrulha"; // Corrigido para seccao
+    const nomePatrulha = tipoPatrulha[user.seccao] || "Patrulha";
 
     const listaMateriais = Object.entries(materiaisPedido)
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
       .join("\n");
-    
-    console.log(user); 
-    console.log(user.seccao);
 
     const mensagem = `
-Pedido de material recebido:
+  Pedido de material recebido:
 
-Nome: ${user.nome} 
-Secção: ${user.seccao}
-${nomePatrulha}: ${patrulha}
-Atividade: ${atividade}
-Data: ${hoje}
+  Nome: ${user.nome} 
+  Secção: ${user.seccao}
+  ${nomePatrulha}: ${patrulha}
+  Atividade: ${atividade}
+  Data: ${hoje}
 
-📦 Material solicitado:
-${listaMateriais}
-`;
+  📦 Material solicitado:
+  ${listaMateriais}
+  `;
 
     try {
       if (!adicionarPedido) {
-        alert("Função para adicionar pedido não implementada.");
+        toast.error("Função para adicionar pedido não implementada.");
         return;
       }
 
+      // Enviar o pedido para a aplicação
       await adicionarPedido(novoPedido);
 
+      // Enviar o email usando emailjs
       await emailjs.send(
         "service_pnn1l65",
         "template_8ud9uk9",
@@ -138,17 +143,19 @@ ${listaMateriais}
         "largUwzgW7L95dduo"
       );
 
-      alert("Pedido enviado com sucesso e email enviado!");
+      // Mostrar mensagem de sucesso com Toast
+      toast.success("Pedido enviado com sucesso!");
+
+      // Resetar os campos do formulário
       setQuantidades({});
       setPatrulha("");
       setAtividade("");
     } catch (error) {
       console.error("Erro ao enviar pedido:", error);
-      alert(
-        "Falha ao enviar pedido ou email. Verifique sua conexão ou configuração."
-      );
+      toast.error("Falha ao enviar pedido ou email. Verifique sua conexão ou configuração.");
     }
   };
+
 
   const handleCriarMaterial = async () => {
     if (!novoMaterialNome.trim() || novoMaterialTotal <= 0) {
@@ -225,6 +232,19 @@ ${listaMateriais}
 
   return (
     <div className="material-container">
+    {/* ToastContainer para as notificações */}
+      <ToastContainer
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
+
       <h2>Olá, {user.nome}</h2> {/* Exibe o nome real do usuário */}
       <h3>Stock disponível</h3>
 

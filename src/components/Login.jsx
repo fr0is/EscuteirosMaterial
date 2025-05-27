@@ -2,6 +2,8 @@ import React, { useContext, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { AppContext } from "../context/AppContext";
 import "../styles/Login.css";
+import "../styles/utilities.css";
+import "../styles/variables.css";
 
 export default function Login() {
   const { login } = useContext(AppContext);
