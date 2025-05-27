@@ -4,7 +4,7 @@ import { AppProvider, AppContext } from "./context/AppContext";
 import Login from "./components/Login";
 import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
-import Configuracao from "./components/Conta";
+import Configuracao from "./components/Configuracao";
 import { FaBars } from "react-icons/fa";
 import "../src/styles/Header.css";
 import logo from "./logo.png";
@@ -47,7 +47,7 @@ function Header() {
         <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
         <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
         {user?.loggedIn && (
-          <Link to="/conta" onClick={() => setMenuOpen(false)}>Conta</Link>
+          <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Conta</Link>
         )}
       </nav>
     </header>
@@ -63,7 +63,7 @@ function App() {
           <Route path="/" element={<Login />} />
           <Route path="/material" element={<Material />} />
           <Route path="/pedidos" element={<Pedidos />} />
-          <Route path="/conta" element={<Conta />} />
+          <Route path="/configuracao" element={<Configuracao />} />
         </Routes>
       </Router>
     </AppProvider>
