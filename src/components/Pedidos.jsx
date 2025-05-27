@@ -12,6 +12,7 @@ export default function Pedidos() {
     updatePedido,
     cancelarPedido,
     setStock,
+    eliminarPedido, // função para eliminar pedidos
   } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -123,9 +124,26 @@ export default function Pedidos() {
     }
   };
 
-  const pedidosVisiveis = user.isAdmin
+  const handleEliminar = async (id) => {
+    const confirm = window.confirm(
+      "Tem certeza que deseja eliminar este pedido? Esta ação não pode ser desfeita."
+    );
+    if (!confirm) return;
+
+    const sucesso = await eliminarPedido(id);
+    if (!sucesso) {
+      alert("Erro ao eliminar pedido");
+      return;
+    }
+    // Atualiza a lista local removendo o pedido eliminado
+    setPedidos((prev) => prev.filter((p) => p.id !== id));
+  };
+
+  const pedidosVisiveis = (user.isAdmin
     ? pedidos
-    : pedidos.filter((p) => p.nome === user.nome);
+    : pedidos.filter((p) => p.nome === user.nome))
+    .slice()
+    .sort((a, b) => b.id - a.id);
 
   return (
     <div className="pedidos-container">
@@ -139,10 +157,13 @@ export default function Pedidos() {
           onAprovar={handleAprovar}
           onDevolver={handleDevolver}
           onCancelar={handleCancelar}
+          onEliminar={handleEliminar}
           isAdmin={user.isAdmin}
           userNome={user.nome}
         />
       ))}
+
+      {/* REMOVIDO: botão de eliminar pedidos antigos */}
     </div>
   );
 }
@@ -152,6 +173,7 @@ function PedidoItem({
   onAprovar,
   onDevolver,
   onCancelar,
+  onEliminar,
   isAdmin,
   userNome,
 }) {
@@ -169,13 +191,30 @@ function PedidoItem({
   const podeCancelar =
     pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
 
+  const getGrupoLabel = (nomeGrupo) => {
+    switch (nomeGrupo) {
+      case "Pioneiros":
+        return "Equipa";
+      case "Lobitos":
+        return "Bando";
+      case "Exploradores":
+        return "Patrulha";
+      case "Caminheiros":
+        return "Tribo";
+      default:
+        return "Patrulha";
+    }
+  };
+
+  const grupoLabel = getGrupoLabel(pedido.nome);
+
   return (
     <div className="pedido-item">
       <p>
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
       <p>
-        <b>Patrulha:</b> {pedido.patrulha || "-"}
+        <b>{grupoLabel}:</b> {pedido.patrulha || "-"}
       </p>
       <p>
         <b>Atividade:</b> {pedido.atividade || "-"}
@@ -196,18 +235,16 @@ function PedidoItem({
 
       <div className="pedido-buttons">
         {pedido.estado === "Pendente" && isAdmin && (
-            <button className="btn-aprovar" onClick={() => onAprovar(pedido.id)}>
-                Aprovar Pedido
-            </button>
+          <button className="btn-aprovar" onClick={() => onAprovar(pedido.id)}>
+            Aprovar Pedido
+          </button>
         )}
-
 
         {podeCancelar && (
-            <button className="btn-cancelar" onClick={() => onCancelar(pedido.id)}>
-                Cancelar Pedido
-            </button>
+          <button className="btn-cancelar" onClick={() => onCancelar(pedido.id)}>
+            Cancelar Pedido
+          </button>
         )}
-
       </div>
 
       {pedido.estado === "Aprovado" && isAdmin && (
@@ -230,14 +267,30 @@ function PedidoItem({
               </label>
             </div>
           ))}
-          <button className="btn-aprovar" onClick={() => onDevolver(pedido.id, devolucao)}>
-            Confirmar Devolução
-          </button>
+          <div className="pedido-buttons">
+            <button
+              className="btn-aprovar"
+              onClick={() => onDevolver(pedido.id, devolucao)}
+            >
+              Confirmar Devolução
+            </button>
+          </div>
         </div>
       )}
 
       {pedido.estado === "Concluído" && (
         <p className="pedido-concluido">Pedido devolvido!</p>
+      )}
+
+      {/* Botão eliminar pedido no canto inferior direito */}
+      {isAdmin && pedido.estado === "Concluído" && (
+        <button
+          className="btn-eliminar-pedido"
+          onClick={() => onEliminar(pedido.id)}
+          title="Eliminar Pedido"
+        >
+          🗑️
+        </button>
       )}
     </div>
   );

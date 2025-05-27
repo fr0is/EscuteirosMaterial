@@ -1,28 +1,34 @@
 .material-container {
-  padding: 20px;
   max-width: 600px;
-  margin: auto;
+  padding: 20px;
+  margin: 0 auto;
+  background-color: var(--color-background);
+  color: var(--color-text);
   font-family: Arial, sans-serif;
-  color: #333;
+  border-radius: var(--border-radius);
 }
 
+/* Títulos principais e secundários */
 .material-container h2,
 .material-container h3 {
-  font-weight: normal;
+  font-weight: bold;
   margin-bottom: 16px;
   text-align: center;
+  color: var(--color-primary);
 }
 
+/* Item do material */
 .material-item {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  margin-bottom: 8px;
-  border-bottom: 1px solid #ddd;
-  padding-bottom: 6px;
   gap: 10px;
+  margin-bottom: 10px;
+  border-bottom: 1px solid #ccc;
+  padding-bottom: 8px;
 }
 
+/* Info dentro do item */
 .material-info {
   flex: 1;
 }
@@ -32,35 +38,96 @@
 }
 
 .material-info em {
-  color: red;
+  color: var(--color-danger);
   font-style: italic;
 }
 
+/* Ações dos botões no material */
 .material-actions button {
-  margin-left: 6px;
+  margin-left: 8px;
+  font-weight: normal;
+  font-size: 14px;
+  line-height: 1.2;
   padding: 6px 10px;
-  border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
+  border-radius: var(--border-radius);
+  border: none;
+  background-color: var(--color-primary);
+  color: white;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease;
+  user-select: none;
 }
 
-.material-actions button:hover {
-  background-color: #e6e6e6;
+/* Botões verde (editar e guardar) */
+button.editar,
+button.guardar {
+  background-color: var(--color-primary);
+  border: 1px solid var(--color-primary-dark);
+  color: white;
+}
+
+button.editar:hover,
+button.guardar:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Botões vermelho (remover e cancelar) */
+button.remover,
+button.cancelar {
+  background-color: var(--color-danger);
+  border: 1px solid #b71c1c;
+  color: white;
+}
+
+button.remover:hover,
+button.cancelar:hover {
+  background-color: #b71c1c;
+}
+
+/* Container edição */
+.material-editing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+}
+
+.material-editing .inputs {
+  display: flex;
+  gap: 6px;
+  flex-grow: 1;
+  align-items: center;
 }
 
 .material-editing input {
   padding: 6px;
   border-radius: 4px;
   border: 1px solid #ccc;
-  margin-right: 6px;
+  font-size: 14px;
 }
 
 .material-editing input[type="number"] {
   width: 80px;
 }
 
+/* Botões dentro da edição */
+.material-editing .buttons {
+  display: flex;
+  gap: 8px;
+  margin-left: 16px;
+}
+
+.material-editing button {
+  font-size: 14px;
+  padding: 6px 10px;
+  border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+/* Controles de quantidade (+/-) */
 .quantity-controls {
   display: flex;
   align-items: center;
@@ -70,13 +137,14 @@
 .quantity-controls button {
   width: 28px;
   height: 28px;
-  font-size: 18px;
+  font-size: 14px;
   line-height: 1;
   padding: 0;
   text-align: center;
   border-radius: 4px;
-  border: 1px solid #ccc;
-  background-color: #f9f9f9;
+  border: 1px solid #bbb;
+  background-color: #f1f8e9;
+  color: var(--color-primary);
   cursor: pointer;
   user-select: none;
 }
@@ -87,6 +155,7 @@
   font-weight: 600;
 }
 
+/* Seções de adicionar material e pedido */
 .add-material,
 .pedido-form {
   margin-top: 20px;
@@ -96,30 +165,33 @@
 
 .add-material input,
 .pedido-form input {
-  padding: 8px;
   margin-bottom: 10px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
   font-size: 16px;
+  padding: 10px;
+  border: 1px solid #ccc;
+  border-radius: var(--border-radius);
+  box-sizing: border-box;
 }
 
 .add-material button,
 .pedido-form button {
   padding: 12px 0;
-  font-size: 18px;
-  border-radius: 6px;
-  border: none;
-  background-color: #007bff;
+  font-weight: bold;
+  font-size: 14px;
+  background-color: var(--color-primary);
   color: white;
+  border: none;
+  border-radius: var(--border-radius);
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  transition: background-color 0.3s ease;
 }
 
 .add-material button:hover,
 .pedido-form button:hover {
-  background-color: #0056b3;
+  background-color: var(--color-primary-dark);
 }
 
+/* Aviso chefe */
 .chefe-aviso {
   margin-top: 20px;
   font-style: italic;
@@ -140,12 +212,12 @@
   .add-material input,
   .pedido-form input {
     font-size: 14px;
-    padding: 6px;
+    padding: 8px;
   }
 
   .add-material button,
   .pedido-form button {
-    font-size: 16px;
+    font-size: 14px;
     padding: 10px 0;
   }
 

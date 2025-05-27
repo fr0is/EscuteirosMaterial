@@ -1,0 +1,83 @@
+/* utilities.css */
+
+/* Containers centralizados */
+.container {
+  max-width: 700px;
+  margin: 0 auto;
+  padding: 0 15px;
+  background-color: var(--color-white);
+  color: var(--color-text);
+  font-family: var(--font-family);
+}
+
+/* Botões base */
+.btn {
+  padding: 10px 14px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: var(--border-radius);
+  border: none;
+  font-weight: 600;
+  color: var(--color-white);
+  transition: background-color 0.3s ease;
+  user-select: none;
+}
+
+/* Botão verde primário */
+.btn-primary {
+  background-color: var(--color-primary);
+  min-width: 140px;
+  text-align: center;
+}
+
+.btn-primary:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Botão vermelho (perigo) */
+.btn-danger {
+  background-color: var(--color-danger);
+}
+
+.btn-danger:hover {
+  background-color: var(--color-danger-dark);
+}
+
+/* Inputs padrão */
+input,
+select,
+textarea {
+  padding: 10px;
+  font-size: 16px;
+  border-radius: 4px;
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+  font-family: var(--font-family);
+}
+
+input:focus,
+select:focus,
+textarea:focus {
+  border-color: var(--color-primary);
+  outline: none;
+}
+
+/* Responsividade comum */
+@media (max-width: 480px) {
+  .container {
+    padding: 0 10px;
+  }
+  
+  .btn {
+    font-size: 14px;
+    padding: 10px 0;
+  }
+  
+  input,
+  select,
+  textarea {
+    font-size: 14px;
+    padding: 8px;
+  }
+}

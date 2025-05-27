@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import "../styles/Configuracao.css";
 
 export default function Configuracao() {
-  const { user, users, setUsers, adicionarUsuario, supabase } = useContext(AppContext);
+  const { user, setUser, users, setUsers, adicionarUsuario, supabase } = useContext(AppContext);
   const navigate = useNavigate();
 
   const [novaPassword, setNovaPassword] = useState("");
@@ -12,22 +12,21 @@ export default function Configuracao() {
   const [novoNome, setNovoNome] = useState("");
   const [novoTipo, setNovoTipo] = useState("user");
 
-  // Estado para controlar qual seção está ativa no menu lateral
+  // Controla qual seção está ativa no menu lateral
   const [secaoAtiva, setSecaoAtiva] = useState("alterarPassword");
 
   useEffect(() => {
-    if (!user.loggedIn || !user.isAdmin) {
+    if (!user.loggedIn) {
       navigate("/");
     }
   }, [user, navigate]);
 
-  // Função para alterar a password do utilizador atual (exemplo simples)
   const handleChangePassword = () => {
     if (!novaPassword.trim()) {
       alert("Insira a nova password.");
       return;
     }
-    // Aqui você faria a lógica para alterar a password no backend
+    // Aqui deve vir a lógica real para alterar a password no backend
     alert("Password alterada com sucesso (simulação).");
     setNovaPassword("");
   };
@@ -83,27 +82,43 @@ export default function Configuracao() {
     }
   };
 
+  const handleLogout = () => {
+    setUser({ loggedIn: false });
+    localStorage.removeItem("user");
+    navigate("/");
+  };
+
+  if (!user.loggedIn) {
+    return null;
+  }
+
+  // Define quais seções aparecem no menu lateral para cada tipo de usuário
+  const secoesMenu = user.isAdmin
+    ? [
+        { id: "alterarPassword", label: "Alterar Password" },
+        { id: "utilizadoresRegistados", label: "Utilizadores Registados" },
+        { id: "adicionarUtilizador", label: "Adicionar Utilizador" },
+      ]
+    : [{ id: "alterarPassword", label: "Alterar Password" }]; // só para user normal
+
   return (
     <div className="config-page">
       <nav className="sidebar-menu">
         <ul>
+          {secoesMenu.map((secao) => (
+            <li
+              key={secao.id}
+              className={secaoAtiva === secao.id ? "active" : ""}
+              onClick={() => setSecaoAtiva(secao.id)}
+            >
+              {secao.label}
+            </li>
+          ))}
           <li
-            className={secaoAtiva === "alterarPassword" ? "active" : ""}
-            onClick={() => setSecaoAtiva("alterarPassword")}
+            className="logout-button"
+            onClick={handleLogout}
           >
-            Alterar Password
-          </li>
-          <li
-            className={secaoAtiva === "utilizadoresRegistados" ? "active" : ""}
-            onClick={() => setSecaoAtiva("utilizadoresRegistados")}
-          >
-            Utilizadores Registados
-          </li>
-          <li
-            className={secaoAtiva === "adicionarUtilizador" ? "active" : ""}
-            onClick={() => setSecaoAtiva("adicionarUtilizador")}
-          >
-            Adicionar Utilizador
+            Logout
           </li>
         </ul>
       </nav>
@@ -112,20 +127,22 @@ export default function Configuracao() {
         {secaoAtiva === "alterarPassword" && (
           <section>
             <h2>Alterar Password</h2>
-            <input
-            type="password"
-            placeholder="Password"
-            value={novaPassword}
-            onChange={(e) => setNovaPassword(e.target.value)}
-            className="input-field"
-            />
-            <button onClick={handleChangePassword} className="btn btn-adicionar">
-              Confirmar Alteração
-            </button>
+            <div className="form-group">
+              <input
+                type="password"
+                placeholder="Nova Password"
+                value={novaPassword}
+                onChange={(e) => setNovaPassword(e.target.value)}
+                className="input-field"
+              />
+              <button onClick={handleChangePassword} className="btn btn-adicionar">
+                Confirmar Alteração
+              </button>
+            </div>
           </section>
         )}
 
-        {secaoAtiva === "utilizadoresRegistados" && (
+        {user.isAdmin && secaoAtiva === "utilizadoresRegistados" && (
           <section>
             <h2>Utilizadores Registados</h2>
             <ul className="user-list">
@@ -150,7 +167,7 @@ export default function Configuracao() {
           </section>
         )}
 
-        {secaoAtiva === "adicionarUtilizador" && (
+        {user.isAdmin && secaoAtiva === "adicionarUtilizador" && (
           <section>
             <h2>Adicionar Utilizador</h2>
             <div className="form-group">

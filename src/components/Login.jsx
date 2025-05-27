@@ -17,16 +17,20 @@ export default function Login() {
       await login(username, password);
       navigate("/material");
     } catch (error) {
-      alert(error.message);
+      alert("Falha no login: " + error.message);
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
     <div className="login-container">
-      <h2>Login</h2>
+      <h2>Entrar</h2>
       <form className="login-form" onSubmit={handleSubmit}>
+        <label htmlFor="username" className="sr-only">Username</label>
         <input
+          id="username"
+          name="username"
           placeholder="Username"
           value={username}
           onChange={(e) => setUsername(e.target.value)}
@@ -34,7 +38,11 @@ export default function Login() {
           autoFocus
           disabled={loading}
         />
+
+        <label htmlFor="password" className="sr-only">Password</label>
         <input
+          id="password"
+          name="password"
           placeholder="Password"
           type="password"
           value={password}
@@ -42,6 +50,7 @@ export default function Login() {
           required
           disabled={loading}
         />
+
         <button type="submit" disabled={loading}>
           {loading ? "Entrando..." : "Entrar"}
         </button>

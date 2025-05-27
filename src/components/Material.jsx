@@ -224,19 +224,25 @@ ${listaMateriais}
             {user.isAdmin ? (
               isEditing ? (
                 <div className="material-editing">
-                  <input
-                    value={editandoNome}
-                    onChange={(e) => setEditandoNome(e.target.value)}
-                  />
-                  <input
-                    type="number"
-                    value={editandoTotal}
-                    onChange={(e) =>
-                      setEditandoTotal(parseInt(e.target.value) || 0)
-                    }
-                  />
-                  <button onClick={salvarEdicao}>Salvar</button>
-                  <button onClick={cancelarEdicao}>Cancelar</button>
+                  <div className="inputs">
+                    <input
+                      value={editandoNome}
+                      onChange={(e) => setEditandoNome(e.target.value)}
+                    />
+                    <input
+                      type="number"
+                      value={editandoTotal}
+                      onChange={(e) => setEditandoTotal(parseInt(e.target.value) || 0)}
+                    />
+                  </div>
+                  <div className="buttons">
+                    <button className="guardar" onClick={salvarEdicao}>
+                      Guardar
+                    </button>
+                    <button className="cancelar" onClick={cancelarEdicao}>
+                      Cancelar
+                    </button>
+                  </div>
                 </div>
               ) : (
                 <>
@@ -246,13 +252,19 @@ ${listaMateriais}
                       {pendente > 0 && <span style={{ color: "red" }}>*</span>}
                     </b>
                     : {item.disponivel} / {item.total}{" "}
-                    {pendente > 0 && (
-                      <em>(Pendentes: {pendente})</em>
-                    )}
+                    {pendente > 0 && <em>(Pendentes: {pendente})</em>}
                   </div>
                   <div className="material-actions">
-                    <button onClick={() => iniciarEdicao(item)}>Editar</button>
-                    <button onClick={() => handleRemoverMaterial(item.id)}>
+                    <button
+                      className="editar"
+                      onClick={() => iniciarEdicao(item)}
+                    >
+                      Editar
+                    </button>
+                    <button
+                      className="remover"
+                      onClick={() => handleRemoverMaterial(item.id)}
+                    >
                       Remover
                     </button>
                   </div>
@@ -273,9 +285,7 @@ ${listaMateriais}
                     {pendente > 0 && <span style={{ color: "red" }}>*</span>}
                   </b>
                   : {item.disponivel} / {item.total}{" "}
-                  {pendente > 0 && (
-                    <em>(Pendentes: {pendente})</em>
-                  )}
+                  {pendente > 0 && <em>(Pendentes: {pendente})</em>}
                 </div>
                 <div className="quantity-controls">
                   <button onClick={() => handleDecrement(item.nome)}>-</button>
@@ -320,9 +330,7 @@ ${listaMateriais}
             onChange={(e) => setAtividade(e.target.value)}
           />
           <button onClick={handleSubmitPedido}>Enviar pedido</button>
-          <p className="chefe-aviso">
-            * Itens com "*" têm pedidos pendentes.
-          </p>
+          <p className="chefe-aviso">* Itens com "*" têm pedidos pendentes.</p>
         </div>
       )}
     </div>

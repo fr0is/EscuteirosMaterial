@@ -6,7 +6,10 @@ import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
 import Configuracao from "./components/Configuracao";
 import { FaBars } from "react-icons/fa";
-import "../styles/Header.css"; // <- CSS aqui (ver abaixo)
+import "../src/styles/Header.css";
+import logo from "./logo.png";
+// index.js (ou App.js)
+import "./index.css";  // global/base CSS
 
 function Header() {
   const { user } = useContext(AppContext);
@@ -16,7 +19,7 @@ function Header() {
     <header className="main-header">
       <div className="header-left">
         <img
-          src="/logo.png"
+          src={logo}
           alt="Logo"
           className="logo"
           onError={(e) => (e.target.style.display = "none")}
@@ -30,11 +33,10 @@ function Header() {
       </button>
 
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        <Link to="/" onClick={() => setMenuOpen(false)}>Login</Link>
         <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
         <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
-        {user?.isAdmin && (
-          <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Configuração</Link>
+        {user?.loggedIn && (
+          <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Conta</Link>
         )}
       </nav>
     </header>

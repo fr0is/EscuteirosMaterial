@@ -1,22 +1,27 @@
+/* Container principal */
 .pedidos-container {
   max-width: 700px;
-  margin: 20px auto;
-  font-family: Arial, sans-serif;
-  color: #333;
   padding: 0 15px;
+  margin: 0 auto;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: Arial, sans-serif;
 }
 
+/* Títulos */
 .pedidos-container h2 {
   text-align: center;
   margin-bottom: 24px;
+  color: var(--color-primary);
 }
 
+/* Item do pedido */
 .pedido-item {
-  border: 1px solid #ddd;
-  border-radius: 6px;
+  position: relative; /* para o botão eliminar ficar absoluto dentro do card */
+  border: 1px solid #cfd8dc;
+  border-radius: var(--border-radius);
   padding: 16px;
   margin-bottom: 20px;
-  background-color: #fafafa;
 }
 
 .pedido-item p {
@@ -33,14 +38,14 @@
 
 .pedido-item ul {
   padding-left: 20px;
-  margin-top: 6px;
-  margin-bottom: 12px;
+  margin: 6px 0 12px 0;
 }
 
 .pedido-item ul li {
   margin-bottom: 4px;
 }
 
+/* Botões dentro do pedido */
 .pedido-buttons {
   display: flex;
   flex-wrap: wrap;
@@ -50,15 +55,42 @@
 
 .pedido-buttons button {
   flex: 1 1 120px;
-  padding: 10px 12px;
+  padding: 10px;
   font-size: 14px;
-  cursor: pointer;
-  border-radius: 6px;
   border: none;
+  border-radius: var(--border-radius);
+  cursor: pointer;
+  transition: background-color 0.3s ease;
   color: white;
-  transition: background-color 0.2s ease;
 }
 
+/* Botão Aprovar */
+.btn-aprovar {
+  background-color: var(--color-primary);
+}
+
+.btn-aprovar:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Botão Cancelar */
+.btn-cancelar {
+  background-color: var(--color-danger);
+}
+
+.btn-cancelar:hover {
+  background-color: var(--color-danger-dark);
+}
+
+/* Pedido concluído */
+.pedido-concluido {
+  color: var(--color-primary);
+  font-weight: bold;
+  margin-top: 12px;
+  text-align: center;
+}
+
+/* Devolução */
 .devolucao-container {
   margin-top: 16px;
 }
@@ -81,41 +113,55 @@
   border: 1px solid #ccc;
 }
 
-.pedido-concluido {
-  color: green;
-  font-weight: bold;
-  margin-top: 12px;
-  text-align: center;
-}
-
-.btn-aprovar {
-  background-color: #28a745; /* verde */
-  color: white;
+/* Botão eliminar pedidos antigos (fixo na tela) */
+.btn-eliminar-antigos {
+  position: fixed;
+  bottom: 20px;
+  right: 20px;
+  background-color: var(--color-danger);
+  color: var(--color-background);
   border: none;
-  padding: 10px 20px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 5px;
+  border-radius: 50%;
+  width: 50px;
+  height: 50px;
+  font-size: 24px;
   cursor: pointer;
-  transition: background-color 0.3s ease;
-  display: inline-block;
-  min-width: 140px; /* largura mínima para ficar consistente */
-  text-align: center;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
 }
 
-.btn-aprovar:hover {
-  background-color: #218838;
+.btn-eliminar-antigos:hover {
+  background-color: #a40000;
 }
 
-.btn-cancelar {
-  background-color: #dc3545; /* vermelho */
-  color: white;
+/* Botão eliminar dentro de cada pedido */
+.btn-eliminar-pedido {
+  position: absolute;
+  bottom: 16px;
+  right: 16px;
+  background-color: var(--color-danger);
+  color: var(--color-background);
+  border: none;
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  font-size: 20px;
+  cursor: pointer;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+  transition: background-color 0.3s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  user-select: none;
 }
 
-.btn-cancelar:hover {
-  background-color: #c82333;
+.btn-eliminar-pedido:hover {
+  background-color: #a40000;
 }
-
 
 /* Responsividade */
 @media (max-width: 480px) {

@@ -1,0 +1,12 @@
+/* variables.css */
+:root {
+  --color-primary: #2e7d32;          /* verde escoteiro */
+  --color-primary-dark: #27642b;
+  --color-danger: #c62828;           /* vermelho escoteiro */
+  --color-danger-dark: #a61c1c;
+  --color-white: #ffffff;
+  --color-text: #2e2e2e;
+  --color-background: #f1f8f4;       /* fundo neutro suave */
+  --border-radius: 6px;
+  --font-family: Arial, sans-serif;
+}

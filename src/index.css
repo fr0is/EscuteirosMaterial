@@ -1,5 +1,10 @@
-/* Estilos base, pode estar vazio inicialmente */
+/* index.css */
+@import url('src/styles/variables.css'); /* Importa variáveis antes de tudo */
+@import url('src/styles/utilities.css'); /* Estilos comuns globais */
+
 body {
   margin: 0;
-  font-family: Arial, sans-serif;
+  font-family: var(--font-family);
+  background-color: var(--color-background);
+  color: var(--color-text);
 }

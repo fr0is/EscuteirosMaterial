@@ -1,18 +1,26 @@
+/* Login.css */
+
 .login-container {
-  padding: 20px;
+  composes: container;
   max-width: 400px;
   margin: 40px auto;
-  box-sizing: border-box;
+  padding: 20px;
+  background-color: var(--color-background);
+  border-radius: var(--border-radius);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   font-family: Arial, sans-serif;
+  color: var(--color-text);
+  box-sizing: border-box;
 }
 
 .login-container h2 {
   margin-bottom: 20px;
-  color: #333;
-  font-weight: normal;
+  color: var(--color-primary);
+  font-weight: bold;
   text-align: center;
 }
 
+/* Formulário */
 .login-form {
   display: flex;
   flex-direction: column;
@@ -23,42 +31,63 @@
   padding: 14px;
   font-size: 18px;
   margin-bottom: 16px;
+  box-sizing: border-box;
   border-radius: 6px;
   border: 1px solid #ccc;
-  box-sizing: border-box;
+  transition: border-color 0.2s ease;
+}
+
+
+.login-form input:focus {
+  border-color: var(--color-primary);
+  outline: none;
 }
 
 .login-form input:disabled {
-  background-color: #f5f5f5;
+  background-color: #f1f1f1;
+  cursor: not-allowed;
 }
 
+/* Botão de login */
 .login-form button {
   padding: 14px 0;
   font-size: 18px;
-  border-radius: 6px;
-  border: none;
-  background-color: #007bff;
-  color: white;
   cursor: pointer;
-  transition: background-color 0.2s ease;
+  border: none;
+  border-radius: var(--border-radius);
+  background-color: var(--color-primary); /* substituindo a classe btn-primary */
+  color: var(--color-background);
+  transition: background-color 0.3s ease;
+}
+
+
+.login-form input {
+  width: 100%;
+  padding: 14px;
+  font-size: 18px;
+  margin-bottom: 16px;
+  box-sizing: border-box;
+  border-radius: 6px;
+  border: 1px solid #ccc;
+  transition: border-color 0.2s ease;
 }
 
 .login-form button:disabled {
-  background-color: #7ea6ff;
+  background-color: #a5d6a7;
   cursor: not-allowed;
 }
 
 .login-form button:hover:not(:disabled) {
-  background-color: #0056b3;
+  background-color: var(--color-primary-dark);
 }
 
-/* Responsividade básica para telas pequenas */
+/* Responsividade básica */
 @media (max-width: 480px) {
   .login-container {
     margin: 20px 10px;
     padding: 15px;
   }
-  
+
   .login-form input,
   .login-form button {
     font-size: 16px;
