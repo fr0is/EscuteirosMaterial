@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
+import emailjs from "@emailjs/browser";
 import "../styles/Pedidos.css";
 
 export default function Pedidos() {
@@ -12,9 +13,13 @@ export default function Pedidos() {
     updatePedido,
     cancelarPedido,
     setStock,
-    eliminarPedido, // função para eliminar pedidos
+    eliminarPedido,
+    users,
   } = useContext(AppContext);
   const navigate = useNavigate();
+
+  // Estado para armazenar a data de levantamento por pedido (chave: id do pedido)
+  const [datasLevantamento, setDatasLevantamento] = useState({});
 
   useEffect(() => {
     if (!user.loggedIn) {
@@ -22,13 +27,22 @@ export default function Pedidos() {
     }
   }, [user.loggedIn, navigate]);
 
-  if (!user.loggedIn) {
-    return null;
-  }
+  if (!user.loggedIn) return null;
+
+  const getUserById = (id) => users?.find((u) => u.id === id);
+
+  // Atualiza a data de levantamento de um pedido específico
+  const handleDataLevantamentoChange = (id, novaData) => {
+    setDatasLevantamento((prev) => ({
+      ...prev,
+      [id]: novaData,
+    }));
+  };
 
   const handleAprovar = async (id) => {
-    if (!pedidos || !materiais) {
-      alert("Dados ainda não carregados");
+    const dataLevant = datasLevantamento[id];
+    if (!dataLevant || !dataLevant.trim()) {
+      alert("Indique a data de levantamento antes de aprovar.");
       return;
     }
 
@@ -36,9 +50,9 @@ export default function Pedidos() {
     if (!pedido || pedido.estado !== "Pendente") return;
 
     for (const [nome, qtd] of Object.entries(pedido.materiais)) {
-      const itemmateriais = materiais.find((s) => s.nome === nome);
-      if (!itemmateriais || itemmateriais.disponivel < qtd) {
-        alert(`Materiais insuficiente para: ${nome}`);
+      const item = materiais.find((m) => m.nome === nome);
+      if (!item || item.disponivel < qtd) {
+        alert(`Materiais insuficientes para: ${nome}`);
         return;
       }
     }
@@ -59,19 +73,68 @@ export default function Pedidos() {
       return;
     }
 
-    const pedidoUpdated = await updatePedido(id, { estado: "Aprovado" });
+    const pedidoUpdated = await updatePedido(id, {
+      estado: "Aprovado",
+      data_levantamento: dataLevant,
+    });
+
     if (!pedidoUpdated) {
       alert("Erro ao aprovar pedido");
       return;
     }
-  };
 
-  const handleDevolver = async (pedidoId, devolucao) => {
-    if (!pedidos || !materiais) {
-      alert("Dados ainda não carregados");
+    const autor = getUserById(pedido.user_id);
+
+    if (!autor?.email) {
+      alert("Email do autor não está definido. Não foi possível enviar o email.");
       return;
     }
 
+    const listaMateriais = Object.entries(pedido.materiais)
+      .map(([nome, qtd]) => `- ${nome}: ${qtd}`)
+      .join("\n");
+
+    const mensagem = `
+Olá ${autor.nome},
+
+O seu pedido foi aprovado ✅
+
+📅 Levantamento: ${dataLevant}
+
+📦 Materiais:
+${listaMateriais}
+
+Boa atividade!
+`.trim();
+
+    console.log("Autor:", autor);
+    console.log("Email do autor:", autor?.email);
+
+    try {
+      await emailjs.send(
+        "service_pnn1l65",
+        "template_im8430o",
+        {
+          message: mensagem,
+          to_email: autor.email,
+        },
+        "largUwzgW7L95dduo"
+      );
+      alert("Pedido aprovado e email enviado.");
+    } catch (err) {
+      console.error(err);
+      alert("Pedido aprovado, mas falha no envio de email.");
+    }
+
+    // Limpa a data de levantamento do pedido aprovado
+    setDatasLevantamento((prev) => {
+      const copy = { ...prev };
+      delete copy[id];
+      return copy;
+    });
+  };
+
+  const handleDevolver = async (pedidoId, devolucao) => {
     const pedido = pedidos.find((p) => p.id === pedidoId);
     if (!pedido || pedido.estado !== "Aprovado") return;
 
@@ -79,10 +142,7 @@ export default function Pedidos() {
       if (devolucao[item.nome]) {
         return {
           ...item,
-          disponivel: Math.min(
-            item.disponivel + devolucao[item.nome],
-            item.total
-          ),
+          disponivel: Math.min(item.disponivel + devolucao[item.nome], item.total),
         };
       }
       return item;
@@ -107,7 +167,6 @@ export default function Pedidos() {
 
     if (!pedidoUpdated) {
       alert("Erro ao atualizar pedido");
-      return;
     }
   };
 
@@ -120,22 +179,17 @@ export default function Pedidos() {
     const success = await cancelarPedido(id);
     if (!success) {
       alert("Erro ao cancelar pedido");
-      return;
     }
   };
 
   const handleEliminar = async (id) => {
-    const confirm = window.confirm(
-      "Tem certeza que deseja eliminar este pedido? Esta ação não pode ser desfeita."
-    );
-    if (!confirm) return;
+    if (!window.confirm("Tem certeza que deseja eliminar este pedido?")) return;
 
     const sucesso = await eliminarPedido(id);
     if (!sucesso) {
       alert("Erro ao eliminar pedido");
       return;
     }
-    // Atualiza a lista local removendo o pedido eliminado
     setPedidos((prev) => prev.filter((p) => p.id !== id));
   };
 
@@ -154,16 +208,18 @@ export default function Pedidos() {
         <PedidoItem
           key={p.id}
           pedido={p}
-          onAprovar={handleAprovar}
+          onAprovar={() => handleAprovar(p.id)}
           onDevolver={handleDevolver}
           onCancelar={handleCancelar}
           onEliminar={handleEliminar}
           isAdmin={user.isAdmin}
           userNome={user.nome}
+          dataLevantamento={datasLevantamento[p.id] || ""}
+          setDataLevantamento={(novaData) =>
+            handleDataLevantamentoChange(p.id, novaData)
+          }
         />
       ))}
-
-      {/* REMOVIDO: botão de eliminar pedidos antigos */}
     </div>
   );
 }
@@ -176,6 +232,8 @@ function PedidoItem({
   onEliminar,
   isAdmin,
   userNome,
+  dataLevantamento,
+  setDataLevantamento,
 }) {
   const [devolucao, setDevolucao] = useState({});
 
@@ -222,6 +280,11 @@ function PedidoItem({
       <p>
         <b>Estado:</b> {pedido.estado}
       </p>
+      {pedido.data_levantamento && (
+        <p>
+          <b>Levantamento:</b> {pedido.data_levantamento}
+        </p>
+      )}
       <p>
         <b>Materiais:</b>
       </p>
@@ -235,9 +298,17 @@ function PedidoItem({
 
       <div className="pedido-buttons">
         {pedido.estado === "Pendente" && isAdmin && (
-          <button className="btn-aprovar" onClick={() => onAprovar(pedido.id)}>
-            Aprovar Pedido
-          </button>
+          <>
+            <input
+              type="date"
+              placeholder="Data de levantamento"
+              value={dataLevantamento}
+              onChange={(e) => setDataLevantamento(e.target.value)}
+            />
+            <button className="btn-aprovar" onClick={onAprovar}>
+              Aprovar Pedido
+            </button>
+          </>
         )}
 
         {podeCancelar && (
@@ -282,7 +353,6 @@ function PedidoItem({
         <p className="pedido-concluido">Pedido devolvido!</p>
       )}
 
-      {/* Botão eliminar pedido no canto inferior direito */}
       {isAdmin && pedido.estado === "Concluído" && (
         <button
           className="btn-eliminar-pedido"

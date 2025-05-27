@@ -101,7 +101,6 @@ export function AppProvider({ children }) {
     return true;
   };
 
-  // Função para eliminar pedido (usada para eliminar pedidos antigos)
   const eliminarPedido = async (id) => {
     const { error } = await supabase.from("pedidos").delete().eq("id", id);
     if (error) {
@@ -237,7 +236,7 @@ export function AppProvider({ children }) {
         removerMaterial,
         atualizarMaterial,
         adicionarPedido,
-        eliminarPedido, // função adicionada aqui
+        eliminarPedido,
       }}
     >
       {children}
