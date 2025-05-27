@@ -44,7 +44,7 @@ export default function Material() {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
       const max =
-        (materiais.find((i) => i.nome === nome)?.disponivel || 0) -
+        (materiais.find((i) => i.nome === nome)?.disponivel || 0) - 
         (pendentesPorItem[nome] || 0);
       if (atual < max) {
         return { ...q, [nome]: atual + 1 };
@@ -94,19 +94,32 @@ export default function Material() {
       user_id: user.id,
     };
 
+    const tipoPatrulha = {
+      Exploradores: "Patrulha",
+      Pioneiros: "Equipa",
+      Lobitos: "Bando",
+      Caminheiros: "Tribo",
+    };
+
+    const nomePatrulha = tipoPatrulha[user.seccao] || "Patrulha"; // Corrigido para seccao
+
     const listaMateriais = Object.entries(materiaisPedido)
       .map(([nome, qtd]) => `${nome}: ${qtd}`)
       .join("\n");
+    
+    console.log(user); 
+    console.log(user.seccao);
 
     const mensagem = `
 Pedido de material recebido:
 
-Nome: ${user.nome}
-Patrulha/Equipa/Bando/Tribo: ${patrulha}
+Nome: ${user.nome} 
+Secção: ${user.seccao}
+${nomePatrulha}: ${patrulha}
 Atividade: ${atividade}
 Data: ${hoje}
 
-Materiais solicitados:
+📦 Material solicitado:
 ${listaMateriais}
 `;
 
@@ -212,7 +225,7 @@ ${listaMateriais}
 
   return (
     <div className="material-container">
-      <h2>Olá, {user.nome}</h2>
+      <h2>Olá, {user.nome}</h2> {/* Exibe o nome real do usuário */}
       <h3>Stock disponível</h3>
 
       {materiais.map((item) => {

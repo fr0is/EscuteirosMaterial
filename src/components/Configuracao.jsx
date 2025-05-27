@@ -10,9 +10,10 @@ export default function Configuracao() {
   const [novaPassword, setNovaPassword] = useState("");
   const [novoUsername, setNovoUsername] = useState("");
   const [novoNome, setNovoNome] = useState("");
+  const [novoEmail, setNovoEmail] = useState(""); 
+  const [novaSeccao, setNovaSeccao] = useState("Lobitos");  // Ajuste para nova variável
   const [novoTipo, setNovoTipo] = useState("user");
 
-  // Controla qual seção está ativa no menu lateral
   const [secaoAtiva, setSecaoAtiva] = useState("alterarPassword");
 
   useEffect(() => {
@@ -26,13 +27,12 @@ export default function Configuracao() {
       alert("Insira a nova password.");
       return;
     }
-    // Aqui deve vir a lógica real para alterar a password no backend
     alert("Password alterada com sucesso (simulação).");
     setNovaPassword("");
   };
 
   const handleAddUser = async () => {
-    if (!novoUsername.trim() || !novoNome.trim() || !novaPassword.trim()) {
+    if (!novoUsername.trim() || !novoNome.trim() || !novaPassword.trim() || !novoEmail.trim()) {
       alert("Preencha todos os campos.");
       return;
     }
@@ -46,10 +46,14 @@ export default function Configuracao() {
         nome: novoNome.trim(),
         tipo: novoTipo,
         password: novaPassword.trim(),
+        email: novoEmail.trim(), // Envia o email junto
+        seccao: novaSeccao.trim(),  // Envia a nova seção
       });
       setNovoUsername("");
       setNovoNome("");
       setNovaPassword("");
+      setNovoEmail("");
+      setNovaSeccao("Lobitos"); 
       setNovoTipo("user");
       alert("Usuário adicionado com sucesso!");
     } catch (error) {
@@ -92,14 +96,13 @@ export default function Configuracao() {
     return null;
   }
 
-  // Define quais seções aparecem no menu lateral para cada tipo de usuário
   const secoesMenu = user.isAdmin
     ? [
         { id: "alterarPassword", label: "Alterar Password" },
         { id: "utilizadoresRegistados", label: "Utilizadores Registados" },
         { id: "adicionarUtilizador", label: "Adicionar Utilizador" },
       ]
-    : [{ id: "alterarPassword", label: "Alterar Password" }]; // só para user normal
+    : [{ id: "alterarPassword", label: "Alterar Password" }];
 
   return (
     <div className="config-page">
@@ -114,12 +117,7 @@ export default function Configuracao() {
               {secao.label}
             </li>
           ))}
-          <li
-            className="logout-button"
-            onClick={handleLogout}
-          >
-            Logout
-          </li>
+          <li className="logout-button" onClick={handleLogout}>Logout</li>
         </ul>
       </nav>
 
@@ -190,6 +188,27 @@ export default function Configuracao() {
                 onChange={(e) => setNovoNome(e.target.value)}
                 className="input-field"
               />
+              <input
+                type="email"
+                placeholder="Email"
+                value={novoEmail}
+                onChange={(e) => setNovoEmail(e.target.value)}
+                className="input-field"
+              />
+              <select
+                value={novaSeccao}
+                onChange={(e) => {
+                  console.log("Valor da Seção Selecionada:", e.target.value);
+                  setNovaSeccao(e.target.value);
+                }}
+                className="select-field"
+              >
+                <option value="Lobitos">Lobitos</option>
+                <option value="Exploradores">Exploradores</option>
+                <option value="Pioneiros">Pioneiros</option>
+                <option value="Caminheiros">Caminheiros</option>
+                <option value="Dirigentes">Dirigentes</option>
+              </select>
               <select
                 value={novoTipo}
                 onChange={(e) => setNovoTipo(e.target.value)}

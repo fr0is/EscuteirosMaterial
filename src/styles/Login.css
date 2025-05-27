@@ -1,5 +1,4 @@
-/* Login.css */
-
+/* Adicionando o erro nos inputs */
 .login-container {
   composes: container;
   max-width: 400px;
@@ -34,18 +33,30 @@
   box-sizing: border-box;
   border-radius: 6px;
   border: 1px solid #ccc;
-  transition: border-color 0.2s ease;
+  transition: border-color 0.3s ease;
 }
 
-
-.login-form input:focus {
-  border-color: var(--color-primary);
-  outline: none;
+/* Estilos para borda vermelha quando erro */
+.login-form input.error {
+  border-color: red;
+  animation: shake 0.5s ease;
 }
 
-.login-form input:disabled {
-  background-color: #f1f1f1;
-  cursor: not-allowed;
+/* Mensagem de erro */
+.error-message {
+  color: red;
+  font-size: 14px;
+  margin-bottom: 16px;
+  text-align: center;
+}
+
+/* Animação de shake */
+@keyframes shake {
+  0% { transform: translateX(0); }
+  25% { transform: translateX(-5px); }
+  50% { transform: translateX(5px); }
+  75% { transform: translateX(-5px); }
+  100% { transform: translateX(0); }
 }
 
 /* Botão de login */
@@ -55,21 +66,9 @@
   cursor: pointer;
   border: none;
   border-radius: var(--border-radius);
-  background-color: var(--color-primary); /* substituindo a classe btn-primary */
+  background-color: var(--color-primary);
   color: var(--color-background);
   transition: background-color 0.3s ease;
-}
-
-
-.login-form input {
-  width: 100%;
-  padding: 14px;
-  font-size: 18px;
-  margin-bottom: 16px;
-  box-sizing: border-box;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  transition: border-color 0.2s ease;
 }
 
 .login-form button:disabled {

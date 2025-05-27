@@ -23,6 +23,7 @@ export function AppProvider({ children }) {
   const [pedidos, setPedidos] = useState([]);
   const [users, setUsers] = useState([]);
 
+  // Fetch materiais, pedidos e usuários do banco
   const fetchMateriais = async () => {
     const { data, error } = await supabase.from("materiais").select("*");
     if (error) console.error("Erro ao buscar materiais:", error);
@@ -53,14 +54,14 @@ export function AppProvider({ children }) {
 
     const { data, error } = await supabase
       .from("users")
-      .insert([
-        {
-          username: novoUser.username,
-          nome: novoUser.nome,
-          tipo: novoUser.tipo,
-          password: hashedPassword,
-        },
-      ])
+      .insert([{
+        username: novoUser.username,
+        nome: novoUser.nome,
+        tipo: novoUser.tipo,
+        password: hashedPassword,
+        email: novoUser.email,
+        seccao: novoUser.seccao,
+      }])
       .select()
       .single();
 
@@ -71,6 +72,7 @@ export function AppProvider({ children }) {
     setUsers((u) => [...u, data]);
   };
 
+  // Atualizar pedido
   const updatePedido = async (pedidoId, updates) => {
     const { data, error } = await supabase
       .from("pedidos")
@@ -91,6 +93,7 @@ export function AppProvider({ children }) {
     return true;
   };
 
+  // Cancelar pedido
   const cancelarPedido = async (id) => {
     const { error } = await supabase.from("pedidos").delete().eq("id", id);
     if (error) {
@@ -101,6 +104,7 @@ export function AppProvider({ children }) {
     return true;
   };
 
+  // Eliminar pedido
   const eliminarPedido = async (id) => {
     const { error } = await supabase.from("pedidos").delete().eq("id", id);
     if (error) {
@@ -111,6 +115,7 @@ export function AppProvider({ children }) {
     return true;
   };
 
+  // Atualizar o stock
   const setStock = async (novoStock) => {
     try {
       for (const item of novoStock) {
@@ -129,6 +134,7 @@ export function AppProvider({ children }) {
     }
   };
 
+  // Atualizar material
   const atualizarMaterial = async (id, updates) => {
     const { data, error } = await supabase
       .from("materiais")
@@ -140,12 +146,14 @@ export function AppProvider({ children }) {
     );
   };
 
+  // Remover material
   const removerMaterial = async (id) => {
     const { error } = await supabase.from("materiais").delete().eq("id", id);
     if (error) throw error;
     setMateriais((prev) => prev.filter((m) => m.id !== id));
   };
 
+  // Adicionar material
   const adicionarMaterial = async ({ nome, total }) => {
     const { data, error } = await supabase
       .from("materiais")
@@ -157,6 +165,7 @@ export function AppProvider({ children }) {
     setMateriais((m) => [...m, data]);
   };
 
+  // Adicionar pedido
   const adicionarPedido = async ({
     nome,
     data,
@@ -169,18 +178,16 @@ export function AppProvider({ children }) {
   }) => {
     const { data: result, error } = await supabase
       .from("pedidos")
-      .insert([
-        {
-          nome,
-          data,
-          materiais,
-          estado,
-          devolvido,
-          patrulha,
-          atividade,
-          user_id,
-        },
-      ])
+      .insert([{
+        nome,
+        data,
+        materiais,
+        estado,
+        devolvido,
+        patrulha,
+        atividade,
+        user_id,
+      }])
       .select()
       .single();
 
@@ -189,6 +196,7 @@ export function AppProvider({ children }) {
     return result;
   };
 
+  // Login do usuário
   const login = async (username, password) => {
     const { data: userEncontrado, error } = await supabase
       .from("users")
@@ -212,6 +220,7 @@ export function AppProvider({ children }) {
       nome: userEncontrado.nome,
       isAdmin: userEncontrado.tipo === "admin",
       loggedIn: true,
+      seccao: userEncontrado.seccao,
     });
   };
 

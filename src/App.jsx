@@ -18,23 +18,12 @@ function Header() {
   return (
     <header className="main-header">
       <div className="header-left">
-        {user?.loggedIn ? (
-          <Link to="/material" className="logo-link" onClick={() => setMenuOpen(false)}>
-            <img
-              src={logo}
-              alt="Logo"
-              className="logo"
-              onError={(e) => (e.target.style.display = "none")}
-            />
-          </Link>
-        ) : (
-          <img
-            src={logo}
-            alt="Logo"
-            className="logo"
-            onError={(e) => (e.target.style.display = "none")}
-          />
-        )}
+        <img
+          src={logo}
+          alt="Logo"
+          className="logo"
+          onError={(e) => (e.target.style.display = "none")}
+        />
       </div>
 
       <h1 className="site-title">Depósito Material 127</h1>
@@ -44,8 +33,12 @@ function Header() {
       </button>
 
       <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
-        <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
+        {user?.loggedIn && (
+          <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
+        )}
+        {user?.loggedIn && (
+          <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
+        )}
         {user?.loggedIn && (
           <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Conta</Link>
         )}

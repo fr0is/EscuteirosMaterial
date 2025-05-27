@@ -52,7 +52,7 @@ export default function Pedidos() {
     for (const [nome, qtd] of Object.entries(pedido.materiais)) {
       const item = materiais.find((m) => m.nome === nome);
       if (!item || item.disponivel < qtd) {
-        alert(`Materiais insuficientes para: ${nome}`);
+        alert(`Material insuficientes para: ${nome}`);
         return;
       }
     }
@@ -101,7 +101,7 @@ O seu pedido foi aprovado ✅
 
 📅 Levantamento: ${dataLevant}
 
-📦 Materiais:
+📦 Material:
 ${listaMateriais}
 
 Boa atividade!
@@ -204,22 +204,28 @@ Boa atividade!
       <h2>Pedidos</h2>
       {pedidosVisiveis.length === 0 && <p>Nenhum pedido registado.</p>}
 
-      {pedidosVisiveis.map((p) => (
-        <PedidoItem
-          key={p.id}
-          pedido={p}
-          onAprovar={() => handleAprovar(p.id)}
-          onDevolver={handleDevolver}
-          onCancelar={handleCancelar}
-          onEliminar={handleEliminar}
-          isAdmin={user.isAdmin}
-          userNome={user.nome}
-          dataLevantamento={datasLevantamento[p.id] || ""}
-          setDataLevantamento={(novaData) =>
-            handleDataLevantamentoChange(p.id, novaData)
-          }
-        />
-      ))}
+      {pedidosVisiveis.map((p) => {
+        const autor = getUserById(p.user_id); // Obter o usuário pelo user_id associado ao pedido
+        const seccao = autor ? autor.seccao : "Não disponível"; // Obter a secção ou valor padrão
+
+        return (
+          <PedidoItem
+            key={p.id}
+            pedido={p}
+            onAprovar={() => handleAprovar(p.id)}
+            onDevolver={handleDevolver}
+            onCancelar={handleCancelar}
+            onEliminar={handleEliminar}
+            isAdmin={user.isAdmin}
+            userNome={user.nome}
+            dataLevantamento={datasLevantamento[p.id] || ""}
+            setDataLevantamento={(novaData) =>
+              handleDataLevantamentoChange(p.id, novaData)
+            }
+            seccao={seccao} // Passar a secção para o componente PedidoItem
+          />
+        );
+      })}
     </div>
   );
 }
@@ -234,6 +240,7 @@ function PedidoItem({
   userNome,
   dataLevantamento,
   setDataLevantamento,
+  seccao, // Recebe a secção como prop
 }) {
   const [devolucao, setDevolucao] = useState({});
 
@@ -272,6 +279,9 @@ function PedidoItem({
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
       <p>
+        <b>Secção:</b> {seccao} {/* Exibir a secção do usuário */}
+      </p>
+      <p>
         <b>{grupoLabel}:</b> {pedido.patrulha || "-"}
       </p>
       <p>
@@ -286,7 +296,7 @@ function PedidoItem({
         </p>
       )}
       <p>
-        <b>Materiais:</b>
+        <b>Material:</b>
       </p>
       <ul>
         {Object.entries(pedido.materiais).map(([nome, q]) => (

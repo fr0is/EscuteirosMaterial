@@ -8,16 +8,30 @@ export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
+  const [usernameError, setUsernameError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
+    setUsernameError("");
+    setPasswordError("");
+    
     try {
       await login(username, password);
       navigate("/material");
     } catch (error) {
-      alert("Falha no login: " + error.message);
+      // Aqui vamos verificar o erro do login
+      if (error.message.includes("Username")) {
+        setUsernameError("Username incorreto. Tente novamente.");
+      } else if (error.message.includes("Password")) {
+        setPasswordError("Password incorreta. Tente novamente.");
+      } else {
+        // Para erros genéricos
+        setUsernameError("Falha ao fazer login. Tente novamente.");
+        setPasswordError("Falha ao fazer login. Tente novamente.");
+      }
     } finally {
       setLoading(false);
     }
@@ -25,7 +39,7 @@ export default function Login() {
 
   return (
     <div className="login-container">
-      <h2>Entrar</h2>
+      <h2>Login</h2>
       <form className="login-form" onSubmit={handleSubmit}>
         <label htmlFor="username" className="sr-only">Username</label>
         <input
@@ -37,7 +51,9 @@ export default function Login() {
           required
           autoFocus
           disabled={loading}
+          className={usernameError ? "error" : ""}
         />
+        {usernameError && <div className="error-message">{usernameError}</div>}
 
         <label htmlFor="password" className="sr-only">Password</label>
         <input
@@ -49,10 +65,12 @@ export default function Login() {
           onChange={(e) => setPassword(e.target.value)}
           required
           disabled={loading}
+          className={passwordError ? "error" : ""}
         />
+        {passwordError && <div className="error-message">{passwordError}</div>}
 
         <button type="submit" disabled={loading}>
-          {loading ? "Entrando..." : "Entrar"}
+          {loading ? "A entrar..." : "Login"}
         </button>
       </form>
     </div>
