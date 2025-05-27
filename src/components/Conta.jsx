@@ -1,9 +1,9 @@
 import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
-import "../styles/Conta.css";
+import "../styles/Configuracao.css";
 
-export default function Conta() {
+export default function Configuracao() {
   const { user, setUser, users, setUsers, adicionarUsuario, supabase } = useContext(AppContext);
   const navigate = useNavigate();
 
