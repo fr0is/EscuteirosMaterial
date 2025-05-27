@@ -18,12 +18,23 @@ function Header() {
   return (
     <header className="main-header">
       <div className="header-left">
-        <img
-          src={logo}
-          alt="Logo"
-          className="logo"
-          onError={(e) => (e.target.style.display = "none")}
-        />
+        {user?.loggedIn ? (
+          <Link to="/material" className="logo-link" onClick={() => setMenuOpen(false)}>
+            <img
+              src={logo}
+              alt="Logo"
+              className="logo"
+              onError={(e) => (e.target.style.display = "none")}
+            />
+          </Link>
+        ) : (
+          <img
+            src={logo}
+            alt="Logo"
+            className="logo"
+            onError={(e) => (e.target.style.display = "none")}
+          />
+        )}
       </div>
 
       <h1 className="site-title">Depósito Material 127</h1>
