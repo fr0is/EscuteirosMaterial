@@ -22,50 +22,52 @@
   margin: 0;
 }
 
+/* Itens do menu */
 .sidebar-menu li {
   padding: 15px 20px;
   cursor: pointer;
   transition: background-color 0.3s, color 0.3s, border-left 0.3s, padding-left 0.3s;
   text-align: left;
   font-size: 16px;
-  border-left: 4px solid transparent;
-  width: 100%;
-  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 /* Hover dos itens do menu lateral (exceto logout) */
 .sidebar-menu li:hover:not(.logout-button) {
-  background-color: var(--color-background);  /* fundo branco */
-  color: var(--color-primary);                /* texto verde */
-  border-left: 4px solid var(--color-primary); /* borda verde à esquerda */
-  padding-left: 16px; /* ajustar padding para compensar borda */
+  background-color: var(--color-background);
+  color: var(--color-primary);
 }
 
-/* Estado ativo do item (selecionado) */
+/* Estado ativo do item */
 .sidebar-menu li.active {
-  background-color: var(--color-background); /* fundo branco */
-  color: var(--color-primary);                /* texto verde */
+  background-color: var(--color-background);
+  color: var(--color-primary);
   font-weight: bold;
-  border-left: 4px solid var(--color-primary);
-  padding-left: 16px;
 }
 
 /* Botão de logout */
 .sidebar-menu li.logout-button {
-  margin-top: 1rem;
-  padding: 15px 20px;
   background-color: #7f1414;
   font-weight: bold;
   text-align: center;
   transition: background-color 0.3s;
   border-radius: 0;
-  width: 100%;
-  font-size: 16px;
-  box-sizing: border-box;
+  color: var(--color-background);
 }
 
 .sidebar-menu li.logout-button:hover {
   background-color: var(--color-danger);
+}
+
+/* Garantir que o logout não se mova no estado ativo e hover */
+.sidebar-menu li.logout-button.active,
+.sidebar-menu li.logout-button:hover {
+  background-color: var(--color-danger);
+  color: var(--color-background);
+  border-left: none; /* Remover a borda */
+  padding-left: 20px; /* Alinhar com os outros itens */
 }
 
 /* Área de conteúdo principal */
@@ -168,39 +170,54 @@
 
   .sidebar-menu {
     width: 100%;
-    display: flex;
-    justify-content: space-around;
-    padding: 10px 0;
+    padding: 0;
   }
 
   .sidebar-menu ul {
     display: flex;
     width: 100%;
-    justify-content: space-around;
+    margin: 0;
+    padding: 0;
   }
 
   .sidebar-menu li {
-    padding: 10px 15px;
-    flex-grow: 1;
+    flex: 1;
+    font-size: 14px;
     text-align: center;
-    font-size: 14px;
+    height: 50px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     border-left: none;
-    padding-left: 0;
+    padding: 0;
   }
 
-  .sidebar-menu li.logout-button {
-    flex-grow: 1;
-    font-size: 14px;
-    padding: 10px 15px;
-  }
-
-  /* Remover borda no mobile para manter layout limpo */
   .sidebar-menu li:hover:not(.logout-button),
   .sidebar-menu li.active {
     background-color: var(--color-primary-dark);
     color: var(--color-background);
+  }
+
+  /* Botão de logout no mobile */
+  .sidebar-menu li.logout-button {
+    font-size: 14px;
+    height: 50px;
+    background-color: #7f1414;
+    color: var(--color-background);
+    font-weight: bold;
+  }
+
+  .sidebar-menu li.logout-button:hover {
+    background-color: var(--color-danger);
+  }
+
+  /* Garantir que o botão de logout não se desvie do alinhamento */
+  .sidebar-menu li.logout-button.active,
+  .sidebar-menu li.logout-button:hover {
+    background-color: var(--color-danger);
+    color: var(--color-background);
     border-left: none;
-    padding-left: 10px;
+    padding-left: 20px; /* Alinhar com os outros itens */
   }
 
   .content-area {
