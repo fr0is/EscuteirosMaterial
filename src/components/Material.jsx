@@ -216,19 +216,58 @@ export default function Material() {
     }
   };
 
-  const handleRemoverMaterial = async (id) => {
-    if (
-      window.confirm(
-        "Tem certeza que deseja remover este material? Essa ação não pode ser desfeita."
-      )
-    ) {
-      try {
-        await removerMaterial(id);
-      } catch (error) {
-        alert("Erro ao remover material: " + error.message);
-      }
+  const handleRemoverMaterial = (id) => {
+  toast.warn(
+    <div>
+      <div>Tem certeza que deseja remover este material?</div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
+        <button
+          onClick={async () => {
+            try {
+              await removerMaterial(id);  // Chama a função de remoção do material
+              toast.success("Material removido com sucesso!");
+            } catch (error) {
+              toast.error("Erro ao remover material.");
+            }
+            toast.dismiss();  // Fecha o toast após ação
+          }}
+          style={{
+            padding: '8px 15px',
+            backgroundColor: 'var(--color-primary-dark)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Sim
+        </button>
+        <button
+          onClick={() => toast.dismiss()}  // Fecha o toast ao clicar em "Não"
+          style={{
+            padding: '8px 15px',
+            backgroundColor: 'var(--color-danger-dark)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Não
+        </button>
+      </div>
+    </div>,
+    {
+      position: 'top-center',
+      autoClose: false,  // Não fecha automaticamente
+      closeOnClick: false,  // Não fecha ao clicar
+      draggable: false,  // Não é possível arrastar
+      progress: undefined,  // Desabilita o progresso do Toast
     }
-  };
+  );
+};
+
+
 
   return (
     <div className="material-container">

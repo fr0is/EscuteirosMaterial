@@ -67,83 +67,72 @@ export default function Configuracao() {
   };
 
   const handleRemoveUser = (username) => {
-    if (username === "CA127") {
-      toast.warn("O utilizador CA127 não pode ser removido.");
-      return;
-    }
-    if (username === user.username) {
-      toast.warn("Você não pode remover a si mesmo.");
-      return;
-    }
+  if (username === "CA127") {
+    toast.warn("O utilizador CA127 não pode ser removido.");
+    return;
+  }
+  if (username === user.username) {
+    toast.warn("Você não pode remover a si mesmo.");
+    return;
+  }
 
-    const confirmDeleteToast = toast.warn("Tem certeza que deseja remover este utilizador?", {
-      autoClose: false, 
-      closeOnClick: false,
-      position: "top-center",
-    });
+  toast.warn(
+    <div>
+      <div>Tem certeza que deseja remover este utilizador?</div>
+      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
+        <button
+          onClick={async () => {
+            try {
+              const { error } = await supabase.from("users").delete().eq("username", username);
+              if (error) {
+                toast.error("Erro ao remover utilizador.");
+                console.error(error);
+                return;
+              }
+              setUsers((u) => u.filter((user) => user.username !== username));
+              toast.success("Utilizador removido com sucesso!");
+            } catch (error) {
+              toast.error("Erro ao remover utilizador.");
+              console.error(error);
+            }
+            toast.dismiss(); // Fecha o Toast após a ação
+          }}
+          style={{
+            padding: '8px 15px',
+            backgroundColor: 'var(--color-primary-dark)',  // A cor do botão "Sim"
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Sim
+        </button>
+        <button
+          onClick={() => toast.dismiss()}  // Fecha o Toast ao clicar em "Não"
+          style={{
+            padding: '8px 15px',
+            backgroundColor: 'var(--color-danger-dark)',  // A cor do botão "Não"
+            color: 'white',
+            border: 'none',
+            borderRadius: '4px',
+            cursor: 'pointer',
+          }}
+        >
+          Não
+        </button>
+      </div>
+    </div>,
+    {
+      position: 'top-center',
+      autoClose: false,  // Não fecha automaticamente
+      closeOnClick: false,  // Não fecha ao clicar
+      draggable: false,  // Não é possível arrastar
+      progress: undefined,  // Desabilita o progresso do Toast
+    }
+  );
+};
 
-    toast.update(confirmDeleteToast, {
-      render: (
-        <div style={{ textAlign: 'center', padding: '10px' }}>
-          <p style={{ marginBottom: '20px', fontSize: '16px' }}>
-            Tem certeza que deseja remover este utilizador?
-          </p>
-          <div style={{ display: 'flex', justifyContent: 'center', gap: '20px' }}>
-            <button
-              onClick={async () => {
-                try {
-                  const { error } = await supabase.from("users").delete().eq("username", username);
-                  if (error) {
-                    toast.error("Erro ao remover utilizador.");
-                    console.error(error);
-                    return;
-                  }
-                  setUsers((u) => u.filter((user) => user.username !== username));
-                  toast.success("Utilizador removido com sucesso!");
-                } catch (error) {
-                  toast.error("Erro ao remover utilizador.");
-                  console.error(error);
-                }
-                toast.dismiss(confirmDeleteToast); // Fecha o Toast após a ação
-              }}
-              style={{
-                backgroundColor: 'green',
-                color: 'white',
-                padding: '10px 20px',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                width: '100px',
-              }}
-            >
-              Sim
-            </button>
-            <button
-              onClick={() => toast.dismiss(confirmDeleteToast)} // Fecha o Toast
-              style={{
-                backgroundColor: 'red',
-                color: 'white',
-                padding: '10px 20px',
-                border: 'none',
-                borderRadius: '5px',
-                cursor: 'pointer',
-                width: '100px',
-              }}
-            >
-              Não
-            </button>
-          </div>
-        </div>
-      ),
-      style: {
-        backgroundColor: '#fff',
-        color: '#333',
-        boxShadow: '0 4px 6px rgba(0, 0, 0, 0.1)',
-        padding: '20px',
-        borderRadius: '8px',
-      }
-    });
-  };
 
   const handleLogout = () => {
     setUser({ loggedIn: false });
@@ -282,16 +271,16 @@ export default function Configuracao() {
       </main>
 
       <ToastContainer
-              position="top-center"
-              autoClose={5000}
-              hideProgressBar={false}
-              newestOnTop={false}
-              closeOnClick
-              rtl={false}
-              pauseOnFocusLoss
-              draggable
-              pauseOnHover
-            />
+        position="top-center"
+        autoClose={5000}
+        hideProgressBar={false}
+        newestOnTop={false}
+        closeOnClick
+        rtl={false}
+        pauseOnFocusLoss
+        draggable
+        pauseOnHover
+      />
     </div>
   );
 }
