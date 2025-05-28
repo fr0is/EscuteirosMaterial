@@ -21,49 +21,84 @@
 /* Item do material */
 .material-item {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 10px;
+  align-items: center;
+  padding: 10px 16px;
   margin-bottom: 10px;
-  border-bottom: 1px solid #ccc;
-  padding-bottom: 8px;
-}
-
-/* Info dentro do item */
-.material-info {
-  flex: 1;
-}
-
-.material-info b {
-  font-weight: 600;
-}
-
-.material-info em {
-  color: var(--color-danger);
-  font-style: italic;
-}
-
-/* Ações dos botões no material */
-.material-actions button {
-  margin-left: 8px;
-  font-weight: normal;
-  font-size: 14px;
-  line-height: 1.2;
-  padding: 6px 10px;
   border-radius: var(--border-radius);
-  border: none;
-  background-color: var(--color-primary);
-  color: white;
+  box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
+  transition: background-color 0.2s ease;
+}
+
+/* Informações (nome + quantidade total) alinhadas à esquerda */
+.material-info {
+  color: var(--color-text);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* Destaque quantidade total com () e leve */
+.material-info em {
+  font-style: normal;
+  color: #888;
+  font-weight: 400;
+  font-size: 14px;
+}
+
+/* Container da área de ações (botões + quantidade selecionada) */
+.material-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+/* Controles de quantidade */
+.quantity-controls {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.quantity-controls button {
+  width: 28px;
+  height: 28px;
+  font-size: 16px;
+  padding: 0;
+  border-radius: 4px;
+  border: 1px solid #bbb;
+  background-color: #f1f8e9;
+  color: var(--color-primary);
   cursor: pointer;
-  transition: background-color 0.3s ease;
+  text-align: center;
+}
+
+.quantity-controls span {
+  font-weight: bold;
+  min-width: 20px;
+  text-align: center;
+  font-size: 14px;
+}
+
+/* Botões base para editar, guardar, remover e cancelar */
+.material-actions button,
+.material-editing button {
+  font-size: 14px;
+  padding: 8px 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
   user-select: none;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  white-space: nowrap;
+  min-width: 50px;
 }
 
 /* Botões verde (editar e guardar) */
 button.editar,
 button.guardar {
   background-color: var(--color-primary);
-  border: 1px solid var(--color-primary-dark);
+  border-color: var(--color-primary-dark);
   color: white;
 }
 
@@ -76,7 +111,7 @@ button.guardar:hover {
 button.remover,
 button.cancelar {
   background-color: var(--color-danger);
-  border: 1px solid #b71c1c;
+  border-color: #b71c1c;
   color: white;
 }
 
@@ -85,89 +120,40 @@ button.cancelar:hover {
   background-color: #b71c1c;
 }
 
-/* Container edição */
+/* Container de edição */
 .material-editing {
   display: flex;
   justify-content: space-between;
   align-items: center;
   width: 100%;
-  flex-wrap: wrap; /* Permite que os itens quebrem para a próxima linha quando necessário */
+  gap: 16px;
 }
 
-/* Inputs de edição */
+/* Inputs da edição: nome e quantidade juntos à esquerda */
 .material-editing .inputs {
   display: flex;
-  gap: 6px;
+  gap: 8px;
   flex-grow: 1;
+  max-width: 60%;
   align-items: center;
-  width: 100%;
-  flex-wrap: wrap; /* Quebra a linha no mobile */
 }
 
 .material-editing input {
-  padding: 6px;
+  padding: 6px 10px;
   border-radius: 4px;
   border: 1px solid #ccc;
   font-size: 14px;
-  width: 45%; /* Garantir que os inputs não fiquem muito largos no mobile */
-  margin-bottom: 10px;
+  width: auto;
+  min-width: 120px;
 }
 
-.material-editing input[type="number"] {
-  width: 45%;
-}
-
-/* Botões dentro da edição */
+/* Botões de cancelar e guardar alinhados à direita */
 .material-editing .buttons {
   display: flex;
   gap: 8px;
-  margin-left: 16px;
-  flex-wrap: wrap; /* Permite que os botões quebrem linha no mobile */
-  justify-content: center;
-  width: 100%;
-}
-
-.material-editing button {
-  font-size: 14px;
-  padding: 6px 10px;
-  border: none;
-  border-radius: var(--border-radius);
-  cursor: pointer;
-  transition: background-color 0.3s ease;
-  user-select: none;
-  margin-top: 10px; /* Garante espaço entre os botões */
-  width: 48%; /* Evita que os botões saiam da tela */
-}
-
-/* Controle de quantidade (+/-) */
-.quantity-controls {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  justify-content: center;
-  width: 100%;
-  margin-bottom: 10px; /* Espaço abaixo */
-}
-
-.quantity-controls button {
-  width: 28px;
-  height: 28px;
-  font-size: 14px;
-  line-height: 1;
-  padding: 0;
-  text-align: center;
-  border-radius: 4px;
-  border: 1px solid #bbb;
-  background-color: #f1f8e9;
-  color: var(--color-primary);
-  cursor: pointer;
-  user-select: none;
-}
-
-.quantity-controls span {
-  min-width: 20px;
-  text-align: center;
-  font-weight: 600;
+  flex-grow: 0;
+  justify-content: flex-end;
+  min-width: 35%;
 }
 
 /* Seções de adicionar material e pedido */
@@ -216,50 +202,89 @@ button.cancelar:hover {
 
 /* Responsividade para mobile */
 @media (max-width: 480px) {
-  /* Ajustar largura do container */
+  .material-item {
+    flex-wrap: nowrap; /* Impede quebra de linha */
+    overflow-x: auto; /* Permite scroll horizontal se necessário */
+    gap: 8px;
+  }
+
+  .material-actions {
+    gap: 6px;
+  }
+
+  .material-actions button {
+    flex: 1 1 auto;
+    padding: 6px;
+    min-width: unset;
+  }
+
+  .quantity-controls {
+    gap: 4px;
+  }
+
   .material-container {
     padding: 15px 10px;
   }
 
-  /* Ajustar inputs dentro de material-editing */
+  .material-editing {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 12px;
+  }
+
+  .material-editing .inputs {
+    max-width: 100%;
+    flex-wrap: wrap;
+  }
+
   .material-editing input {
-    width: 100%; /* Full-width para os inputs no mobile */
+    width: 100%;
+    min-width: unset;
   }
 
-  /* Ajustar botões dentro de material-editing */
+  .material-editing .buttons {
+    min-width: 100%;
+    justify-content: space-between;
+  }
+
   .material-editing button {
-    width: 100%; /* Full-width para os botões no mobile */
+    width: 48%;
   }
 
-  /* Ajustar controles de quantidade */
   .quantity-controls button {
-    width: 40px; /* Botões de quantidade mais largos */
-    height: 40px;
+    width: 32px;  /* Um pouco maior, mas sem exagero */
+    height: 32px;
+    font-size: 16px;
+    padding: 0;
   }
 
   .quantity-controls span {
-    font-size: 18px; /* Aumenta o tamanho da quantidade */
+    font-size: 16px;
+    min-width: 24px;
   }
 
-  /* Ajuste da estrutura para melhor visualização */
   .material-info {
-    font-size: 14px; /* Menor fonte para materiais */
+    flex-shrink: 0; /* Para não encolher demais */
+    font-size: 14px;
+    white-space: nowrap; /* Texto numa linha */
   }
 
   .add-material input,
   .pedido-form input {
-    font-size: 14px; /* Ajusta o tamanho da fonte nos inputs */
-    padding: 8px; /* Diminui o padding para caber melhor na tela */
+    font-size: 14px;
+    padding: 8px;
   }
 
   .add-material button,
   .pedido-form button {
-    font-size: 14px; /* Ajusta o tamanho da fonte no botão */
+    font-size: 14px;
     padding: 10px 0;
   }
 
   .material-actions button {
-    padding: 5px 8px;
+    flex: 0 0 auto; /* Não crescer nem encolher */
+    padding: 6px 10px;
+    min-width: 48px;
     font-size: 14px;
   }
 }

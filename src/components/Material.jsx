@@ -309,10 +309,10 @@ export default function Material() {
                   </div>
                   <div className="buttons">
                     <button className="guardar" onClick={salvarEdicao}>
-                      Guardar
+                       💾 
                     </button>
                     <button className="cancelar" onClick={cancelarEdicao}>
-                      Cancelar
+                      🗙
                     </button>
                   </div>
                 </div>
@@ -331,13 +331,13 @@ export default function Material() {
                       className="editar"
                       onClick={() => iniciarEdicao(item)}
                     >
-                      Editar
+                      ✏️
                     </button>
                     <button
                       className="remover"
                       onClick={() => handleRemoverMaterial(item.id)}
                     >
-                      Remover
+                      🗑️
                     </button>
                   </div>
                 </>

@@ -202,7 +202,7 @@ export default function Configuracao() {
                       onClick={() => handleRemoveUser(u.username)}
                       className="btn btn-remover"
                     >
-                      Remover
+                      🗑️
                     </button>
                   ) : (
                     <span className="disabled-remover">(Não pode remover)</span>
