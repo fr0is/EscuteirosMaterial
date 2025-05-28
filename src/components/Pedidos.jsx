@@ -188,58 +188,60 @@ Boa atividade!
   };
 
   const handleEliminar = (id) => {
-  toast.warn(
-    <div>
-      <div>Tem certeza que deseja eliminar este pedido?</div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
-        <button
-          onClick={async () => {
-            const sucesso = await eliminarPedido(id);
-            if (!sucesso) {
-              toast.error("Erro ao eliminar pedido");
-            } else {
-              toast.success("Pedido eliminado com sucesso!");
-              setPedidos((prev) => prev.filter((p) => p.id !== id));
-            }
-            toast.dismiss(); // Fecha o Toast após a ação
-          }}
-          style={{
-            padding: '8px 15px',
-            backgroundColor: 'var(--color-primary-dark)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Sim
-        </button>
-        <button
-          onClick={() => toast.dismiss()} // Fecha o Toast ao clicar em "Não"
-          style={{
-            padding: '8px 15px',
-            backgroundColor: 'var(--color-danger-dark)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Não
-        </button>
-      </div>
-    </div>,
-    {
-      position: 'top-center',
-      autoClose: false,
-      closeOnClick: false,
-      draggable: false,
-      progress: undefined,
-    }
-  );
-};
+    const confirmToastId = toast.warn(
+      <div>
+        <div>Tem certeza que deseja eliminar este pedido?</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
+          <button
+            onClick={async () => {
+              toast.dismiss(confirmToastId); // Fecha só o toast de confirmação
 
+              const sucesso = await eliminarPedido(id);
 
+              setTimeout(() => {
+                if (!sucesso) {
+                  toast.error("Erro ao eliminar pedido");
+                } else {
+                  toast.success("Pedido eliminado com sucesso!");
+                  setPedidos((prev) => prev.filter((p) => p.id !== id));
+                }
+              }, 300);
+            }}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-primary-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Sim
+          </button>
+          <button
+            onClick={() => toast.dismiss(confirmToastId)} // Fecha só o toast de confirmação
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-danger-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Não
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        progress: undefined,
+      }
+    );
+  };
 
   const pedidosVisiveis = (user.isAdmin
     ? pedidos

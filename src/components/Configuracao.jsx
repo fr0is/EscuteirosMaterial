@@ -275,12 +275,16 @@ export default function Configuracao() {
       return;
     }
 
-    toast.warn(
+    // Aqui captura o ID do toast de confirmação
+    const confirmToastId = toast.warn(
       <div>
         <div>Tem certeza que deseja remover este utilizador?</div>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
           <button
             onClick={async () => {
+              // Fecha só o toast de confirmação
+              toast.dismiss(confirmToastId);
+
               try {
                 const { error } = await supabase.from("users").delete().eq("username", username);
                 if (error) {
@@ -289,12 +293,22 @@ export default function Configuracao() {
                   return;
                 }
                 setUsers((u) => u.filter((user) => user.username !== username));
-                toast.success("Utilizador removido com sucesso!");
+
+                setTimeout(() => {
+                  toast.success("Utilizador removido com sucesso!", {
+                    autoClose: 8000,
+                    closeOnClick: true,
+                    draggable: true,
+                  });
+                }, 300);
               } catch (error) {
-                toast.error("Erro ao remover utilizador.");
+                toast.error("Erro ao remover o utilizador.", {
+                  autoClose: 8000,
+                  closeOnClick: true,
+                  draggable: true,
+                }, 300);
                 console.error(error);
               }
-              toast.dismiss();
             }}
             style={{
               padding: '8px 15px',
@@ -308,7 +322,7 @@ export default function Configuracao() {
             Sim
           </button>
           <button
-            onClick={() => toast.dismiss()}
+            onClick={() => toast.dismiss(confirmToastId)}  // fecha só o toast de confirmação
             style={{
               padding: '8px 15px',
               backgroundColor: 'var(--color-danger-dark)',
@@ -331,6 +345,7 @@ export default function Configuracao() {
       }
     );
   };
+
 
   const handleChangeSeccao = async () => {
     if (!novaSeccao) {

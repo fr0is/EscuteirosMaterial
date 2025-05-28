@@ -240,55 +240,73 @@ export default function Material() {
   };
 
   const handleRemoverMaterial = (id) => {
-  toast.warn(
-    <div>
-      <div>Tem certeza que deseja remover este material?</div>
-      <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
-        <button
-          onClick={async () => {
-            try {
-              await removerMaterial(id);  // Chama a função de remoção do material
-              toast.success("Material removido com sucesso!");
-            } catch (error) {
-              toast.error("Erro ao remover material.");
-            }
-            toast.dismiss();  // Fecha o toast após ação
-          }}
-          style={{
-            padding: '8px 15px',
-            backgroundColor: 'var(--color-primary-dark)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Sim
-        </button>
-        <button
-          onClick={() => toast.dismiss()}  // Fecha o toast ao clicar em "Não"
-          style={{
-            padding: '8px 15px',
-            backgroundColor: 'var(--color-danger-dark)',
-            color: 'white',
-            border: 'none',
-            borderRadius: '4px',
-            cursor: 'pointer',
-          }}
-        >
-          Não
-        </button>
-      </div>
-    </div>,
-    {
-      position: 'top-center',
-      autoClose: false,  // Não fecha automaticamente
-      closeOnClick: false,  // Não fecha ao clicar
-      draggable: false,  // Não é possível arrastar
-      progress: undefined,  // Desabilita o progresso do Toast
-    }
-  );
-};
+    // Captura o id do toast de confirmação
+    const confirmToastId = toast.warn(
+      <div>
+        <div>Tem certeza que deseja remover este material?</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
+          <button
+            onClick={async () => {
+              // Fecha só o toast de confirmação
+              toast.dismiss(confirmToastId);
+
+              try {
+                await removerMaterial(id);  // Chama a função de remoção do material
+                
+                setTimeout(() => {
+                  toast.success("Material removido com sucesso!", {
+                    autoClose: 8000,
+                    closeOnClick: true,
+                    draggable: true,
+                  });
+                }, 300);
+                
+              } catch (error) {
+                setTimeout(() => {
+                  toast.error("Erro ao remover material.", {
+                    autoClose: 8000,
+                    closeOnClick: true,
+                    draggable: true,
+                  });
+                }, 300);
+              }
+            }}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-primary-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Sim
+          </button>
+          <button
+            onClick={() => toast.dismiss(confirmToastId)}  // Fecha só o toast de confirmação
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-danger-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Não
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        progress: undefined,
+      }
+    );
+  };
+
 
 
 
