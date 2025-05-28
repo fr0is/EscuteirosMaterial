@@ -138,6 +138,7 @@ button.cancelar:hover {
   align-items: center;
 }
 
+/* Inputs base */
 .material-editing input {
   padding: 6px 10px;
   border-radius: 4px;
@@ -145,6 +146,20 @@ button.cancelar:hover {
   font-size: 14px;
   width: auto;
   min-width: 120px;
+}
+
+/* Input específico do nome - maior */
+.material-editing .inputs .input-nome {
+  flex-grow: 2;
+  min-width: 200px; /* maior que antes */
+}
+
+/* Input específico da quantidade - menor */
+.material-editing .inputs .input-quantidade {
+  flex-grow: 1;
+  max-width: 70px; /* menor, para até 3 dígitos */
+  min-width: 50px;
+  text-align: center;
 }
 
 /* Botões de cancelar e guardar alinhados à direita */
@@ -202,6 +217,10 @@ button.cancelar:hover {
 
 /* Responsividade para mobile */
 @media (max-width: 480px) {
+  .material-container {
+    padding: 15px 10px;
+  }
+
   .material-item {
     flex-wrap: nowrap; /* Impede quebra de linha */
     overflow-x: auto; /* Permite scroll horizontal se necessário */
@@ -222,8 +241,16 @@ button.cancelar:hover {
     gap: 4px;
   }
 
-  .material-container {
-    padding: 15px 10px;
+  .quantity-controls button {
+    width: 32px; /* Um pouco maior, mas sem exagero */
+    height: 32px;
+    font-size: 16px;
+    padding: 0;
+  }
+
+  .quantity-controls span {
+    font-size: 16px;
+    min-width: 24px;
   }
 
   .material-editing {
@@ -251,16 +278,9 @@ button.cancelar:hover {
     width: 48%;
   }
 
-  .quantity-controls button {
-    width: 32px;  /* Um pouco maior, mas sem exagero */
-    height: 32px;
-    font-size: 16px;
-    padding: 0;
-  }
-
-  .quantity-controls span {
-    font-size: 16px;
-    min-width: 24px;
+  .material-editing .inputs .input-quantidade {
+    max-width: unset;
+    text-align: left;
   }
 
   .material-info {

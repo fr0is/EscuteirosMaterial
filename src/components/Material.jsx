@@ -298,12 +298,12 @@ export default function Material() {
               isEditing ? (
                 <div className="material-editing">
                   <div className="inputs">
-                    <input
+                    <input type="text" class="input-nome"
                       value={editandoNome}
                       onChange={(e) => setEditandoNome(e.target.value)}
                     />
                     <input
-                      type="number"
+                      type="number" class="input-quantidade"
                       value={editandoTotal}
                       onChange={(e) => setEditandoTotal(parseInt(e.target.value) || 0)}
                     />
