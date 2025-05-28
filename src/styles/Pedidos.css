@@ -163,6 +163,33 @@
   background-color: #a40000;
 }
 
+.devolucao-item label {
+  display: flex;
+  align-items: center;
+  gap: 0.3rem; /* espaçamento entre elementos */
+  flex-wrap: nowrap; /* evitar quebra de linha */
+}
+
+.input-wrapper {
+  display: flex;
+  align-items: center;
+  gap: 0.2rem;
+  white-space: nowrap; /* mantém tudo na mesma linha */
+}
+
+.input-wrapper input {
+  width: 4ch; /* largura suficiente para 3 números (caracteres) */
+  padding: 0.2rem 0.3rem;
+  font-size: 1rem;
+}
+
+/* Para telas maiores, aumenta o input */
+@media (min-width: 600px) {
+  .input-wrapper input {
+    width: 6ch; /* mais largo no desktop */
+  }
+}
+
 /* Responsividade */
 @media (max-width: 480px) {
   .pedido-buttons {

@@ -139,7 +139,8 @@ export default function Material() {
       }
 
       if (emails.length === 0) {
-        toast.warning("Nenhum e-mail de notificação encontrado.");
+        toast.error("Não existe email para receber o pedido. Pedido não enviado");
+        return;  // <<< interrompe a função, não cria pedido
       }
 
       // Enviar email para cada destinatário
@@ -165,7 +166,7 @@ export default function Material() {
       }
       await adicionarPedido(novoPedido);
 
-      toast.success("Pedido enviado com sucesso! E-mails de notificação enviados.");
+      toast.success("Pedido enviado com sucesso!");
 
       // Resetar formulário
       setQuantidades({});
@@ -176,9 +177,6 @@ export default function Material() {
       toast.error("Falha ao enviar pedido ou e-mail. Verifique sua conexão ou configuração.");
     }
   };
-
-
-
 
   const handleCriarMaterial = async () => {
     if (!novoMaterialNome.trim() || novoMaterialTotal <= 0) {

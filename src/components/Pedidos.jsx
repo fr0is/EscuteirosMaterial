@@ -385,16 +385,16 @@ function PedidoItem({
             <div key={nome} className="devolucao-item">
               <label>
                 {nome}:
-                <input
-                  type="number"
-                  min={0}
-                  max={q}
-                  value={devolucao[nome] || 0}
-                  onChange={(e) =>
-                    handleChangeDevolucao(nome, Number(e.target.value))
-                  }
-                />{" "}
-                / {q}
+                <span className="input-wrapper">
+                  <input
+                    type="number"
+                    min={0}
+                    max={q}
+                    value={devolucao[nome] || 0}
+                    onChange={(e) => handleChangeDevolucao(nome, Number(e.target.value))}
+                  />
+                  / {q}
+                </span>
               </label>
             </div>
           ))}
