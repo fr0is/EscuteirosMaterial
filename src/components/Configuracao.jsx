@@ -230,13 +230,13 @@ export default function Configuracao() {
   const secoesMenu = user.isAdmin
     ? [
         { id: "alterarPassword", label: "Alterar Password" },
-        { id: "alterarSeccao", label: "Alterar Seccao" },
+        { id: "alterarSeccao", label: "Alterar Secção" },
         { id: "utilizadoresRegistados", label: "Utilizadores Registados" },
         { id: "adicionarUtilizador", label: "Adicionar Utilizador" },
       ]
     : [
         { id: "alterarPassword", label: "Alterar Password" },
-        { id: "alterarSeccao", label: "Alterar Seccao" },
+        { id: "alterarSeccao", label: "Alterar Secção" },
       ];
 
   return (
@@ -277,7 +277,7 @@ export default function Configuracao() {
 
         {seccaoAtiva === "alterarSeccao" && (
           <section>
-            <h2>Alterar Seccao</h2>
+            <h2>Alterar Secção</h2>
             <div className="form-group">
               <select
                 value={novaSeccao}
