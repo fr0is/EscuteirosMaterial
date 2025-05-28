@@ -17,6 +17,7 @@ export default function Material() {
     adicionarMaterial,
     atualizarMaterial,
     removerMaterial,
+    supabase,
   } = useContext(AppContext);
   const navigate = useNavigate();
 
@@ -68,7 +69,6 @@ export default function Material() {
   };
 
   const handleSubmitPedido = async () => {
-    // Verificar se a patrulha e a atividade estão preenchidas
     if (patrulha.trim() === "") {
       toast.error("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
       return;
@@ -125,37 +125,59 @@ export default function Material() {
 
   📦 Material solicitado:
   ${listaMateriais}
-  `;
+    `;
 
     try {
+      // Buscar emails antes de criar o pedido
+      const { data: emails, error } = await supabase
+        .from('emails_notificacao')
+        .select('email');
+
+      if (error) {
+        toast.error("Erro ao obter e-mails.");
+        return;
+      }
+
+      if (emails.length === 0) {
+        toast.warning("Nenhum e-mail de notificação encontrado.");
+      }
+
+      // Enviar email para cada destinatário
+      for (const { email } of emails) {
+        try {
+          await emailjs.send(
+            "service_pnn1l65",
+            "template_8ud9uk9",
+            { message: mensagem, to_email: email },
+            "largUwzgW7L95dduo"
+          );
+        } catch (err) {
+          console.error(`Erro ao enviar e-mail para ${email}:`, err);
+          toast.error(`Falha ao enviar e-mail para ${email}`);
+          return; // Para execução: NÃO cria pedido se falhar email
+        }
+      }
+
+      // Se chegou até aqui, todos os emails foram enviados com sucesso
       if (!adicionarPedido) {
         toast.error("Função para adicionar pedido não implementada.");
         return;
       }
-
-      // Enviar o pedido para a aplicação
       await adicionarPedido(novoPedido);
 
-      // Enviar o email usando emailjs
-      await emailjs.send(
-        "service_pnn1l65",
-        "template_8ud9uk9",
-        { message: mensagem },
-        "largUwzgW7L95dduo"
-      );
+      toast.success("Pedido enviado com sucesso! E-mails de notificação enviados.");
 
-      // Mostrar mensagem de sucesso com Toast
-      toast.success("Pedido enviado com sucesso!");
-
-      // Resetar os campos do formulário
+      // Resetar formulário
       setQuantidades({});
       setPatrulha("");
       setAtividade("");
     } catch (error) {
       console.error("Erro ao enviar pedido:", error);
-      toast.error("Falha ao enviar pedido ou email. Verifique sua conexão ou configuração.");
+      toast.error("Falha ao enviar pedido ou e-mail. Verifique sua conexão ou configuração.");
     }
   };
+
+
 
 
   const handleCriarMaterial = async () => {

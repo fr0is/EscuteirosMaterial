@@ -66,8 +66,8 @@
 .sidebar-menu li.logout-button:hover {
   background-color: var(--color-danger);
   color: var(--color-background);
-  border-left: none; /* Remover a borda */
-  padding-left: 20px; /* Alinhar com os outros itens */
+  border-left: none;
+  padding-left: 20px;
 }
 
 /* Área de conteúdo principal */
@@ -106,6 +106,7 @@
   cursor: pointer;
   transition: background-color 0.3s;
   user-select: none;
+  min-width:50px;
 }
 
 .btn-adicionar {
@@ -128,6 +129,9 @@
   background-color: #a40000;
 }
 
+/* Estilo para botão de editar (usa as mesmas classes dos outros) */
+/* Usa a classe .btn + .btn-adicionar no HTML/JSX */
+
 /* Lista de utilizadores */
 .user-list {
   list-style: none;
@@ -141,17 +145,23 @@
   align-items: center;
   padding: 12px 15px;
   border-bottom: 1px solid #eee;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .user-info {
-  font-size: 16px;
-  overflow-wrap: anywhere;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    white-space: nowrap;
 }
 
 .disabled-remover {
   color: #999;
   font-style: italic;
   user-select: none;
+  display: flex;
+  align-items: center;
 }
 
 /* Agrupamento de campos */
@@ -160,6 +170,22 @@
   flex-direction: column;
   max-width: 400px;
   gap: 12px;
+}
+
+/* Dropdown + botão "Guardar" na mesma linha */
+.inline-edit-container {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+}
+
+.inline-edit-container .select-field {
+  flex: 1;
+}
+
+.inline-edit-container .btn {
+  white-space: nowrap;
 }
 
 /* Responsividade */
@@ -198,7 +224,6 @@
     color: var(--color-background);
   }
 
-  /* Botão de logout no mobile */
   .sidebar-menu li.logout-button {
     font-size: 14px;
     height: 50px;
@@ -211,13 +236,12 @@
     background-color: var(--color-danger);
   }
 
-  /* Garantir que o botão de logout não se desvie do alinhamento */
   .sidebar-menu li.logout-button.active,
   .sidebar-menu li.logout-button:hover {
     background-color: var(--color-danger);
     color: var(--color-background);
     border-left: none;
-    padding-left: 20px; /* Alinhar com os outros itens */
+    padding-left: 20px;
   }
 
   .content-area {
@@ -226,5 +250,14 @@
 
   .form-group {
     max-width: 100%;
+  }
+
+  .inline-edit-container {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .inline-edit-container .btn {
+    width: 100%;
   }
 }

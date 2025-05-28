@@ -22,6 +22,7 @@ export function AppProvider({ children }) {
   const [materiais, setMateriais] = useState([]);
   const [pedidos, setPedidos] = useState([]);
   const [users, setUsers] = useState([]);
+  const [emailsNotificacao, setEmailsNotificacao] = useState([]);
 
   // Fetch materiais, pedidos e usuários do banco
   const fetchMateriais = async () => {
@@ -245,6 +246,51 @@ export function AppProvider({ children }) {
     }
   };
 
+  // Buscar emails de notificação
+  const buscarEmailsNotificacao = async () => {
+    const { data, error } = await supabase.from("emails_notificacao").select("email");
+    if (error) {
+      console.error("Erro ao buscar emails de notificação:", error);
+    } else {
+      setEmailsNotificacao(data); // data = [{ email: "x" }, { email: "y" }]
+    }
+  };
+
+
+  // Adicionar email de notificação
+  const adicionarEmailNotificacao = async (email) => {
+    const { data, error } = await supabase
+      .from("emails_notificacao")
+      .insert([{ email }])
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro ao adicionar email de notificação:", error);
+      throw error;
+    }
+
+    setEmailsNotificacao((prev) => [...prev, data]);
+  };
+
+
+  // Remover email de notificação
+  const removerEmailNotificacao = async (email) => {
+    const { error } = await supabase
+      .from("emails_notificacao")
+      .delete()
+      .eq("email", email);
+
+    if (error) {
+      console.error("Erro ao remover email de notificação:", error);
+      return false;
+    }
+
+    setEmailsNotificacao((prev) => prev.filter((e) => e.email !== email));
+    return true;
+  };
+
+
   return (
     <AppContext.Provider
       value={{
@@ -268,6 +314,10 @@ export function AppProvider({ children }) {
         adicionarPedido,
         eliminarPedido,
         alterarSeccaoUsuario,
+        emailsNotificacao,
+        adicionarEmailNotificacao,
+        removerEmailNotificacao,
+
       }}
     >
       {children}

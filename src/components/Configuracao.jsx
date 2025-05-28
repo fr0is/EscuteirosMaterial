@@ -28,14 +28,35 @@ export default function Configuracao() {
   const [tipoNovoUtilizador, setTipoNovoUtilizador] = useState("user");
   const [passwordNovoUtilizador, setPasswordNovoUtilizador] = useState("");
   const [novaSeccao, setNovaSeccao] = useState(user.seccao || "Lobitos");
-
+  const [edicoesTipo, setEdicoesTipo] = useState({});
   const [seccaoAtiva, setSeccaoAtiva] = useState("alterarPassword");
+  // NOVO: Estados para Emails de Notificação
+  const [emailsNotificacao, setEmailsNotificacao] = useState([]);
+  const [novoEmailNotificacao, setNovoEmailNotificacao] = useState("");
+  const [loadingEmails, setLoadingEmails] = useState(false);
 
   useEffect(() => {
     if (!user.loggedIn) {
       navigate("/");
+    } else {
+    carregarEmailsNotificacao();  // <-- chama aqui para carregar ao entrar
     }
   }, [user, navigate]);
+
+  async function carregarEmailsNotificacao() {
+    setLoadingEmails(true);
+    const { data, error } = await supabase
+      .from("emails_notificacao")
+      .select("*")
+      .order("email", { ascending: true });
+    if (error) {
+      toast.error("Erro ao carregar emails de notificação.");
+      console.error(error);
+    } else {
+      setEmailsNotificacao(data);
+    }
+    setLoadingEmails(false);
+  }
 
   const validarPassword = (password) => {
     const temTamanhoValido = password.length > 6;
@@ -46,6 +67,114 @@ export default function Configuracao() {
   const validarEmail = (email) => {
     return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
   };
+
+  // Função para adicionar email de notificação
+  const handleAdicionarEmail = async () => {
+    const email = novoEmailNotificacao.trim().toLowerCase();
+
+    if (!validarEmail(email)) {
+      toast.warn("Insira um email válido.");
+      return;
+    }
+
+    setLoadingEmails(true);
+    const { data: existente, error: erroConsulta } = await supabase
+      .from("emails_notificacao")
+      .select("email")
+      .eq("email", email);
+
+    if (erroConsulta) {
+      toast.error("Erro ao verificar email.");
+      setLoadingEmails(false);
+      return;
+    }
+    if (existente.length > 0) {
+      toast.warn("Este email já está na lista de notificação.");
+      setLoadingEmails(false);
+      return;
+    }
+
+    const { error } = await supabase
+      .from("emails_notificacao")
+      .insert([{ email }]);
+
+    if (error) {
+      toast.error("Erro ao adicionar email.");
+      console.error(error);
+    } else {
+      toast.success("Email adicionado com sucesso!");
+      setNovoEmailNotificacao("");
+      carregarEmailsNotificacao();
+    }
+    setLoadingEmails(false);
+  };
+
+  // Função para remover email de notificação
+  const handleRemoverEmail = (email) => {
+    toast.warn(
+      <div>
+        <div>Tem certeza que deseja remover este email de notificação?</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
+          <button
+            onClick={async () => {
+              setLoadingEmails(true);  // Start loading
+              try {
+                const { error } = await supabase
+                  .from("emails_notificacao")
+                  .delete()
+                  .eq("email", email);
+
+                if (error) {
+                  toast.error("Erro ao remover email.");
+                  console.error(error);
+                  return;
+                }
+
+                // Após remover com sucesso, recarrega a lista
+                carregarEmailsNotificacao();
+                toast.success("Email removido com sucesso!");
+              } catch (error) {
+                toast.error("Erro ao remover email.");
+                console.error(error);
+              }
+              toast.dismiss();  // Dismiss the toast
+            }}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-primary-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Sim
+          </button>
+          <button
+            onClick={() => toast.dismiss()}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-danger-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Não
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+        progress: undefined,
+      }
+    );
+  };
+
 
   const handleChangePassword = () => {
     const password = novaPassword.trim();
@@ -227,12 +356,51 @@ export default function Configuracao() {
     return null;
   }
 
+  const handleSalvarTipo = async (username) => {
+    const novoTipo = edicoesTipo[username];
+
+    if (!["user", "admin"].includes(novoTipo)) {
+      toast.warn("Tipo inválido.");
+      return;
+    }
+
+    try {
+      const { error } = await supabase
+        .from("users")
+        .update({ tipo: novoTipo })
+        .eq("username", username);
+
+      if (error) {
+        toast.error("Erro ao atualizar tipo.");
+        return;
+      }
+
+      setUsers((prev) =>
+        prev.map((u) =>
+          u.username === username ? { ...u, tipo: novoTipo } : u
+        )
+      );
+
+      setEdicoesTipo((prev) => {
+        const copy = { ...prev };
+        delete copy[username];
+        return copy;
+      });
+
+      toast.success("Tipo atualizado com sucesso!");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro ao atualizar tipo.");
+    }
+  };
+
   const secoesMenu = user.isAdmin
     ? [
         { id: "alterarPassword", label: "Alterar Password" },
         { id: "alterarSeccao", label: "Alterar Secção" },
         { id: "utilizadoresRegistados", label: "Utilizadores Registados" },
         { id: "adicionarUtilizador", label: "Adicionar Utilizador" },
+        { id: "emailsNotificacao", label: "Emails de Notificação" }, // NOVO
       ]
     : [
         { id: "alterarPassword", label: "Alterar Password" },
@@ -301,26 +469,91 @@ export default function Configuracao() {
           <section>
             <h2>Utilizadores Registados</h2>
             <ul className="user-list">
-              {users
-                .filter((u) => u.username !== "admin") // filtra o "admin"
-                .map((u) => (
+            {users
+              .filter((u) => u.username !== "admin") // manténs este filtro para não mostrar "admin" na lista normal
+              .map((u) => {
+                const podeEditar = 
+                  (user.username === "CA127" || user.username === "admin") && // se o user logado é CA127 ou admin
+                  u.username !== "CA127"; // mas não pode editar CA127
+                
+                return (
                   <li key={u.username} className="user-list-item">
                     <div className="user-info">
-                      <b>{u.username}</b> ({u.tipo}) - {u.nome}
+                      <b>{u.username}</b>{" "}
+                      {edicoesTipo[u.username] !== undefined ? (
+                        <>
+                          <select
+                            value={edicoesTipo[u.username]}
+                            onChange={(e) =>
+                              setEdicoesTipo((prev) => ({
+                                ...prev,
+                                [u.username]: e.target.value,
+                              }))
+                            }
+                            className="select-field"
+                          >
+                            <option value="user">user</option>
+                            <option value="admin">admin</option>
+                          </select>
+                          <button
+                            onClick={() => handleSalvarTipo(u.username)}
+                            className="btn btn-adicionar"
+                            style={{ marginLeft: "10px" }}
+                          >
+                            💾
+                          </button>
+                          <button
+                            onClick={() =>
+                              setEdicoesTipo((prev) => {
+                                const copy = { ...prev };
+                                delete copy[u.username];
+                                return copy;
+                              })
+                            }
+                            className="btn btn-remover"
+                          >
+                            🗙
+                          </button>
+                        </>
+                      ) : (
+                        <>
+                          ({u.tipo}) - {u.nome}
+                        </>
+                      )}
                     </div>
-                    {u.username !== "CA127" && u.username !== user.username ? (
-                      <button
-                        onClick={() => handleRemoveUser(u.username)}
-                        className="btn btn-remover"
-                      >
-                        🗑️
-                      </button>
-                    ) : (
-                      <span className="disabled-remover">(Não pode remover)</span>
-                    )}
+
+                    <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                      {/* Mostrar botão editar para CA127 e admin para qualquer user, exceto CA127 */}
+                      {podeEditar && !edicoesTipo[u.username] && (
+                        <button
+                          onClick={() =>
+                            setEdicoesTipo((prev) => ({
+                              ...prev,
+                              [u.username]: u.tipo,
+                            }))
+                          }
+                          className="btn btn-adicionar"
+                        >
+                          ✏️
+                        </button>
+                      )}
+
+                      {/* Botão remover só aparece se não for CA127 e nem o próprio user */}
+                      {u.username !== "CA127" && u.username !== user.username ? (
+                        <button
+                          onClick={() => handleRemoveUser(u.username)}
+                          className="btn btn-remover"
+                        >
+                          🗑️
+                        </button>
+                      ) : (
+                        <span className="disabled-remover">(Não pode remover)</span>
+                      )}
+                    </div>
                   </li>
-                ))}
-            </ul>
+                );
+              })}
+          </ul>
           </section>
         )}
 
@@ -377,6 +610,49 @@ export default function Configuracao() {
                 Adicionar
               </button>
             </div>
+          </section>
+        )}
+        {user.isAdmin && seccaoAtiva === "emailsNotificacao" && (
+          <section>
+            <h2>Emails de Notificação</h2>
+            {loadingEmails && <p>A carregar emails...</p>}
+            {!loadingEmails && (
+              <>
+                <ul className="user-list">
+                  {emailsNotificacao.length === 0 && <li>Nenhum email configurado.</li>}
+                  {emailsNotificacao.map(({ email }) => (
+                    <li key={email} className="user-list-item">
+                      {email}{" "}
+                      <button
+                        onClick={() => handleRemoverEmail(email)}
+                        className="btn btn-remover"
+                        disabled={loadingEmails}
+                      >
+                        🗑️
+                      </button>
+                    </li>
+                  ))}
+                </ul>
+
+                <div className="form-group" style={{ marginTop: "1rem" }}>
+                  <input
+                    type="email"
+                    placeholder="Novo email"
+                    value={novoEmailNotificacao}
+                    onChange={(e) => setNovoEmailNotificacao(e.target.value)}
+                    className="input-field"
+                    disabled={loadingEmails}
+                  />
+                  <button
+                    onClick={handleAdicionarEmail}
+                    className="btn btn-adicionar"
+                    disabled={loadingEmails}
+                  >
+                    Adicionar
+                  </button>
+                </div>
+              </>
+            )}
           </section>
         )}
       </main>
