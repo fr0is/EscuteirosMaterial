@@ -27,22 +27,20 @@ function Header() {
       </div>
 
       <h1 className="site-title">Depósito Material 127</h1>
-
-      <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
-        <FaBars />
-      </button>
-
-      <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
-        {user?.loggedIn && (
-          <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
-        )}
-        {user?.loggedIn && (
-          <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
-        )}
-        {user?.loggedIn && (
-          <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Conta</Link>
-        )}
-      </nav>
+      
+      {user?.loggedIn && (
+        <>
+          <button className="menu-toggle" onClick={() => setMenuOpen(!menuOpen)}>
+            <FaBars />
+          </button>
+          <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
+            <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
+            <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
+            <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Conta</Link>
+          </nav>
+        </>
+      )}
+      
     </header>
   );
 }

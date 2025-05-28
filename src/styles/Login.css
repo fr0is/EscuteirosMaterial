@@ -1,6 +1,5 @@
 /*Login.css*/
 .login-container {
-  composes: container;
   max-width: 400px;
   margin: 40px auto;
   padding: 20px;
