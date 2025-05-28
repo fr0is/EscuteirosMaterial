@@ -29,7 +29,7 @@ export default function Configuracao() {
   const [passwordNovoUtilizador, setPasswordNovoUtilizador] = useState("");
   const [novaSeccao, setNovaSeccao] = useState(user.seccao || "Lobitos");
   const [edicoesTipo, setEdicoesTipo] = useState({});
-  const [seccaoAtiva, setSeccaoAtiva] = useState("alterarPassword");
+  const [seccaoAtiva, setSeccaoAtiva] = useState("perfil");
   // NOVO: Estados para Emails de Notificação
   const [emailsNotificacao, setEmailsNotificacao] = useState([]);
   const [novoEmailNotificacao, setNovoEmailNotificacao] = useState("");
@@ -111,13 +111,17 @@ export default function Configuracao() {
 
   // Função para remover email de notificação
   const handleRemoverEmail = (email) => {
-    toast.warn(
+    const confirmToastId = toast.warn(
       <div>
-        <div>Tem certeza que deseja remover este email de notificação?</div>
+        <div>Tem a certeza que deseja remover este email de notificação?</div>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
           <button
             onClick={async () => {
-              setLoadingEmails(true);  // Start loading
+              setLoadingEmails(true);  // Inicia o carregamento
+
+              // Fecha apenas o toast de confirmação
+              toast.dismiss(confirmToastId);
+
               try {
                 const { error } = await supabase
                   .from("emails_notificacao")
@@ -125,19 +129,31 @@ export default function Configuracao() {
                   .eq("email", email);
 
                 if (error) {
-                  toast.error("Erro ao remover email.");
+                  setTimeout(() => {
+                    toast.error("Erro ao remover email.");
+                  }, 400);
                   console.error(error);
                   return;
                 }
 
-                // Após remover com sucesso, recarrega a lista
+                // Atualiza a lista após remoção bem-sucedida
                 carregarEmailsNotificacao();
-                toast.success("Email removido com sucesso!");
+
+                setTimeout(() => {
+                  toast.success("Email removido com sucesso!", {
+                    autoClose: 8000,
+                    closeOnClick: true,
+                    draggable: true,
+                  });
+                }, 400); // Delay para suavizar transição
               } catch (error) {
-                toast.error("Erro ao remover email.");
+                setTimeout(() => {
+                  toast.error("Erro ao remover email.");
+                }, 400);
                 console.error(error);
+              } finally {
+                setLoadingEmails(false);
               }
-              toast.dismiss();  // Dismiss the toast
             }}
             style={{
               padding: '8px 15px',
@@ -151,7 +167,7 @@ export default function Configuracao() {
             Sim
           </button>
           <button
-            onClick={() => toast.dismiss()}
+            onClick={() => toast.dismiss(confirmToastId)}
             style={{
               padding: '8px 15px',
               backgroundColor: 'var(--color-danger-dark)',
@@ -171,6 +187,7 @@ export default function Configuracao() {
         closeOnClick: false,
         draggable: false,
         progress: undefined,
+        toastId: 'confirm-remove-email', // Identificador único para este toast
       }
     );
   };
@@ -278,7 +295,7 @@ export default function Configuracao() {
     // Aqui captura o ID do toast de confirmação
     const confirmToastId = toast.warn(
       <div>
-        <div>Tem certeza que deseja remover este utilizador?</div>
+        <div>Tem a certeza que deseja remover este utilizador?</div>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
           <button
             onClick={async () => {
@@ -411,15 +428,13 @@ export default function Configuracao() {
 
   const secoesMenu = user.isAdmin
     ? [
-        { id: "alterarPassword", label: "Alterar Password" },
-        { id: "alterarSeccao", label: "Alterar Secção" },
+        { id: "perfil", label: "Perfil" },
         { id: "utilizadoresRegistados", label: "Utilizadores Registados" },
         { id: "adicionarUtilizador", label: "Adicionar Utilizador" },
-        { id: "emailsNotificacao", label: "Emails de Notificação" }, // NOVO
+        { id: "emailsNotificacao", label: "Emails de Notificação" },
       ]
     : [
-        { id: "alterarPassword", label: "Alterar Password" },
-        { id: "alterarSeccao", label: "Alterar Secção" },
+        { id: "perfil", label: "Perfil" },
       ];
 
   return (
@@ -440,10 +455,12 @@ export default function Configuracao() {
       </nav>
 
       <main className="content-area">
-        {seccaoAtiva === "alterarPassword" && (
+        {seccaoAtiva === "perfil" && (
           <section>
-            <h2>Alterar Password</h2>
+            <h2>Perfil</h2>
+
             <div className="form-group">
+              <h3>Alterar Password</h3>
               <input
                 type="password"
                 placeholder="Nova Password"
@@ -455,18 +472,15 @@ export default function Configuracao() {
                 Confirmar Alteração
               </button>
             </div>
-          </section>
-        )}
 
-        {seccaoAtiva === "alterarSeccao" && (
-          <section>
-            <h2>Alterar Secção</h2>
-            <div className="form-group">
+            <div className="form-group" style={{ marginTop: "2rem" }}>
+              <h3>Alterar Secção</h3>
               <select
                 value={novaSeccao}
                 onChange={(e) => setNovaSeccao(e.target.value)}
                 className="select-field"
               >
+                <option value="">-- Seleciona uma secção --</option>
                 <option value="Lobitos">Lobitos</option>
                 <option value="Exploradores">Exploradores</option>
                 <option value="Pioneiros">Pioneiros</option>
@@ -671,7 +685,7 @@ export default function Configuracao() {
           </section>
         )}
       </main>
-
+        
       <ToastContainer
         position="top-center"
         autoClose={5000}

@@ -190,7 +190,7 @@ Boa atividade!
   const handleEliminar = (id) => {
     const confirmToastId = toast.warn(
       <div>
-        <div>Tem certeza que deseja eliminar este pedido?</div>
+        <div>Tem a certeza que deseja eliminar este pedido?</div>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
           <button
             onClick={async () => {

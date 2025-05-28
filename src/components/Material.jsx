@@ -243,7 +243,7 @@ export default function Material() {
     // Captura o id do toast de confirmação
     const confirmToastId = toast.warn(
       <div>
-        <div>Tem certeza que deseja remover este material?</div>
+        <div>Tem a certeza que deseja remover este material?</div>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
           <button
             onClick={async () => {
@@ -326,7 +326,7 @@ export default function Material() {
       />
 
       <h2>Olá, {user.nome}</h2> {/* Exibe o nome real do usuário */}
-      <h3>Stock disponível</h3>
+      <h3>Material disponível</h3>
 
       {materiais.map((item) => {
         const pendente = pendentesPorItem[item.nome] || 0;

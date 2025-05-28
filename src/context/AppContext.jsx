@@ -256,7 +256,6 @@ export function AppProvider({ children }) {
     }
   };
 
-
   // Adicionar email de notificação
   const adicionarEmailNotificacao = async (email) => {
     const { data, error } = await supabase
