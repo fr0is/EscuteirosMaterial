@@ -11,12 +11,11 @@ const supabaseKey =
 const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function AppProvider({ children }) {
-  const [user, setUser] = useState({
-    id: null,
-    nome: "",
-    username: "",
-    isAdmin: false,
-    loggedIn: false,
+  const [user, setUser] = useState(() => {
+  const storedUser = localStorage.getItem("user");
+  return storedUser
+    ? JSON.parse(storedUser)
+    : { id: null, nome: "", username: "", isAdmin: false, loggedIn: false };
   });
 
   const [materiais, setMateriais] = useState([]);
@@ -48,6 +47,10 @@ export function AppProvider({ children }) {
     fetchPedidos();
     fetchUsers();
   }, []);
+
+  useEffect(() => {
+  localStorage.setItem("user", JSON.stringify(user));
+  }, [user]);
 
   const adicionarUsuario = async (novoUser) => {
     const salt = bcrypt.genSaltSync(10);

@@ -379,7 +379,14 @@ export default function Configuracao() {
   };
 
   const handleLogout = () => {
-    setUser({ loggedIn: false });
+    setUser({
+      id: null,
+      nome: "",
+      username: "",
+      isAdmin: false,
+      loggedIn: false,
+      seccao: null, // se também usares este campo
+    });
     localStorage.removeItem("user");
     navigate("/");
   };
