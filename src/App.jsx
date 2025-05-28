@@ -1,5 +1,5 @@
 import React, { useContext, useState } from "react";
-import { BrowserRouter as Router, Routes, Route, Link } from "react-router-dom";
+import { BrowserRouter as Router, Routes, Route, Link,useNavigate  } from "react-router-dom";
 import { AppProvider, AppContext } from "./context/AppContext";
 import Login from "./components/Login";
 import Material from "./components/Material";
@@ -14,6 +14,15 @@ import "./index.css";  // global/base CSS
 function Header() {
   const { user } = useContext(AppContext);
   const [menuOpen, setMenuOpen] = useState(false);
+  const navigate = useNavigate();
+
+  const handleLogoClick = () => {
+    if (user?.loggedIn) {
+      navigate("/material");
+    } else {
+      navigate("/");
+    }
+  };
 
   return (
     <header className="main-header">
@@ -22,6 +31,8 @@ function Header() {
           src={logo}
           alt="Logo"
           className="logo"
+          style={{ cursor: "pointer" }}
+          onClick={handleLogoClick}
           onError={(e) => (e.target.style.display = "none")}
         />
       </div>
