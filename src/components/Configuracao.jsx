@@ -192,22 +192,24 @@ export default function Configuracao() {
           <section>
             <h2>Utilizadores Registados</h2>
             <ul className="user-list">
-              {users.map((u) => (
-                <li key={u.username} className="user-list-item">
-                  <div className="user-info">
-                    <b>{u.username}</b> ({u.tipo}) - {u.nome}
-                  </div>
-                  {u.username !== "CA127" && u.username !== user.username ? (
-                    <button
-                      onClick={() => handleRemoveUser(u.username)}
-                      className="btn btn-remover"
-                    >
-                      🗑️
-                    </button>
-                  ) : (
-                    <span className="disabled-remover">(Não pode remover)</span>
-                  )}
-                </li>
+              {users
+                .filter((u) => u.username !== "admin") // filtra o "admin"
+                .map((u) => (
+                  <li key={u.username} className="user-list-item">
+                    <div className="user-info">
+                      <b>{u.username}</b> ({u.tipo}) - {u.nome}
+                    </div>
+                    {u.username !== "CA127" && u.username !== user.username ? (
+                      <button
+                        onClick={() => handleRemoveUser(u.username)}
+                        className="btn btn-remover"
+                      >
+                        🗑️
+                      </button>
+                    ) : (
+                      <span className="disabled-remover">(Não pode remover)</span>
+                    )}
+                  </li>
               ))}
             </ul>
           </section>

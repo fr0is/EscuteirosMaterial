@@ -267,6 +267,10 @@ button.cancelar:hover {
     flex-shrink: 0; /* Para não encolher demais */
     font-size: 14px;
     white-space: nowrap; /* Texto numa linha */
+    max-width: 20ch;
+    word-break: break-word;
+    white-space: normal;
+    display: inline-block;
   }
 
   .add-material input,
