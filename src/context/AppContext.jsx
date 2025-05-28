@@ -175,6 +175,7 @@ export function AppProvider({ children }) {
     patrulha,
     atividade,
     user_id,
+    seccao,
   }) => {
     const { data: result, error } = await supabase
       .from("pedidos")
@@ -187,6 +188,7 @@ export function AppProvider({ children }) {
         patrulha,
         atividade,
         user_id,
+        seccao,
       }])
       .select()
       .single();
@@ -224,6 +226,25 @@ export function AppProvider({ children }) {
     });
   };
 
+  const alterarSeccaoUsuario = async (username, novaSeccao) => {
+    const { data, error } = await supabase
+      .from("users")
+      .update({ seccao: novaSeccao })
+      .eq("username", username)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    setUsers((prev) =>
+      prev.map((u) => (u.username === username ? { ...u, seccao: novaSeccao } : u))
+    );
+
+    if (user.username === username) {
+      setUser((prevUser) => ({ ...prevUser, seccao: novaSeccao }));
+    }
+  };
+
   return (
     <AppContext.Provider
       value={{
@@ -246,6 +267,7 @@ export function AppProvider({ children }) {
         atualizarMaterial,
         adicionarPedido,
         eliminarPedido,
+        alterarSeccaoUsuario,
       }}
     >
       {children}

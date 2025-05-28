@@ -338,7 +338,7 @@ function PedidoItem({
       <p>
         <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
       </p>
-      <p><b>Secção:</b> {seccao}</p>
+      <p><b>Secção:</b> {pedido.seccao}</p>
       <p><b>{grupoLabel}:</b> {pedido.patrulha || "-"}</p>
       <p><b>Atividade:</b> {pedido.atividade || "-"}</p>
       <p><b>Estado:</b> {pedido.estado}</p>

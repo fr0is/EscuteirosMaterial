@@ -98,6 +98,7 @@ export default function Material() {
       patrulha,
       atividade,
       user_id: user.id,
+      seccao: user.seccao,
     };
 
     const tipoPatrulha = {
@@ -392,7 +393,7 @@ export default function Material() {
         <div className="pedido-form">
           <h3>Pedido de material</h3>
           <input
-            placeholder="Patrulha/Equipa/Bando/Tribo"
+            placeholder="Bando/Patrulha/Equipa/Tribo"
             value={patrulha}
             onChange={(e) => setPatrulha(e.target.value)}
           />
