@@ -203,15 +203,17 @@ export function AppProvider({ children }) {
   };
 
   // Login do usuário
-  const login = async (username, password) => {
+  const login = async (identifier, password) => {
+    // identifier pode ser username ou email
+
     const { data: userEncontrado, error } = await supabase
       .from("users")
       .select("*")
-      .eq("username", username.trim())
+      .or(`username.eq.${identifier.trim()},email.eq.${identifier.trim()}`)
       .single();
 
     if (error || !userEncontrado) {
-      throw new Error("Username não encontrado");
+      throw new Error("Username ou email não encontrado");
     }
 
     const passwordMatch = bcrypt.compareSync(password, userEncontrado.password);

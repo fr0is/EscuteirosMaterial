@@ -398,6 +398,11 @@ function PedidoItem({
               </label>
             </div>
           ))}
+          {pedido.estado === "Aprovado" && (
+            <p className="pedido-warning">
+              ⚠️ Pedido ainda não está totalmente entregue.
+            </p>
+          )}
           <div className="pedido-buttons">
             <button
               className="btn-aprovar"

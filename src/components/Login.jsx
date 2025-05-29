@@ -7,31 +7,31 @@ import "../styles/variables.css";
 
 export default function Login() {
   const { login } = useContext(AppContext);
-  const [username, setUsername] = useState("");
+  const [identifier, setIdentifier] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [usernameError, setUsernameError] = useState("");
+  const [identifierError, setIdentifierError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setUsernameError("");
+    setIdentifierError("");
     setPasswordError("");
     
     try {
-      await login(username, password);
+      await login(identifier, password);
       navigate("/material");
     } catch (error) {
       // Aqui vamos verificar o erro do login
-      if (error.message.includes("Username")) {
-        setUsernameError("Username incorreto. Tente novamente.");
+      if (error.message.includes("Identifier")) {
+        setIdentifierError("Username/Email incorreto. Tente novamente.");
       } else if (error.message.includes("Password")) {
         setPasswordError("Password incorreta. Tente novamente.");
       } else {
         // Para erros genéricos
-        setUsernameError("Falha ao fazer login. Tente novamente.");
+        setIdentifierError("Falha ao fazer login. Tente novamente.");
         setPasswordError("Falha ao fazer login. Tente novamente.");
       }
     } finally {
@@ -43,19 +43,19 @@ export default function Login() {
     <div className="login-container">
       <h2>Login</h2>
       <form className="login-form" onSubmit={handleSubmit}>
-        <label htmlFor="username" className="sr-only">Username</label>
+        <label htmlFor="identifier" className="sr-only">Username/Email</label>
         <input
-          id="username"
-          name="username"
-          placeholder="Username"
-          value={username}
-          onChange={(e) => setUsername(e.target.value)}
+          id="identifier"
+          name="identifier"
+          placeholder="Username/Email"
+          value={identifier}
+          onChange={(e) => setIdentifier(e.target.value)}
           required
           autoFocus
           disabled={loading}
-          className={usernameError ? "error" : ""}
+          className={identifierError ? "error" : ""}
         />
-        {usernameError && <div className="error-message">{usernameError}</div>}
+        {identifierError && <div className="error-message">{identifierError}</div>}
 
         <label htmlFor="password" className="sr-only">Password</label>
         <input
