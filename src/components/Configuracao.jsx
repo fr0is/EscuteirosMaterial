@@ -598,7 +598,7 @@ export default function Configuracao() {
             <h2>Adicionar Utilizador</h2>
             <div className="form-group">
               <input
-                placeholder="Nome de Bando/Patrulha/Equipa/Tribo"
+                placeholder="Username"
                 value={usernameNovoUtilizador}
                 onChange={(e) => setUsernameNovoUtilizador(e.target.value)}
                 className="input-field"
@@ -617,8 +617,8 @@ export default function Configuracao() {
                 className="input-field"
               />
               <input
-                type="Email do encarregado de material"
-                placeholder="Email"
+                type="email"
+                placeholder="Email do encarregado de material"
                 value={emailNovoUtilizador}
                 onChange={(e) => setEmailNovoUtilizador(e.target.value)}
                 className="input-field"
