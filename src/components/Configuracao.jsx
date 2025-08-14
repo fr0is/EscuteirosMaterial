@@ -410,7 +410,7 @@ export default function Configuracao() {
         .eq("username", username);
 
       if (error) {
-        toast.error("Erro ao atualizar tipo.");
+        toast.error("Erro ao atualizar tipo de utilizador.");
         return;
       }
 
@@ -426,10 +426,10 @@ export default function Configuracao() {
         return copy;
       });
 
-      toast.success("Tipo atualizado com sucesso!");
+      toast.success("Tipo de utilizador atualizado com sucesso!");
     } catch (err) {
       console.error(err);
-      toast.error("Erro ao atualizar tipo.");
+      toast.error("Erro ao atualizar tipo de utilizador.");
     }
   };
 
@@ -598,26 +598,26 @@ export default function Configuracao() {
             <h2>Adicionar Utilizador</h2>
             <div className="form-group">
               <input
-                placeholder="Username"
+                placeholder="Nome de Bando/Patrulha/Equipa/Tribo"
                 value={usernameNovoUtilizador}
                 onChange={(e) => setUsernameNovoUtilizador(e.target.value)}
                 className="input-field"
               />
               <input
-                type="password"
+                type="Password"
                 placeholder="Password"
                 value={passwordNovoUtilizador}
                 onChange={(e) => setPasswordNovoUtilizador(e.target.value)}
                 className="input-field"
               />
               <input
-                placeholder="Nome"
+                placeholder="Nome do encarregado de material"
                 value={nomeNovoUtilizador}
                 onChange={(e) => setNomeNovoUtilizador(e.target.value)}
                 className="input-field"
               />
               <input
-                type="email"
+                type="Email do encarregado de material"
                 placeholder="Email"
                 value={emailNovoUtilizador}
                 onChange={(e) => setEmailNovoUtilizador(e.target.value)}
