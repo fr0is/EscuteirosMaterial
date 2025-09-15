@@ -9,6 +9,10 @@ export default async function handler(req, res) {
   // Verifica token secreto
   const token = req.headers['x-ping-token'];
   if (!token || token !== process.env.PING_TOKEN) {
+
+    console.log("🔍 Header recebido:", req.headers['x-ping-token']);
+    console.log("🔍 Token do Vercel:", process.env.PING_TOKEN);
+
     console.warn("❌ [PING] Token inválido ou ausente");
     return res.status(403).json({ success: false, error: "Forbidden" });
   }
