@@ -2,12 +2,15 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: "*/30 * * * *" # corre de 15 em 15 minutos
-  workflow_dispatch: # allows manual run from GitHub
+    - cron: "*/30 * * * *" # corre de 30 em 30 minutos
+  workflow_dispatch: # permite disparar manualmente
 
 jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
       - name: Ping API
-        run: curl -s https://escuteiros-material.vercel.app/api/ping
+        run: |
+          echo "🔔 Chamando endpoint /api/ping..."
+          curl -i -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" \
+               https://escuteiros-material.vercel.app/api/ping
