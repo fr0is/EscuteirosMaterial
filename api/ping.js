@@ -10,7 +10,7 @@ export default async function handler(req, res) {
   const token = req.headers['x-ping-token'];
   if (!token || token !== process.env.PING_TOKEN) {
 
-    console.log("🔍 Header recebido:", req.headers['x-ping-token']);
+    console.log("🔍 Token do Vercel:", process.env.VERCEL_TOKEN);
     console.log("🔍 Token do Vercel:", process.env.PING_TOKEN);
 
     console.warn("❌ [PING] Token inválido ou ausente");
