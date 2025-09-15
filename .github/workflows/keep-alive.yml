@@ -1,17 +1,31 @@
-name: Keep Supabase Alive
+name: Keep Supabase Alive & Redeploy
 
 on:
   schedule:
-    - cron: "*/30 * * * *" # corre de 30 em 30 minutos
-  workflow_dispatch: # permite disparar manualmente
+    - cron: "0 3 */2 * *"  # ping a cada 2 dias às 03:00 UTC
+    - cron: "0 3 * * 1"    # deploy semanal às segundas às 03:00 UTC
+  workflow_dispatch:
 
 jobs:
-  ping:
+  keep-alive:
     runs-on: ubuntu-latest
     steps:
+      # 1️⃣ Ping seguro da API
       - name: Ping API com token
         run: |
           echo "🔔 Chamando endpoint /api/ping com token secreto..."
-          curl -i -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" \
+          curl -i -A "Mozilla/5.0" \
                -H "x-ping-token: ${{ secrets.PING_TOKEN }}" \
                https://escuteiros-material.vercel.app/api/ping
+
+      # 2️⃣ Deploy semanal no Vercel
+      - name: Deploy semanal no Vercel
+        if: github.event.schedule == '0 3 * * 1'  # só executa na cron semanal
+        run: |
+          echo "🚀 Disparando redeploy no Vercel..."
+          curl -X POST "https://api.vercel.com/v13/deployments" \
+            -H "Authorization: Bearer ${{ secrets.VERCEL_TOKEN }}" \
+            -H "Content-Type: application/json" \
+            -d '{
+              "target": "production"
+            }'
