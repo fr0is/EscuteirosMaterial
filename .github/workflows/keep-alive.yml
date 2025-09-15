@@ -9,8 +9,9 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
-      - name: Ping API
+      - name: Ping API com token
         run: |
-          echo "🔔 Chamando endpoint /api/ping..."
+          echo "🔔 Chamando endpoint /api/ping com token secreto..."
           curl -i -A "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/128.0.0.0 Safari/537.36" \
+               -H "x-ping-token: ${{ secrets.PING_TOKEN }}" \
                https://escuteiros-material.vercel.app/api/ping
