@@ -6,18 +6,7 @@ const supabase = createClient(
 );
 
 export default async function handler(req, res) {
-  // Verifica token secreto
-  const token = req.headers['x-ping-token'];
-  if (!token || token !== process.env.PING_TOKEN) {
-
-    console.log("🔍 Token do Vercel:", process.env.VERCEL_TOKEN);
-    console.log("🔍 Token do Vercel:", process.env.PING_TOKEN);
-
-    console.warn("❌ [PING] Token inválido ou ausente");
-    return res.status(403).json({ success: false, error: "Forbidden" });
-  }
-
-  console.log("🔔 [PING] Request autorizado recebido em:", new Date().toISOString());
+  console.log("🔔 [PING] Request recebido em:", new Date().toISOString());
 
   const { data, error } = await supabase.from("users").select("id").limit(1);
 
@@ -26,6 +15,6 @@ export default async function handler(req, res) {
     return res.status(500).json({ success: false, error: error.message });
   }
 
-  console.log("✅ [PING] Query ao Supabase executada com sucesso");
+  console.log("✅ [PING] Query ao Supabase executada com sucesso", data?.length ? "→ resultados encontrados" : "→ tabela vazia");
   res.status(200).json({ success: true });
 }
