@@ -12,10 +12,10 @@ const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(() => {
-  const storedUser = localStorage.getItem("user");
-  return storedUser
-    ? JSON.parse(storedUser)
-    : { id: null, nome: "", username: "", isAdmin: false, loggedIn: false };
+    const storedUser = localStorage.getItem("user");
+    return storedUser
+      ? JSON.parse(storedUser)
+      : { id: null, nome: "", username: "", isAdmin: false, loggedIn: false };
   });
 
   const [materiais, setMateriais] = useState([]);
@@ -23,7 +23,10 @@ export function AppProvider({ children }) {
   const [users, setUsers] = useState([]);
   const [emailsNotificacao, setEmailsNotificacao] = useState([]);
 
-  // Fetch materiais, pedidos e usuários do banco
+  // 🧩 Novo estado: detalhe_material
+  const [detalheMaterial, setDetalheMaterial] = useState([]);
+
+  // ---------------- FETCHS ----------------
   const fetchMateriais = async () => {
     const { data, error } = await supabase.from("materiais").select("*");
     if (error) console.error("Erro ao buscar materiais:", error);
@@ -42,30 +45,67 @@ export function AppProvider({ children }) {
     else setUsers(data);
   };
 
+  // 🔍 Buscar detalhe_material (referências, condição e estado)
+  const fetchDetalheMaterial = async () => {
+    const { data, error } = await supabase
+      .from("detalhe_material")
+      .select("id, id_material, referencia, condicao, estado_pedido");
+
+    if (error) {
+      console.error("Erro ao buscar detalhe_material:", error);
+    } else {
+      setDetalheMaterial(data);
+    }
+  };
+
+  // Atualizar um item de detalhe_material (opcional, útil futuramente)
+  const atualizarDetalheMaterial = async (id, updates) => {
+    const { data, error } = await supabase
+      .from("detalhe_material")
+      .update(updates)
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) {
+      console.error("Erro ao atualizar detalhe_material:", error);
+      throw error;
+    }
+
+    setDetalheMaterial((prev) =>
+      prev.map((d) => (d.id === id ? { ...d, ...data } : d))
+    );
+  };
+
+  // ---------------- USEEFFECT ----------------
   useEffect(() => {
     fetchMateriais();
     fetchPedidos();
     fetchUsers();
+    fetchDetalheMaterial(); // 👈 adiciona o carregamento de referências
   }, []);
 
   useEffect(() => {
-  localStorage.setItem("user", JSON.stringify(user));
+    localStorage.setItem("user", JSON.stringify(user));
   }, [user]);
 
+  // ---------------- USUÁRIOS ----------------
   const adicionarUsuario = async (novoUser) => {
     const salt = bcrypt.genSaltSync(10);
     const hashedPassword = bcrypt.hashSync(novoUser.password, salt);
 
     const { data, error } = await supabase
       .from("users")
-      .insert([{
-        username: novoUser.username,
-        nome: novoUser.nome,
-        tipo: novoUser.tipo,
-        password: hashedPassword,
-        email: novoUser.email,
-        seccao: novoUser.seccao,
-      }])
+      .insert([
+        {
+          username: novoUser.username,
+          nome: novoUser.nome,
+          tipo: novoUser.tipo,
+          password: hashedPassword,
+          email: novoUser.email,
+          seccao: novoUser.seccao,
+        },
+      ])
       .select()
       .single();
 
@@ -76,7 +116,7 @@ export function AppProvider({ children }) {
     setUsers((u) => [...u, data]);
   };
 
-  // Atualizar pedido
+  // ---------------- PEDIDOS ----------------
   const updatePedido = async (pedidoId, updates) => {
     const { data, error } = await supabase
       .from("pedidos")
@@ -93,11 +133,9 @@ export function AppProvider({ children }) {
     setPedidos((prev) =>
       prev.map((p) => (p.id === pedidoId ? { ...p, ...data } : p))
     );
-
     return true;
   };
 
-  // Cancelar pedido
   const cancelarPedido = async (id) => {
     const { error } = await supabase.from("pedidos").delete().eq("id", id);
     if (error) {
@@ -108,7 +146,6 @@ export function AppProvider({ children }) {
     return true;
   };
 
-  // Eliminar pedido
   const eliminarPedido = async (id) => {
     const { error } = await supabase.from("pedidos").delete().eq("id", id);
     if (error) {
@@ -119,15 +156,13 @@ export function AppProvider({ children }) {
     return true;
   };
 
-  // Atualizar o stock
+  // ---------------- MATERIAIS ----------------
   const setStock = async (novoStock) => {
     try {
       for (const item of novoStock) {
         await supabase
           .from("materiais")
-          .update({
-            disponivel: item.disponivel,
-          })
+          .update({ disponivel: item.disponivel })
           .eq("id", item.id);
       }
       setMateriais(novoStock);
@@ -138,9 +173,8 @@ export function AppProvider({ children }) {
     }
   };
 
-  // Atualizar material
   const atualizarMaterial = async (id, updates) => {
-    const { data, error } = await supabase
+    const { error } = await supabase
       .from("materiais")
       .update(updates)
       .eq("id", id);
@@ -150,14 +184,12 @@ export function AppProvider({ children }) {
     );
   };
 
-  // Remover material
   const removerMaterial = async (id) => {
     const { error } = await supabase.from("materiais").delete().eq("id", id);
     if (error) throw error;
     setMateriais((prev) => prev.filter((m) => m.id !== id));
   };
 
-  // Adicionar material
   const adicionarMaterial = async ({ nome, total }) => {
     const { data, error } = await supabase
       .from("materiais")
@@ -169,7 +201,6 @@ export function AppProvider({ children }) {
     setMateriais((m) => [...m, data]);
   };
 
-  // Adicionar pedido
   const adicionarPedido = async ({
     nome,
     data,
@@ -183,17 +214,19 @@ export function AppProvider({ children }) {
   }) => {
     const { data: result, error } = await supabase
       .from("pedidos")
-      .insert([{
-        nome,
-        data,
-        materiais,
-        estado,
-        devolvido,
-        patrulha,
-        atividade,
-        user_id,
-        seccao,
-      }])
+      .insert([
+        {
+          nome,
+          data,
+          materiais,
+          estado,
+          devolvido,
+          patrulha,
+          atividade,
+          user_id,
+          seccao,
+        },
+      ])
       .select()
       .single();
 
@@ -202,25 +235,18 @@ export function AppProvider({ children }) {
     return result;
   };
 
-  // Login do usuário
+  // ---------------- LOGIN ----------------
   const login = async (identifier, password) => {
-    // identifier pode ser username ou email
-
     const { data: userEncontrado, error } = await supabase
       .from("users")
       .select("*")
       .or(`username.eq.${identifier.trim()},email.eq.${identifier.trim()}`)
       .single();
 
-    if (error || !userEncontrado) {
-      throw new Error("Username ou email não encontrado");
-    }
+    if (error || !userEncontrado) throw new Error("Username ou email não encontrado");
 
     const passwordMatch = bcrypt.compareSync(password, userEncontrado.password);
-
-    if (!passwordMatch) {
-      throw new Error("Password incorreta");
-    }
+    if (!passwordMatch) throw new Error("Password incorreta");
 
     setUser({
       id: userEncontrado.id,
@@ -251,17 +277,16 @@ export function AppProvider({ children }) {
     }
   };
 
-  // Buscar emails de notificação
+  // ---------------- EMAILS DE NOTIFICAÇÃO ----------------
   const buscarEmailsNotificacao = async () => {
     const { data, error } = await supabase.from("emails_notificacao").select("email");
     if (error) {
       console.error("Erro ao buscar emails de notificação:", error);
     } else {
-      setEmailsNotificacao(data); // data = [{ email: "x" }, { email: "y" }]
+      setEmailsNotificacao(data);
     }
   };
 
-  // Adicionar email de notificação
   const adicionarEmailNotificacao = async (email) => {
     const { data, error } = await supabase
       .from("emails_notificacao")
@@ -277,13 +302,8 @@ export function AppProvider({ children }) {
     setEmailsNotificacao((prev) => [...prev, data]);
   };
 
-
-  // Remover email de notificação
   const removerEmailNotificacao = async (email) => {
-    const { error } = await supabase
-      .from("emails_notificacao")
-      .delete()
-      .eq("email", email);
+    const { error } = await supabase.from("emails_notificacao").delete().eq("email", email);
 
     if (error) {
       console.error("Erro ao remover email de notificação:", error);
@@ -294,7 +314,7 @@ export function AppProvider({ children }) {
     return true;
   };
 
-
+  // ---------------- CONTEXTO ----------------
   return (
     <AppContext.Provider
       value={{
@@ -322,6 +342,10 @@ export function AppProvider({ children }) {
         adicionarEmailNotificacao,
         removerEmailNotificacao,
 
+        // 👇 Novos valores adicionados
+        detalheMaterial,
+        setDetalheMaterial,
+        atualizarDetalheMaterial,
       }}
     >
       {children}

@@ -1,0 +1,248 @@
+/* DetalheMaterial.css — estilo compatível com Material.css */
+
+.material-container {
+  max-width: 900px;
+  padding: 20px;
+  margin: 0 auto;
+  background-color: var(--color-background);
+  color: var(--color-text);
+  font-family: Arial, sans-serif;
+  border-radius: var(--border-radius);
+}
+
+/* Títulos principais e secundários */
+.material-container h2,
+.material-container h3 {
+  font-weight: bold;
+  margin-bottom: 16px;
+  text-align: center;
+  color: var(--color-primary);
+}
+
+/* Bloco de cada material */
+.material-detalhe-bloco {
+  margin-bottom: 20px;
+  border: 1px solid #ddd;
+  border-radius: var(--border-radius);
+  overflow: hidden;
+}
+
+/* Cabeçalho do material */
+.material-detalhe-bloco h3 {
+  background-color: var(--color-primary);
+  color: white;
+  padding: 10px 15px;
+  margin: 0;
+  font-size: 16px;
+}
+
+/* Tabela de detalhes */
+.material-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14px;
+  margin-top: 5px;
+  table-layout: fixed; /* FIXA o tamanho das colunas */
+}
+
+.material-table th,
+.material-table td {
+  border-bottom: 1px solid #e0e0e0;
+  padding: 8px 10px;
+  text-align: left;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.material-table th {
+  background-color: #f7f7f7;
+  font-weight: 600;
+}
+
+/* Definição de larguras fixas das colunas */
+.material-table th.descricao,
+.material-table td.descricao {
+  width: 40%;
+}
+
+.material-table th.referencia,
+.material-table td.referencia {
+  width: 15%;
+}
+
+.material-table th.condicao,
+.material-table td.condicao {
+  width: 15%;
+}
+
+.material-table th.estado,
+.material-table td.estado {
+  width: 15%;
+}
+
+.material-table th.acoes,
+.material-table td.acoes {
+  width: 15%;
+}
+
+/* Hover linha */
+.material-table tr:hover {
+  background-color: #fafafa;
+}
+
+/* Inputs e selects na tabela */
+.material-table input,
+.material-table select {
+  width: 100%;
+  padding: 6px 8px;
+  font-size: 14px;
+  border-radius: var(--border-radius);
+  border: 1px solid #ccc;
+  box-sizing: border-box;
+  min-width: 0; /* evita expansão da coluna */
+}
+
+/* Container de edição — layout fixo */
+.material-editing {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  width: 100%;
+  gap: 16px; /* gap desktop */
+  flex-wrap: nowrap; /* mantém tudo na mesma linha */
+}
+
+/* Inputs da edição */
+.material-editing .inputs {
+  display: flex;
+  gap: 8px;
+  flex-grow: 1;
+  max-width: 60%;
+  align-items: center;
+}
+
+/* Botões de edição */
+.material-editing .buttons {
+  display: flex;
+  gap: 8px; /* gap desktop */
+  justify-content: flex-end;
+  flex-shrink: 0;
+}
+
+/* Botões de ação (editar, guardar, eliminar, cancelar) */
+.material-table button {
+  font-size: 14px;
+  padding: 6px 10px;
+  border-radius: var(--border-radius);
+  border: 1px solid transparent;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.3s ease, border-color 0.3s ease;
+  min-width: 50px;
+}
+
+/* Botões verde (editar e guardar) */
+.material-table button:first-child {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary-dark);
+  color: white;
+  margin-right: 8px; /* desktop */
+}
+
+.material-table button:first-child:hover {
+  background-color: var(--color-primary-dark);
+}
+
+/* Botões vermelho (eliminar/cancelar) */
+.material-table button:last-child {
+  background-color: var(--color-danger);
+  border-color: #b71c1c;
+  color: white;
+}
+
+.material-table button:last-child:hover {
+  background-color: #b71c1c;
+}
+
+/* Responsividade para mobile */
+@media (max-width: 480px) {
+  .material-container {
+    padding: 10px 5px;
+  }
+
+  .material-detalhe-bloco h3 {
+    font-size: 14px;
+    padding: 6px 10px;
+  }
+
+  .material-table {
+    display: block;
+    overflow-x: auto;
+    width: 100%;
+    font-size: 12px;
+  }
+
+  .material-table th,
+  .material-table td {
+    padding: 4px 6px;
+    font-size: 12px;
+    white-space: normal; /* permite quebra de linha */
+  }
+
+  /* Ajusta larguras das colunas para caber melhor */
+  .material-table th.descricao,
+  .material-table td.descricao {
+    width: 45%;
+  }
+
+  .material-table th.referencia,
+  .material-table td.referencia {
+    width: 15%;
+  }
+
+  .material-table th.condicao,
+  .material-table td.condicao {
+    width: 15%;
+  }
+
+  .material-table th.estado,
+  .material-table td.estado {
+    width: 15%;
+  }
+
+  .material-table th.acoes,
+  .material-table td.acoes {
+    width: 10%;
+  }
+
+  .material-table button {
+    padding: 4px 6px;
+    font-size: 12px;
+    min-width: unset;
+    margin-right: 6px; /* gap entre botões mobile */
+  }
+
+  .material-editing {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+  }
+
+  .material-editing .inputs {
+    flex-wrap: wrap;
+    gap: 4px;
+  }
+
+  .material-editing .buttons {
+    gap: 6px;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .material-table input,
+  .material-table select {
+    font-size: 12px;
+    padding: 4px 6px;
+  }
+}

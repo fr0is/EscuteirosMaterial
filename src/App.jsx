@@ -5,6 +5,7 @@ import Login from "./components/Login";
 import Material from "./components/Material";
 import Pedidos from "./components/Pedidos";
 import Configuracao from "./components/Configuracao";
+import DetalheMaterial from "./components/DetalheMaterial";
 import { FaBars } from "react-icons/fa";
 import "../src/styles/Header.css";
 import logo from "./logo.png";
@@ -46,6 +47,7 @@ function Header() {
           </button>
           <nav className={`nav-links ${menuOpen ? "open" : ""}`}>
             <Link to="/material" onClick={() => setMenuOpen(false)}>Material</Link>
+            {user.isAdmin &&<Link to="/detalheMaterial" onClick={() => setMenuOpen(false)}>Detalhe Material</Link>}
             <Link to="/pedidos" onClick={() => setMenuOpen(false)}>Pedidos</Link>
             <Link to="/configuracao" onClick={() => setMenuOpen(false)}>Conta</Link>
           </nav>
@@ -64,6 +66,7 @@ function App() {
         <Routes>
           <Route path="/" element={<Login />} />
           <Route path="/material" element={<Material />} />
+          <Route path="/detalheMaterial" element={<DetalheMaterial />} />
           <Route path="/pedidos" element={<Pedidos />} />
           <Route path="/configuracao" element={<Configuracao />} />
         </Routes>

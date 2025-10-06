@@ -2,8 +2,8 @@ import React, { useContext, useEffect, useState } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
-import { ToastContainer, toast } from "react-toastify"; // Importando o Toast
-import "react-toastify/dist/ReactToastify.css"; // Estilo do Toast
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import "../styles/Pedidos.css";
 import "../styles/utilities.css";
 import "../styles/variables.css";
@@ -16,32 +16,59 @@ export default function Pedidos() {
     materiais,
     updatePedido,
     cancelarPedido,
-    setStock,
     eliminarPedido,
     users,
+    detalheMaterial,
+    atualizarDetalheMaterial,
   } = useContext(AppContext);
   const navigate = useNavigate();
-
   const [datasLevantamento, setDatasLevantamento] = useState({});
 
   useEffect(() => {
-    if (!user.loggedIn) {
-      navigate("/");
-    }
+    if (!user.loggedIn) navigate("/");
   }, [user.loggedIn, navigate]);
+
+  useEffect(() => {
+    if (!pedidos || pedidos.length === 0) return;
+
+    setPedidos((prev) =>
+      prev.map((p) => {
+        if (!p.materiaisDetalhados) {
+          const detalhados = {};
+          Object.entries(p.materiais || {}).forEach(([nome, qtd]) => {
+            detalhados[nome] = Array(qtd)
+              .fill(0)
+              .map(() => ({
+                referencia: "",
+                condicao: "bom",
+                estado_pedido: "disponivel",
+                detalhes: "",
+              }));
+          });
+          return { ...p, materiaisDetalhados: detalhados };
+        }
+        return p;
+      })
+    );
+  }, []);
 
   if (!user.loggedIn) return null;
 
   const getUserById = (id) => users?.find((u) => u.id === id);
 
   const handleDataLevantamentoChange = (id, novaData) => {
-    setDatasLevantamento((prev) => ({
-      ...prev,
-      [id]: novaData,
-    }));
+    setDatasLevantamento((prev) => ({ ...prev, [id]: novaData }));
   };
 
-  const handleAprovar = async (id) => {
+  const pedidosVisiveis = (user.isAdmin
+    ? pedidos
+    : pedidos.filter((p) => p.nome === user.nome)
+  )
+    .slice()
+    .sort((a, b) => b.id - a.id);
+
+  // ------------------- APROVAR -------------------
+  async function handleAprovar(id) {
     const dataLevant = datasLevantamento[id];
     if (!dataLevant || !dataLevant.trim()) {
       toast.error("Indique a data de levantamento antes de aprovar.");
@@ -51,77 +78,73 @@ export default function Pedidos() {
     const pedido = pedidos.find((p) => p.id === id);
     if (!pedido || pedido.estado !== "Pendente") return;
 
-    for (const [nome, qtd] of Object.entries(pedido.materiais)) {
-      const item = materiais.find((m) => m.nome === nome);
-      if (!item || item.disponivel < qtd) {
-        toast.error(`Material insuficiente para: ${nome}`);
-        return;
+    for (const [nome, unidades] of Object.entries(pedido.materiaisDetalhados)) {
+      for (const unidade of unidades) {
+        if (!unidade.referencia) {
+          toast.error(`Selecione todas as referências para ${nome}`);
+          return;
+        }
       }
     }
 
-    const novoMateriais = materiais.map((item) => {
-      if (pedido.materiais[item.nome]) {
-        return {
-          ...item,
-          disponivel: item.disponivel - pedido.materiais[item.nome],
-        };
-      }
-      return item;
-    });
-
-    const materiaisUpdated = await setStock(novoMateriais);
-    if (!materiaisUpdated) {
-      toast.error("Erro ao atualizar materiais");
+    const todasReferencias = Object.values(pedido.materiaisDetalhados)
+      .flat()
+      .map((u) => u.referencia);
+    const refsDuplicadas = todasReferencias.filter(
+      (r, i) => todasReferencias.indexOf(r) !== i
+    );
+    if (refsDuplicadas.length > 0) {
+      toast.error(`Referência repetida: ${refsDuplicadas[0]}`);
       return;
     }
 
-    const pedidoUpdated = await updatePedido(id, {
+    const ok = await updatePedido(id, {
       estado: "Aprovado",
       data_levantamento: dataLevant,
+      materiaisDetalhados: pedido.materiaisDetalhados,
     });
-
-    if (!pedidoUpdated) {
+    if (!ok) {
       toast.error("Erro ao aprovar pedido");
       return;
     }
 
-    const autor = getUserById(pedido.user_id);
-
-    if (!autor?.email) {
-      toast.error("Email do autor não está definido. Não foi possível enviar o email.");
-      return;
+    // Atualiza detalhe_material
+    for (const [nome, unidades] of Object.entries(pedido.materiaisDetalhados)) {
+      for (const unidade of unidades) {
+        const detalhe = detalheMaterial.find(
+          (d) =>
+            d.referencia === unidade.referencia &&
+            materiais.find((m) => m.id === d.id_material)?.nome === nome
+        );
+        if (detalhe) {
+          await atualizarDetalheMaterial(detalhe.id, {
+            estado_pedido: "emUso",
+            descricao: "",
+          });
+        }
+      }
     }
 
-    const listaMateriais = Object.entries(pedido.materiais)
-      .map(([nome, qtd]) => `- ${nome}: ${qtd}`)
-      .join("\n");
-
-    const mensagem = `
-Olá ${autor.nome},
-
-O seu pedido foi aprovado ✅
-
-📅 Levantamento: ${dataLevant}
-
-📦 Material:
-${listaMateriais}
-
-Boa atividade!
-`.trim();
-
-    try {
-      await emailjs.send(
-        "service_pnn1l65",
-        "template_im8430o",
-        {
-          message: mensagem,
-          to_email: autor.email,
-        },
-        "largUwzgW7L95dduo"
-      );
-      toast.success("Pedido aprovado e email enviado.");
-    } catch (err) {
-      toast.error("Pedido aprovado, mas falha no envio de email.");
+    // Email
+    const autor = getUserById(pedido.user_id);
+    if (autor?.email) {
+      const listaMateriais = Object.entries(pedido.materiais || {})
+        .map(([nome, qtd]) => `- ${nome}: ${qtd} unidades`)
+        .join("\n");
+      try {
+        await emailjs.send(
+          "service_pnn1l65",
+          "template_im8430o",
+          {
+            message: `Olá ${autor.nome},\n\nO seu pedido foi aprovado ✅\n\n📅 Levantamento: ${dataLevant}\n\n📦 Material:\n${listaMateriais}\n\nBoa atividade!`,
+            to_email: autor.email,
+          },
+          "largUwzgW7L95dduo"
+        );
+        toast.success("Pedido aprovado e email enviado.");
+      } catch {
+        toast.error("Pedido aprovado, mas falha ao enviar email.");
+      }
     }
 
     setDatasLevantamento((prev) => {
@@ -129,125 +152,53 @@ Boa atividade!
       delete copy[id];
       return copy;
     });
-  };
+  }
 
-  const handleDevolver = async (pedidoId, devolucao) => {
+  // ------------------- DEVOLVER -------------------
+  async function handleDevolver(pedidoId) {
     const pedido = pedidos.find((p) => p.id === pedidoId);
     if (!pedido || pedido.estado !== "Aprovado") return;
 
-    // Atualizando os materiais
-    const novoMateriais = materiais.map((item) => {
-      if (devolucao[item.nome]) {
-        return {
-          ...item,
-          disponivel: Math.min(item.disponivel + devolucao[item.nome], item.total),
-        };
-      }
-      return item;
-    });
+    let devolucaoTotal = true;
+    const devolvidoAtualizado = { ...pedido.devolvido };
 
-    const materiaisUpdated = await setStock(novoMateriais);
-    if (!materiaisUpdated) {
-      toast.error("Erro ao atualizar materiais");
-      return;
+    for (const [nome, unidades] of Object.entries(pedido.materiaisDetalhados)) {
+      for (let i = 0; i < unidades.length; i++) {
+        const unidade = unidades[i];
+        const devolvido = pedido.devolvido?.[nome]?.[i];
+
+        if (devolvido) {
+          devolvidoAtualizado[nome][i] = 1;
+          const detalhe = detalheMaterial.find(
+            (d) =>
+              d.referencia === unidade.referencia &&
+              materiais.find((m) => m.id === d.id_material)?.nome === nome
+          );
+          if (detalhe) {
+            await atualizarDetalheMaterial(detalhe.id, {
+              estado_pedido: "disponivel",
+              condicao: unidade.condicao,
+              descricao: unidade.detalhes || "",
+            });
+          }
+        } else {
+          devolucaoTotal = false;
+        }
+      }
     }
 
-    // Verificar se todos os materiais foram devolvidos
-    const devolucaoCompleta = Object.entries(pedido.materiais).every(
-      ([nome, q]) => (devolucao[nome] || 0) === q
-    );
-
-    // Se todos os materiais foram devolvidos, atualiza o estado para "Concluído"
-    const novoEstado = devolucaoCompleta ? "Concluído" : "Aprovado";
-
-    const pedidoUpdated = await updatePedido(pedidoId, {
+    const novoEstado = devolucaoTotal ? "Concluído" : "Aprovado";
+    await updatePedido(pedidoId, {
       estado: novoEstado,
-      devolvido: devolucao,
+      devolvido: devolvidoAtualizado,
     });
 
-    if (!pedidoUpdated) {
-      toast.error("Erro ao atualizar pedido");
-      return;
-    }
-
-    if (devolucaoCompleta) {
-      toast.success("Pedido devolvido completamente e concluído!");
-    }
-  };
-
-  const handleCancelar = async (id) => {
-    const pedido = pedidos.find((p) => p.id === id);
-    if (!pedido || pedido.estado !== "Pendente") return;
-
-    if (!user.isAdmin && pedido.nome !== user.nome) return;
-
-    const success = await cancelarPedido(id);
-    if (!success) {
-      toast.error("Erro ao cancelar pedido");
-    }
-  };
-
-  const handleEliminar = (id) => {
-    const confirmToastId = toast.warn(
-      <div>
-        <div>Tem a certeza que deseja eliminar este pedido?</div>
-        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
-          <button
-            onClick={async () => {
-              toast.dismiss(confirmToastId); // Fecha só o toast de confirmação
-
-              const sucesso = await eliminarPedido(id);
-
-              setTimeout(() => {
-                if (!sucesso) {
-                  toast.error("Erro ao eliminar pedido");
-                } else {
-                  toast.success("Pedido eliminado com sucesso!");
-                  setPedidos((prev) => prev.filter((p) => p.id !== id));
-                }
-              }, 300);
-            }}
-            style={{
-              padding: '8px 15px',
-              backgroundColor: 'var(--color-primary-dark)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Sim
-          </button>
-          <button
-            onClick={() => toast.dismiss(confirmToastId)} // Fecha só o toast de confirmação
-            style={{
-              padding: '8px 15px',
-              backgroundColor: 'var(--color-danger-dark)',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
-          >
-            Não
-          </button>
-        </div>
-      </div>,
-      {
-        position: 'top-center',
-        autoClose: false,
-        closeOnClick: false,
-        draggable: false,
-        progress: undefined,
-      }
+    toast.success(
+      devolucaoTotal
+        ? "Pedido devolvido completamente!"
+        : "Pedido devolvido parcialmente!"
     );
-  };
-
-  const pedidosVisiveis = (user.isAdmin
-    ? pedidos
-    : pedidos.filter((p) => p.nome === user.nome))
-    .slice()
-    .sort((a, b) => b.id - a.id);
+  }
 
   return (
     <div className="pedidos-container">
@@ -263,9 +214,9 @@ Boa atividade!
             key={p.id}
             pedido={p}
             onAprovar={() => handleAprovar(p.id)}
-            onDevolver={handleDevolver}
-            onCancelar={handleCancelar}
-            onEliminar={handleEliminar}
+            onDevolver={() => handleDevolver(p.id)}
+            onCancelar={cancelarPedido}
+            onEliminar={eliminarPedido}
             isAdmin={user.isAdmin}
             userNome={user.nome}
             dataLevantamento={datasLevantamento[p.id] || ""}
@@ -273,24 +224,19 @@ Boa atividade!
               handleDataLevantamentoChange(p.id, novaData)
             }
             seccao={seccao}
+            materiais={materiais}
+            detalheMaterial={detalheMaterial}
+            setPedidos={setPedidos}
           />
         );
       })}
 
-      <ToastContainer 
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastContainer position="top-center" autoClose={4000} />
     </div>
   );
 }
+
+// ------------------- COMPONENTE PEDIDO ITEM -------------------
 
 function PedidoItem({
   pedido,
@@ -303,65 +249,212 @@ function PedidoItem({
   dataLevantamento,
   setDataLevantamento,
   seccao,
+  materiais,
+  detalheMaterial,
+  setPedidos,
 }) {
-  const [devolucao, setDevolucao] = useState({});
-
-  useEffect(() => {
-    setDevolucao(pedido.devolvido || {});
-  }, [pedido]);
-
-  const handleChangeDevolucao = (nome, val) => {
-    val = Math.min(Math.max(val, 0), pedido.materiais[nome]);
-    setDevolucao((d) => ({ ...d, [nome]: val }));
-  };
+  const [devolvidoLocal, setDevolvidoLocal] = useState(pedido.devolvido || {});
 
   const podeCancelar =
     pedido.estado === "Pendente" && (isAdmin || pedido.nome === userNome);
 
-  const getGrupoLabel = (nomeGrupo) => {
-    switch (nomeGrupo) {
-      case "Pioneiros":
-        return "Equipa";
-      case "Lobitos":
-        return "Bando";
-      case "Exploradores":
-        return "Patrulha";
-      case "Caminheiros":
-        return "Tribo";
-      default:
-        return "Patrulha";
-    }
+  const handleDevolvidoChange = (nome, idx, checked) => {
+    const updated = { ...devolvidoLocal };
+    if (!updated[nome]) updated[nome] = [];
+    updated[nome][idx] = checked ? 1 : 0;
+    setDevolvidoLocal(updated);
+
+    setPedidos((prev) =>
+      prev.map((p) =>
+        p.id === pedido.id ? { ...p, devolvido: updated } : p
+      )
+    );
   };
 
+  const getGrupoLabel = (nomeGrupo) => {
+    switch (nomeGrupo) {
+      case "Pioneiros": return "Equipa";
+      case "Lobitos": return "Bando";
+      case "Exploradores": return "Patrulha";
+      case "Caminheiros": return "Tribo";
+      default: return "Patrulha";
+    }
+  };
   const grupoLabel = getGrupoLabel(pedido.nome);
 
   return (
     <div className="pedido-item">
-      <p>
-        <b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}
-      </p>
+      <p><b>Pedido</b> por <i>{pedido.nome}</i> em {pedido.data}</p>
       <p><b>Secção:</b> {pedido.seccao}</p>
       <p><b>{grupoLabel}:</b> {pedido.patrulha || "-"}</p>
       <p><b>Atividade:</b> {pedido.atividade || "-"}</p>
       <p><b>Estado:</b> {pedido.estado}</p>
-      {pedido.data_levantamento && (
-        <p><b>Levantamento:</b> {pedido.data_levantamento}</p>
-      )}
-      <p><b>Material:</b></p>
-      <ul>
-        {Object.entries(pedido.materiais).map(([nome, q]) => (
-          <li key={nome}>
-            {nome}: {q} (Devolvido: {pedido.devolvido?.[nome] || 0})
-          </li>
-        ))}
-      </ul>
+      {pedido.data_levantamento && <p><b>Levantamento:</b> {pedido.data_levantamento}</p>}
+
+      <table className="material-table">
+        <thead>
+          <tr>
+            <th>Item</th>
+            <th>Referência</th>
+            <th>Detalhes</th>
+            <th>Condição</th>
+            <th>Devolvido</th>
+          </tr>
+        </thead>
+        <tbody>
+          {Object.entries(pedido.materiaisDetalhados || {}).map(([nome, unidades]) =>
+            unidades.map((unidade, idx) => {
+              const material = materiais.find((m) => m.nome === nome);
+              const referenciasDisponiveis = (detalheMaterial || [])
+                .filter(
+                  (d) =>
+                    d.id_material === material?.id &&
+                    d.estado_pedido === "disponivel"
+                )
+                .map((d) => d.referencia);
+
+              const devolvidoConfirmado = pedido.devolvido?.[nome]?.[idx] === 1;
+
+              const podeEditarDetalhes =
+                isAdmin &&
+                ((pedido.estado === "Pendente") ||
+                  (pedido.estado === "Aprovado" && !devolvidoConfirmado));
+
+              const podeEditarCondicao =
+                isAdmin &&
+                pedido.estado === "Aprovado" &&
+                !devolvidoConfirmado;
+
+              return (
+                <tr key={`${nome}-${idx}`}>
+                  <td>{nome}</td>
+
+                  {/* REFERÊNCIA */}
+                  <td>
+                    {isAdmin && pedido.estado === "Pendente" ? (
+                      <select
+                        value={unidade.referencia}
+                        onChange={(e) => {
+                          const novaRef = e.target.value;
+
+                          // Encontra o detalhe do material correspondente à referência escolhida
+                          const detalheSelecionado = detalheMaterial.find(
+                            (d) =>
+                              d.referencia === novaRef &&
+                              materiais.find((m) => m.id === d.id_material)?.nome === nome
+                          );
+
+                          // Atualiza os dados do pedido
+                          const updated = { ...pedido.materiaisDetalhados };
+                          updated[nome][idx] = {
+                            ...updated[nome][idx],
+                            referencia: novaRef,
+                            detalhes: detalheSelecionado?.descricao || "", // aplica automaticamente o detalhe
+                          };
+
+                          setPedidos((prev) =>
+                            prev.map((p) =>
+                              p.id === pedido.id
+                                ? { ...p, materiaisDetalhados: updated }
+                                : p
+                            )
+                          );
+                        }}
+                      >
+                        <option value="">Selecione</option>
+                        {referenciasDisponiveis
+                          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true })) // ordenação crescente numérica
+                          .map((ref) => (
+                            <option key={ref} value={ref}>
+                              {ref}
+                            </option>
+                          ))}
+                      </select>
+                    ) : (
+                      unidade.referencia || "-"
+                    )}
+                  </td>
+
+                  {/* DETALHES */}
+                  <td>
+                    {podeEditarDetalhes ? (
+                      <input
+                        type="text"
+                        value={unidade.detalhes || ""}
+                        onChange={(e) => {
+                          const updated = { ...pedido.materiaisDetalhados };
+                          updated[nome][idx] = {
+                            ...updated[nome][idx],
+                            detalhes: e.target.value,
+                          };
+                          setPedidos((prev) =>
+                            prev.map((p) =>
+                              p.id === pedido.id
+                                ? { ...p, materiaisDetalhados: updated }
+                                : p
+                            )
+                          );
+                        }}
+                      />
+                    ) : (
+                      unidade.detalhes || "-"
+                    )}
+                  </td>
+
+                  {/* CONDIÇÃO */}
+                  <td>
+                    {podeEditarCondicao ? (
+                      <select
+                        value={unidade.condicao}
+                        onChange={(e) => {
+                          const updated = { ...pedido.materiaisDetalhados };
+                          updated[nome][idx] = {
+                            ...updated[nome][idx],
+                            condicao: e.target.value,
+                          };
+                          setPedidos((prev) =>
+                            prev.map((p) =>
+                              p.id === pedido.id
+                                ? { ...p, materiaisDetalhados: updated }
+                                : p
+                            )
+                          );
+                        }}
+                      >
+                        <option value="bom">Bom</option>
+                        <option value="danificado">Danificado</option>
+                      </select>
+                    ) : (
+                      unidade.condicao
+                    )}
+                  </td>
+
+                  {/* DEVOLVIDO */}
+                  <td>
+                    {pedido.estado === "Aprovado" && isAdmin ? (
+                      <input
+                        type="checkbox"
+                        checked={!!devolvidoLocal[nome]?.[idx]} // valor local
+                        disabled={devolvidoConfirmado}         // só bloqueia após confirmação oficial
+                        onChange={(e) => handleDevolvidoChange(nome, idx, e.target.checked)}
+                      />
+                    ) : (
+                      devolvidoConfirmado ? "Sim" : "Não"
+                    )}
+                  </td>
+                </tr>
+              );
+            })
+          )}
+        </tbody>
+
+      </table>
 
       <div className="pedido-buttons">
         {pedido.estado === "Pendente" && isAdmin && (
           <>
             <input
               type="date"
-              placeholder="Data de levantamento"
               value={dataLevantamento}
               onChange={(e) => setDataLevantamento(e.target.value)}
             />
@@ -376,57 +469,22 @@ function PedidoItem({
             Cancelar Pedido
           </button>
         )}
+
+        {pedido.estado === "Aprovado" && isAdmin && (
+          <button className="btn-aprovar" onClick={onDevolver}>
+            Confirmar Devolução
+          </button>
+        )}
+
+        {pedido.estado === "Concluído" && isAdmin && (
+          <button
+            className="btn-eliminar-pedido"
+            onClick={() => onEliminar(pedido.id)}
+          >
+            🗑️
+          </button>
+        )}
       </div>
-
-      {pedido.estado === "Aprovado" && isAdmin && (
-        <div className="devolucao-container">
-          <p>Registar devolução:</p>
-          {Object.entries(pedido.materiais).map(([nome, q]) => (
-            <div key={nome} className="devolucao-item">
-              <label>
-                {nome}:
-                <span className="input-wrapper">
-                  <input
-                    type="number"
-                    min={0}
-                    max={q}
-                    value={devolucao[nome] || 0}
-                    onChange={(e) => handleChangeDevolucao(nome, Number(e.target.value))}
-                  />
-                  / {q}
-                </span>
-              </label>
-            </div>
-          ))}
-          {pedido.estado === "Aprovado" && (
-            <p className="pedido-warning">
-              ⚠️ Pedido ainda não está totalmente entregue.
-            </p>
-          )}
-          <div className="pedido-buttons">
-            <button
-              className="btn-aprovar"
-              onClick={() => onDevolver(pedido.id, devolucao)}
-            >
-              Confirmar Devolução
-            </button>
-          </div>
-        </div>
-      )}
-
-      {pedido.estado === "Concluído" && (
-        <p className="pedido-concluido">Pedido devolvido!</p>
-      )}
-
-      {isAdmin && pedido.estado === "Concluído" && (
-        <button
-          className="btn-eliminar-pedido"
-          onClick={() => onEliminar(pedido.id)}
-          title="Eliminar Pedido"
-        >
-          🗑️
-        </button>
-      )}
     </div>
   );
 }
