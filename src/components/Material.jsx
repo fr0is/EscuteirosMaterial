@@ -342,7 +342,9 @@ ${listaMateriais}
       <h2>Olá, {user.nome}</h2>
       <h3>Material disponível</h3>
 
-      {materiais.map((item) => {
+      {[...materiais]
+      .sort((a, b) => a.nome.localeCompare(b.nome, 'pt', { sensitivity: 'base' }))
+      .map((item) =>  {
         const pendente = pendentesPorItem[item.nome] || 0;
         const isEditing = editandoMaterialId === item.id;
 
