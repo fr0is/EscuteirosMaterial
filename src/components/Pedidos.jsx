@@ -300,7 +300,9 @@ function PedidoItem({
           </tr>
         </thead>
         <tbody>
-          {Object.entries(pedido.materiaisDetalhados || {}).map(([nome, unidades]) =>
+          {Object.entries(pedido.materiaisDetalhados || {})
+          .sort(([a], [b]) => a.localeCompare(b, "pt", { sensitivity: "base" }))
+          .map(([nome, unidades]) =>
             unidades.map((unidade, idx) => {
               const material = materiais.find((m) => m.nome === nome);
               const referenciasDisponiveis = (detalheMaterial || [])
