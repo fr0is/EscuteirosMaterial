@@ -87,15 +87,13 @@ export default function Pedidos() {
       }
     }
 
-    const todasReferencias = Object.values(pedido.materiaisDetalhados)
-      .flat()
-      .map((u) => u.referencia);
-    const refsDuplicadas = todasReferencias.filter(
-      (r, i) => todasReferencias.indexOf(r) !== i
-    );
-    if (refsDuplicadas.length > 0) {
-      toast.error(`Referência repetida: ${refsDuplicadas[0]}`);
-      return;
+    for (const [nome, unidades] of Object.entries(pedido.materiaisDetalhados)) {
+      const refs = unidades.map((u) => u.referencia).filter((r) => r);
+      const duplicadas = refs.filter((r, i) => refs.indexOf(r) !== i);
+      if (duplicadas.length > 0) {
+        toast.error(`Referência repetida em ${nome}: ${duplicadas[0]}`);
+        return;
+      }
     }
 
     const ok = await updatePedido(id, {

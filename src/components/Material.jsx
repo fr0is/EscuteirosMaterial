@@ -1,4 +1,4 @@
-import React, { useContext, useState } from "react";
+import React, { useContext, useState, useEffect } from "react";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import emailjs from "@emailjs/browser";
@@ -18,7 +18,9 @@ export default function Material() {
     atualizarMaterial,
     removerMaterial,
     supabase,
+    detalheMaterial,
   } = useContext(AppContext);
+
   const navigate = useNavigate();
 
   const [quantidades, setQuantidades] = useState({});
@@ -36,6 +38,60 @@ export default function Material() {
     return null;
   }
 
+  // 🔄 Atualizar automaticamente totais e disponíveis com base no detalhe_material
+  useEffect(() => {
+    if (!user.loggedIn) return;
+
+    const atualizarEstoque = async () => {
+      try {
+        // 1️⃣ Buscar todos os registos da tabela detalhe_material
+        const { data: detalhes, error } = await supabase
+          .from("detalhe_material")
+          .select("id_material, estado_pedido");
+
+        if (error) {
+          console.error("Erro ao obter detalhe_material:", error);
+          toast.error("Erro ao atualizar materiais.");
+          return;
+        }
+
+        // 2️⃣ Contar total e disponíveis por id_material
+        const contagens = {};
+        detalhes.forEach((item) => {
+          if (!contagens[item.id_material]) {
+            contagens[item.id_material] = { total: 0, disponivel: 0 };
+          }
+          contagens[item.id_material].total += 1;
+          if (item.estado_pedido === "disponivel") {
+            contagens[item.id_material].disponivel += 1;
+          }
+        });
+
+        // 3️⃣ Atualizar cada material se houver diferenças
+        for (const material of materiais) {
+          const info = contagens[material.id] || { total: 0, disponivel: 0 };
+
+          if (
+            material.total !== info.total ||
+            material.disponivel !== info.disponivel
+          ) {
+            await atualizarMaterial(material.id, {
+              total: info.total,
+              disponivel: info.disponivel,
+            });
+          }
+        }
+
+        console.log("Materiais atualizados com sucesso!");
+      } catch (err) {
+        console.error("Erro ao sincronizar materiais:", err);
+      }
+    };
+
+    atualizarEstoque();
+  }, [user.loggedIn, detalheMaterial]); // Atualiza quando se entra na página ou muda detalhe_material
+
+  // ---------------- PEDIDOS PENDENTES ----------------
   const pendentesPorItem = {};
   pedidos.forEach((p) => {
     if (p.estado === "Pendente") {
@@ -45,11 +101,12 @@ export default function Material() {
     }
   });
 
+  // ---------------- CONTROLOS DE QUANTIDADE ----------------
   const handleIncrement = (nome) => {
     setQuantidades((q) => {
       const atual = q[nome] || 0;
       const max =
-        (materiais.find((i) => i.nome === nome)?.disponivel || 0) - 
+        (materiais.find((i) => i.nome === nome)?.disponivel || 0) -
         (pendentesPorItem[nome] || 0);
       if (atual < max) {
         return { ...q, [nome]: atual + 1 };
@@ -68,22 +125,23 @@ export default function Material() {
     });
   };
 
+  // ---------------- ENVIAR PEDIDO ----------------
   const handleSubmitPedido = async () => {
     if (patrulha.trim() === "") {
-      toast.error("Por favor, informe o nome da patrulha/equipa/bando/tribo.");
+      toast.error("Por favor, indica o nome da patrulha/equipa/bando/tribo.");
       return;
     }
     if (atividade.trim() === "") {
-      toast.error("Por favor, informe a atividade.");
+      toast.error("Por favor, indica a atividade.");
       return;
     }
 
     const materiaisPedido = Object.fromEntries(
       Object.entries(quantidades).filter(([_, q]) => q > 0)
     );
-    
+
     if (Object.keys(materiaisPedido).length === 0) {
-      toast.error("Selecione algum material para pedir.");
+      toast.error("Seleciona algum material para pedir.");
       return;
     }
 
@@ -115,23 +173,22 @@ export default function Material() {
       .join("\n");
 
     const mensagem = `
-  Pedido de material recebido:
+Pedido de material recebido:
 
-  Nome: ${user.nome} 
-  Secção: ${user.seccao}
-  ${nomePatrulha}: ${patrulha}
-  Atividade: ${atividade}
-  Data: ${hoje}
+Nome: ${user.nome} 
+Secção: ${user.seccao}
+${nomePatrulha}: ${patrulha}
+Atividade: ${atividade}
+Data: ${hoje}
 
-  📦 Material solicitado:
-  ${listaMateriais}
+📦 Material solicitado:
+${listaMateriais}
     `;
 
     try {
-      // Buscar emails antes de criar o pedido
       const { data: emails, error } = await supabase
-        .from('emails_notificacao')
-        .select('email');
+        .from("emails_notificacao")
+        .select("email");
 
       if (error) {
         toast.error("Erro ao obter e-mails.");
@@ -139,11 +196,10 @@ export default function Material() {
       }
 
       if (emails.length === 0) {
-        toast.error("Não existe email para receber o pedido. Pedido não enviado");
-        return;  // <<< interrompe a função, não cria pedido
+        toast.error("Não existe e-mail configurado para receber o pedido.");
+        return;
       }
 
-      // Enviar email para cada destinatário
       for (const { email } of emails) {
         try {
           await emailjs.send(
@@ -155,32 +211,26 @@ export default function Material() {
         } catch (err) {
           console.error(`Erro ao enviar e-mail para ${email}:`, err);
           toast.error(`Falha ao enviar e-mail para ${email}`);
-          return; // Para execução: NÃO cria pedido se falhar email
+          return;
         }
       }
 
-      // Se chegou até aqui, todos os emails foram enviados com sucesso
-      if (!adicionarPedido) {
-        toast.error("Função para adicionar pedido não implementada.");
-        return;
-      }
       await adicionarPedido(novoPedido);
 
       toast.success("Pedido enviado com sucesso!");
-
-      // Resetar formulário
       setQuantidades({});
       setPatrulha("");
       setAtividade("");
     } catch (error) {
       console.error("Erro ao enviar pedido:", error);
-      toast.error("Falha ao enviar pedido ou e-mail. Verifique sua conexão ou configuração.");
+      toast.error("Falha ao enviar pedido ou e-mail.");
     }
   };
 
+  // ---------------- GERIR MATERIAIS (ADMIN) ----------------
   const handleCriarMaterial = async () => {
     if (!novoMaterialNome.trim() || novoMaterialTotal <= 0) {
-      alert("Informe nome e quantidade total válidos para o material.");
+      alert("Indica nome e quantidade total válidos para o material.");
       return;
     }
     try {
@@ -210,7 +260,7 @@ export default function Material() {
 
   const salvarEdicao = async () => {
     if (!editandoNome.trim() || editandoTotal <= 0) {
-      alert("Informe nome e quantidade total válidos para o material.");
+      alert("Indica nome e quantidade total válidos para o material.");
       return;
     }
 
@@ -219,9 +269,7 @@ export default function Material() {
     const novoDisponivel = materialAtual.disponivel + diferencaTotal;
 
     if (novoDisponivel < 0) {
-      alert(
-        "Não pode reduzir total para menos do que a quantidade já emprestada."
-      );
+      alert("Não podes reduzir o total para menos do que o já emprestado.");
       return;
     }
 
@@ -238,34 +286,21 @@ export default function Material() {
   };
 
   const handleRemoverMaterial = (id) => {
-    // Captura o id do toast de confirmação
     const confirmToastId = toast.warn(
       <div>
-        <div>Tem a certeza que deseja remover este material?</div>
+        <div>Tens a certeza que queres remover este material?</div>
         <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
           <button
             onClick={async () => {
-              // Fecha só o toast de confirmação
               toast.dismiss(confirmToastId);
-
               try {
-                await removerMaterial(id);  // Chama a função de remoção do material
-                
+                await removerMaterial(id);
                 setTimeout(() => {
-                  toast.success("Material removido com sucesso!", {
-                    autoClose: 8000,
-                    closeOnClick: true,
-                    draggable: true,
-                  });
+                  toast.success("Material removido com sucesso!");
                 }, 300);
-                
               } catch (error) {
                 setTimeout(() => {
-                  toast.error("Erro ao remover material.", {
-                    autoClose: 8000,
-                    closeOnClick: true,
-                    draggable: true,
-                  });
+                  toast.error("Erro ao remover material.");
                 }, 300);
               }
             }}
@@ -281,7 +316,7 @@ export default function Material() {
             Sim
           </button>
           <button
-            onClick={() => toast.dismiss(confirmToastId)}  // Fecha só o toast de confirmação
+            onClick={() => toast.dismiss(confirmToastId)}
             style={{
               padding: '8px 15px',
               backgroundColor: 'var(--color-danger-dark)',
@@ -295,35 +330,16 @@ export default function Material() {
           </button>
         </div>
       </div>,
-      {
-        position: 'top-center',
-        autoClose: false,
-        closeOnClick: false,
-        draggable: false,
-        progress: undefined,
-      }
+      { position: 'top-center', autoClose: false }
     );
   };
 
-
-
-
+  // ---------------- INTERFACE ----------------
   return (
     <div className="material-container">
-    {/* ToastContainer para as notificações */}
-      <ToastContainer
-        position="top-center"
-        autoClose={5000}
-        hideProgressBar={false}
-        newestOnTop={false}
-        closeOnClick
-        rtl={false}
-        pauseOnFocusLoss
-        draggable
-        pauseOnHover
-      />
+      <ToastContainer position="top-center" autoClose={5000} />
 
-      <h2>Olá, {user.nome}</h2> {/* Exibe o nome real do usuário */}
+      <h2>Olá, {user.nome}</h2>
       <h3>Material disponível</h3>
 
       {materiais.map((item) => {
@@ -336,19 +352,24 @@ export default function Material() {
               isEditing ? (
                 <div className="material-editing">
                   <div className="inputs">
-                    <input type="text" class="input-nome"
+                    <input
+                      type="text"
+                      className="input-nome"
                       value={editandoNome}
                       onChange={(e) => setEditandoNome(e.target.value)}
                     />
                     <input
-                      type="number" class="input-quantidade"
+                      type="number"
+                      className="input-quantidade"
                       value={editandoTotal}
-                      onChange={(e) => setEditandoTotal(parseInt(e.target.value) || 0)}
+                      onChange={(e) =>
+                        setEditandoTotal(parseInt(e.target.value) || 0)
+                      }
                     />
                   </div>
                   <div className="buttons">
                     <button className="guardar" onClick={salvarEdicao}>
-                       💾 
+                      💾
                     </button>
                     <button className="cancelar" onClick={cancelarEdicao}>
                       🗙
@@ -366,10 +387,7 @@ export default function Material() {
                     {pendente > 0 && <em>(Pendentes: {pendente})</em>}
                   </div>
                   <div className="material-actions">
-                    <button
-                      className="editar"
-                      onClick={() => iniciarEdicao(item)}
-                    >
+                    <button className="editar" onClick={() => iniciarEdicao(item)}>
                       ✏️
                     </button>
                     <button
@@ -441,7 +459,9 @@ export default function Material() {
             onChange={(e) => setAtividade(e.target.value)}
           />
           <button onClick={handleSubmitPedido}>Enviar pedido</button>
-          <p className="chefe-aviso">* Itens com "*" têm pedidos pendentes.</p>
+          <p className="chefe-aviso">
+            * Itens com "*" têm pedidos pendentes.
+          </p>
         </div>
       )}
     </div>

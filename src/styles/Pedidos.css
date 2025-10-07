@@ -140,9 +140,6 @@
 
 /* Botão eliminar dentro de cada pedido */
 .btn-eliminar-pedido {
-  position: absolute;
-  bottom: 16px;
-  right: 16px;
   background-color: var(--color-danger);
   color: var(--color-background);
   border: none;
@@ -157,7 +154,10 @@
   align-items: center;
   justify-content: center;
   user-select: none;
+  margin-top: 10px; /* espaço extra para respirar */
+  align-self: flex-end; /* alinha à direita dentro de .pedido-buttons */
 }
+
 
 .btn-eliminar-pedido:hover {
   background-color: #a40000;
