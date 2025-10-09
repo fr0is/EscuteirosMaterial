@@ -60,7 +60,14 @@
   font-weight: 600;
 }
 
-/* Definição de larguras fixas das colunas */
+/* Coluna de ícones */
+.material-table th:first-child,
+.material-table td:first-child {
+  width: 30px;       /* coluna estreita para os ícones */
+  text-align: center;
+}
+
+/* Definição de larguras fixas das colunas restantes */
 .material-table th.descricao,
 .material-table td.descricao {
   width: 40%;
@@ -214,6 +221,11 @@
   .material-table th.acoes,
   .material-table td.acoes {
     width: 10%;
+  }
+
+  .material-table th:first-child,
+  .material-table td:first-child {
+    width: 25px; /* coluna ícones ligeiramente mais estreita no mobile */
   }
 
   .material-table button {

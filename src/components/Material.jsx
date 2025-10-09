@@ -47,7 +47,7 @@ export default function Material() {
         // 1️⃣ Buscar todos os registos da tabela detalhe_material
         const { data: detalhes, error } = await supabase
           .from("detalhe_material")
-          .select("id_material, estado_pedido");
+          .select("id_material, estado_pedido, condicao");
 
         if (error) {
           console.error("Erro ao obter detalhe_material:", error);
@@ -61,8 +61,12 @@ export default function Material() {
           if (!contagens[item.id_material]) {
             contagens[item.id_material] = { total: 0, disponivel: 0 };
           }
+
+          // Sempre aumenta o total, independente da condição/estado
           contagens[item.id_material].total += 1;
-          if (item.estado_pedido === "disponivel") {
+
+          // Apenas conta como disponível se estiver bom e realmente disponível
+          if (item.estado_pedido === "disponivel" && item.condicao === "bom") {
             contagens[item.id_material].disponivel += 1;
           }
         });
@@ -85,6 +89,7 @@ export default function Material() {
         console.log("Materiais atualizados com sucesso!");
       } catch (err) {
         console.error("Erro ao sincronizar materiais:", err);
+        toast.error("Erro ao sincronizar materiais.");
       }
     };
 

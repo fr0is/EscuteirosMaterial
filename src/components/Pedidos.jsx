@@ -306,12 +306,13 @@ function PedidoItem({
             unidades.map((unidade, idx) => {
               const material = materiais.find((m) => m.nome === nome);
               const referenciasDisponiveis = (detalheMaterial || [])
-                .filter(
-                  (d) =>
-                    d.id_material === material?.id &&
-                    d.estado_pedido === "disponivel"
-                )
-                .map((d) => d.referencia);
+              .filter(
+                (d) =>
+                  d.id_material === material?.id &&
+                  d.estado_pedido === "disponivel" &&
+                  d.condicao === "bom"
+              )
+              .map((d) => d.referencia);
 
               const devolvidoConfirmado = pedido.devolvido?.[nome]?.[idx] === 1;
 
