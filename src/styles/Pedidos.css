@@ -48,14 +48,14 @@
   margin: 6px 0 12px 0;
 }
 
-/* Aplica apenas à tabela dentro de pedidos-container */
-.pedidos-material-table th:first-child,
-.pedidos-material-table td:first-child {
-  white-space: normal;   /* permite quebra de linha */
-  overflow: visible;     /* não corta o texto */
-  text-overflow: clip;   /* sem reticências */
-  max-width: 250px;      /* ajusta conforme necessário */
-  word-wrap: break-word; /* quebra palavras longas */
+/* Sobrescreve apenas para a tabela dentro de Pedidos */
+.pedidos-container .material-table th:first-child,
+.pedidos-container .material-table td:first-child {
+    width: auto;           /* remove o width de 30px */
+    text-align: left;      /* ou center se quiseres centralizado */
+    white-space: normal;   /* permite quebra de linha */
+    overflow: visible;     
+    text-overflow: clip;
 }
 
 
