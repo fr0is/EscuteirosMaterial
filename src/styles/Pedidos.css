@@ -1,4 +1,4 @@
-/*Pedidos.css*/
+/* Pedidos.css */
 .pedidos-container {
   max-width: 700px;
   padding: 0 15px;
@@ -6,6 +6,13 @@
   background-color: var(--color-background);
   color: var(--color-text);
   font-family: Arial, sans-serif;
+}
+
+/* Aumenta o container para telas maiores */
+@media (min-width: 900px) {
+  .pedidos-container {
+    max-width: 900px;
+  }
 }
 
 /* Títulos */
@@ -40,6 +47,17 @@
   padding-left: 20px;
   margin: 6px 0 12px 0;
 }
+
+/* Aplica apenas à tabela dentro de pedidos-container */
+.pedidos-material-table th:first-child,
+.pedidos-material-table td:first-child {
+  white-space: normal;   /* permite quebra de linha */
+  overflow: visible;     /* não corta o texto */
+  text-overflow: clip;   /* sem reticências */
+  max-width: 250px;      /* ajusta conforme necessário */
+  word-wrap: break-word; /* quebra palavras longas */
+}
+
 
 .pedido-item ul li {
   margin-bottom: 4px;
@@ -158,7 +176,6 @@
   align-self: flex-end; /* alinha à direita dentro de .pedido-buttons */
 }
 
-
 .btn-eliminar-pedido:hover {
   background-color: #a40000;
 }
@@ -216,5 +233,30 @@
 
   .devolucao-item input {
     width: 100%;
+  }
+}
+
+/* ==================== NOVAS REGRAS PARA NOME COMPLETO DOS ITENS ==================== */
+
+/* Garantir que o nome do item e outros textos longos sejam totalmente visíveis */
+.material-table td,
+.material-table th,
+.pedido-item p,
+.pedido-item b {
+  white-space: normal;   /* permite quebra de linha */
+  overflow: visible;     /* não corta o texto */
+  text-overflow: clip;   /* sem reticências */
+}
+
+/* Limite máximo para colunas e quebra de palavras longas */
+.material-table td {
+  max-width: 300px;      /* maior limite para PC */
+  word-wrap: break-word; /* quebra palavras longas */
+}
+
+/* Para telas menores, ajusta o tamanho da coluna */
+@media (max-width: 768px) {
+  .material-table td {
+    max-width: 200px;
   }
 }

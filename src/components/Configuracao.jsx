@@ -34,12 +34,108 @@ export default function Configuracao() {
   const [emailsNotificacao, setEmailsNotificacao] = useState([]);
   const [novoEmailNotificacao, setNovoEmailNotificacao] = useState("");
   const [loadingEmails, setLoadingEmails] = useState(false);
+    // ==== NOVO BLOCO: Dirigentes (Responsáveis de Secção) ====
+  const [dirigentes, setDirigentes] = useState([]);
+  const [loadingDirigentes, setLoadingDirigentes] = useState(false);
+  const [novoDirigente, setNovoDirigente] = useState({
+    seccao: "",
+    nome: "",
+    email: "",
+  });
+  const [editandoDirigente, setEditandoDirigente] = useState(null);
+
+  async function carregarDirigentes() {
+    setLoadingDirigentes(true);
+    const { data, error } = await supabase
+      .from("responsaveis_seccao")
+      .select("*")
+      .order("seccao", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      toast.error("Erro ao carregar responsáveis de secção.");
+    } else {
+      setDirigentes(data);
+    }
+    setLoadingDirigentes(false);
+  }
+
+  async function adicionarDirigente() {
+    const { seccao, nome, email } = novoDirigente;
+
+    if (!seccao || !nome || !email) {
+      toast.warn("Preencha todos os campos.");
+      return;
+    }
+
+    const { error } = await supabase.from("dirigentes").upsert([{ seccao, nome, email }]);
+    if (error) {
+      toast.error("Erro ao adicionar/atualizar responsável.");
+      console.error(error);
+    } else {
+      toast.success("Responsável guardado com sucesso!");
+      setNovoDirigente({ seccao: "", nome: "", email: "" });
+      carregarDirigentes();
+    }
+  }
+
+  async function removerDirigente(seccao) {
+    const confirmToastId = toast.warn(
+      <div>
+        <div>Tem a certeza que deseja remover o responsável da secção <b>{seccao}</b>?</div>
+        <div style={{ display: 'flex', justifyContent: 'center', marginTop: '10px', gap: '10px' }}>
+          <button
+            onClick={async () => {
+              toast.dismiss(confirmToastId);
+              const { error } = await supabase.from("dirigentes").delete().eq("seccao", seccao);
+              if (error) {
+                toast.error("Erro ao remover responsável.");
+              } else {
+                toast.success("Responsável removido com sucesso!");
+                carregarDirigentes();
+              }
+            }}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-primary-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Sim
+          </button>
+          <button
+            onClick={() => toast.dismiss(confirmToastId)}
+            style={{
+              padding: '8px 15px',
+              backgroundColor: 'var(--color-danger-dark)',
+              color: 'white',
+              border: 'none',
+              borderRadius: '4px',
+              cursor: 'pointer',
+            }}
+          >
+            Não
+          </button>
+        </div>
+      </div>,
+      {
+        position: 'top-center',
+        autoClose: false,
+        closeOnClick: false,
+        draggable: false,
+      }
+    );
+  }
 
   useEffect(() => {
     if (!user.loggedIn) {
       navigate("/");
     } else {
     carregarEmailsNotificacao();  // <-- chama aqui para carregar ao entrar
+    carregarDirigentes();
     }
   }, [user, navigate]);
 
@@ -439,6 +535,7 @@ export default function Configuracao() {
         { id: "utilizadoresRegistados", label: "Utilizadores Registados" },
         { id: "adicionarUtilizador", label: "Adicionar Utilizador" },
         { id: "emailsNotificacao", label: "Emails de Notificação" },
+        { id: "responsavelSeccao", label: "Responsável Secção" },
       ]
     : [
         { id: "perfil", label: "Perfil" },
@@ -691,6 +788,116 @@ export default function Configuracao() {
             )}
           </section>
         )}
+
+        {user.isAdmin && seccaoAtiva === "responsavelSeccao" && (
+  <section>
+    <h2>Responsáveis de Secção</h2>
+
+    {loadingDirigentes && <p>A carregar responsáveis...</p>}
+    {!loadingDirigentes && (
+      <ul className="user-list">
+        {["Lobitos", "Exploradores", "Pioneiros", "Caminheiros"].map((secao) =>
+          dirigentes
+            .filter((d) => d.seccao === secao)
+            .map((d) => {
+              const isEditing = editandoDirigente === d.id;
+
+              return (
+                <li key={d.id} className="user-list-item">
+                  <div className="user-info">
+                    <b>{d.seccao}</b>
+                    {isEditing ? (
+                      <>
+                        <input
+                          type="text"
+                          value={d.nome}
+                          onChange={(e) =>
+                            setDirigentes((prev) =>
+                              prev.map((r) =>
+                                r.id === d.id ? { ...r, nome: e.target.value } : r
+                              )
+                            )
+                          }
+                          placeholder="Nome do responsável"
+                          className="input-field"
+                        />
+                        <input
+                          type="email"
+                          value={d.email}
+                          onChange={(e) =>
+                            setDirigentes((prev) =>
+                              prev.map((r) =>
+                                r.id === d.id ? { ...r, email: e.target.value } : r
+                              )
+                            )
+                          }
+                          placeholder="Email do responsável"
+                          className="input-field"
+                        />
+                      </>
+                    ) : (
+                      <>
+                         ({d.nome}) - {d.email}
+                      </>
+                    )}
+                  </div>
+
+                  <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                    {isEditing ? (
+                      <>
+                        <button
+                          className="btn btn-adicionar"
+                          onClick={async () => {
+                            const { id, nome, email } = d;
+                            const emailValido = /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email);
+                            if (!emailValido) {
+                              toast.error("Insira um email válido.");
+                              return;
+                            }
+
+                            const { error } = await supabase
+                              .from("responsaveis_seccao")
+                              .update({ nome, email })
+                              .eq("id", id);
+
+                            if (error) {
+                              toast.error("Erro ao atualizar responsável.");
+                              console.error(error);
+                            } else {
+                              toast.success("Responsável atualizado com sucesso!");
+                              setEditandoDirigente(null);
+                              carregarDirigentes();
+                            }
+                          }}
+                        >
+                          💾
+                        </button>
+                        <button
+                          className="btn btn-remover"
+                          onClick={() => setEditandoDirigente(null)}
+                        >
+                          🗙
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        className="btn btn-adicionar"
+                        onClick={() => setEditandoDirigente(d.id)}
+                      >
+                        ✏️
+                      </button>
+                    )}
+                  </div>
+                </li>
+              );
+            })
+        )}
+      </ul>
+    )}
+  </section>
+)}
+
+
       </main>
         
       <ToastContainer

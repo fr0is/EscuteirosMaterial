@@ -20,6 +20,7 @@ export default function Pedidos() {
     users,
     detalheMaterial,
     atualizarDetalheMaterial,
+    supabase,
   } = useContext(AppContext);
   const navigate = useNavigate();
   const [datasLevantamento, setDatasLevantamento] = useState({});
@@ -123,26 +124,46 @@ export default function Pedidos() {
       }
     }
 
-    // Email
+    // ----- ENVIO DE EMAIL -----
     const autor = getUserById(pedido.user_id);
-    if (autor?.email) {
+    if (!autor?.email) {
+      toast.error("Pedido aprovado, mas autor sem email configurado.");
+      return;
+    }
+
+    try {
+      // Busca responsável da secção (opcional)
+      const { data: responsavel, error: errResp } = await supabase
+        .from("responsaveis_seccao")
+        .select("email")
+        .eq("seccao", pedido.seccao)
+        .single();
+
+      const emailResponsavel = responsavel?.email;
+
+      const listaEmails = [autor.email];
+      if (emailResponsavel) listaEmails.push(emailResponsavel);
+
       const listaMateriais = Object.entries(pedido.materiais || {})
         .map(([nome, qtd]) => `- ${nome}: ${qtd} unidades`)
         .join("\n");
-      try {
+
+      for (const email of listaEmails) {
         await emailjs.send(
           "service_pnn1l65",
           "template_im8430o",
           {
             message: `Olá ${autor.nome},\n\nO seu pedido foi aprovado ✅\n\n📅 Levantamento: ${dataLevant}\n\n📦 Material:\n${listaMateriais}\n\nBoa atividade!`,
-            to_email: autor.email,
+            to_email: email,
           },
           "largUwzgW7L95dduo"
         );
-        toast.success("Pedido aprovado e email enviado.");
-      } catch {
-        toast.error("Pedido aprovado, mas falha ao enviar email.");
       }
+
+      toast.success("Pedido aprovado e email(s) enviado(s).");
+    } catch (err) {
+      console.error("Erro ao enviar email:", err);
+      toast.error("Pedido aprovado, mas falha ao enviar email.");
     }
 
     setDatasLevantamento((prev) => {
@@ -235,7 +256,6 @@ export default function Pedidos() {
 }
 
 // ------------------- COMPONENTE PEDIDO ITEM -------------------
-
 function PedidoItem({
   pedido,
   onAprovar,
@@ -337,22 +357,17 @@ function PedidoItem({
                         value={unidade.referencia}
                         onChange={(e) => {
                           const novaRef = e.target.value;
-
-                          // Encontra o detalhe do material correspondente à referência escolhida
                           const detalheSelecionado = detalheMaterial.find(
                             (d) =>
                               d.referencia === novaRef &&
                               materiais.find((m) => m.id === d.id_material)?.nome === nome
                           );
-
-                          // Atualiza os dados do pedido
                           const updated = { ...pedido.materiaisDetalhados };
                           updated[nome][idx] = {
                             ...updated[nome][idx],
                             referencia: novaRef,
-                            detalhes: detalheSelecionado?.descricao || "", // aplica automaticamente o detalhe
+                            detalhes: detalheSelecionado?.descricao || "",
                           };
-
                           setPedidos((prev) =>
                             prev.map((p) =>
                               p.id === pedido.id
@@ -364,7 +379,7 @@ function PedidoItem({
                       >
                         <option value="">Selecione</option>
                         {referenciasDisponiveis
-                          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true })) // ordenação crescente numérica
+                          .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }))
                           .map((ref) => (
                             <option key={ref} value={ref}>
                               {ref}
@@ -435,8 +450,8 @@ function PedidoItem({
                     {pedido.estado === "Aprovado" && isAdmin ? (
                       <input
                         type="checkbox"
-                        checked={!!devolvidoLocal[nome]?.[idx]} // valor local
-                        disabled={devolvidoConfirmado}         // só bloqueia após confirmação oficial
+                        checked={!!devolvidoLocal[nome]?.[idx]}
+                        disabled={devolvidoConfirmado}
                         onChange={(e) => handleDevolvidoChange(nome, idx, e.target.checked)}
                       />
                     ) : (
@@ -448,7 +463,6 @@ function PedidoItem({
             })
           )}
         </tbody>
-
       </table>
 
       <div className="pedido-buttons">

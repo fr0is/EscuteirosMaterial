@@ -102,12 +102,22 @@ export default function DetalheMaterial() {
     const confirmToastId = toast.warn(
       <div>
         <div>Tem a certeza que deseja eliminar este item?</div>
-        <div style={{ display: "flex", justifyContent: "center", marginTop: "10px", gap: "10px" }}>
+        <div
+          style={{
+            display: "flex",
+            justifyContent: "center",
+            marginTop: "10px",
+            gap: "10px",
+          }}
+        >
           <button
             onClick={async () => {
               toast.dismiss(confirmToastId);
               try {
-                const { error } = await supabase.from("detalhe_material").delete().eq("id", id);
+                const { error } = await supabase
+                  .from("detalhe_material")
+                  .delete()
+                  .eq("id", id);
                 if (error) throw error;
                 toast.success("Item eliminado!");
                 carregarMateriaisEDetalhes();
@@ -146,12 +156,15 @@ export default function DetalheMaterial() {
   };
 
   if (!user?.isAdmin) {
-    return <p style={{ textAlign: "center", marginTop: "50px" }}>Acesso restrito — apenas administradores podem ver esta página.</p>;
+    return (
+      <p style={{ textAlign: "center", marginTop: "50px" }}>
+        Acesso restrito — apenas administradores podem ver esta página.
+      </p>
+    );
   }
 
-  // Função de ícones baseada nas três condições, usando cores do site
   const getIcone = (item) => {
-    const iconStyle = { fontSize: "18px" }; // tamanho compacto
+    const iconStyle = { fontSize: "18px" };
     if (item.condicao === "danificado")
       return <FaExclamationTriangle style={{ ...iconStyle, color: "var(--color-danger)" }} />;
     if (item.estado_pedido === "emUso")
@@ -160,7 +173,6 @@ export default function DetalheMaterial() {
       return <FaCheckCircle style={{ ...iconStyle, color: "var(--color-primary)" }} />;
     return null;
   };
-
 
   return (
     <div className="material-container">
@@ -174,7 +186,6 @@ export default function DetalheMaterial() {
           {materiais.map((mat) => {
             const detalhesFiltrados = detalhes.filter((d) => d.id_material === mat.id);
             const condicaoMap = { bom: "Bom", danificado: "Danificado" };
-            const estadoMap = { disponivel: "Disponível", emUso: "Em Uso" };
 
             return (
               <div key={mat.id} className="material-detalhe-bloco">
@@ -185,57 +196,63 @@ export default function DetalheMaterial() {
                   <table className="material-table">
                     <thead>
                       <tr>
-                        <th></th> {/* coluna do ícone sem header */}
+                        <th></th>
                         <th>Referência</th>
                         <th>Descrição</th>
                         <th>Condição</th>
-                        <th>Estado Pedido</th>
                         <th>Ações</th>
                       </tr>
                     </thead>
                     <tbody>
-                      {[...detalhesFiltrados].sort((a, b) =>
-                        (a.referencia || "").localeCompare(b.referencia || "", "pt", { numeric: true, sensitivity: "base" })
-                      ).map((item) => (
-                        <tr key={item.id}>
-                          <td style={{ textAlign: "center", width: "25px" }}>{getIcone(item)}</td>
-                          <td>{item.referencia}</td>
-                          {editandoId === item.id ? (
-                            <>
-                              <td>
-                                <input
-                                  value={editData.descricao}
-                                  onChange={(e) => setEditData({ ...editData, descricao: e.target.value })}
-                                />
-                              </td>
-                              <td>
-                                <select
-                                  value={editData.condicao}
-                                  onChange={(e) => setEditData({ ...editData, condicao: e.target.value })}
-                                >
-                                  <option value="bom">Bom</option>
-                                  <option value="danificado">Danificado</option>
-                                </select>
-                              </td>
-                              <td>{estadoMap[item.estado_pedido]}</td>
-                              <td>
-                                <button onClick={() => guardarEdicao(item.id)}>💾</button>
-                                <button onClick={cancelarEdicao}>🗙</button>
-                              </td>
-                            </>
-                          ) : (
-                            <>
-                              <td>{item.descricao || "-"}</td>
-                              <td>{condicaoMap[item.condicao] || item.condicao}</td>
-                              <td>{estadoMap[item.estado_pedido] || item.estado_pedido}</td>
-                              <td>
-                                <button onClick={() => iniciarEdicao(item)}>✏️</button>
-                                <button onClick={() => eliminarDetalhe(item.id)}>🗑️</button>
-                              </td>
-                            </>
-                          )}
-                        </tr>
-                      ))}
+                      {[...detalhesFiltrados]
+                        .sort((a, b) =>
+                          (a.referencia || "").localeCompare(b.referencia || "", "pt", {
+                            numeric: true,
+                            sensitivity: "base",
+                          })
+                        )
+                        .map((item) => (
+                          <tr key={item.id}>
+                            <td style={{ textAlign: "center", width: "25px" }}>{getIcone(item)}</td>
+                            <td>{item.referencia}</td>
+                            {editandoId === item.id ? (
+                              <>
+                                <td>
+                                  <input
+                                    value={editData.descricao}
+                                    onChange={(e) =>
+                                      setEditData({ ...editData, descricao: e.target.value })
+                                    }
+                                  />
+                                </td>
+                                <td>
+                                  <select
+                                    value={editData.condicao}
+                                    onChange={(e) =>
+                                      setEditData({ ...editData, condicao: e.target.value })
+                                    }
+                                  >
+                                    <option value="bom">Bom</option>
+                                    <option value="danificado">Danificado</option>
+                                  </select>
+                                </td>
+                                <td>
+                                  <button onClick={() => guardarEdicao(item.id)}>💾</button>
+                                  <button onClick={cancelarEdicao}>🗙</button>
+                                </td>
+                              </>
+                            ) : (
+                              <>
+                                <td>{item.descricao || "-"}</td>
+                                <td>{condicaoMap[item.condicao] || item.condicao}</td>
+                                <td>
+                                  <button onClick={() => iniciarEdicao(item)}>✏️</button>
+                                  <button onClick={() => eliminarDetalhe(item.id)}>🗑️</button>
+                                </td>
+                              </>
+                            )}
+                          </tr>
+                        ))}
                     </tbody>
                   </table>
                 )}

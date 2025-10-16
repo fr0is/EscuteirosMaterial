@@ -44,7 +44,6 @@ export default function Material() {
 
     const atualizarEstoque = async () => {
       try {
-        // 1️⃣ Buscar todos os registos da tabela detalhe_material
         const { data: detalhes, error } = await supabase
           .from("detalhe_material")
           .select("id_material, estado_pedido, condicao");
@@ -55,26 +54,19 @@ export default function Material() {
           return;
         }
 
-        // 2️⃣ Contar total e disponíveis por id_material
         const contagens = {};
         detalhes.forEach((item) => {
           if (!contagens[item.id_material]) {
             contagens[item.id_material] = { total: 0, disponivel: 0 };
           }
-
-          // Sempre aumenta o total, independente da condição/estado
           contagens[item.id_material].total += 1;
-
-          // Apenas conta como disponível se estiver bom e realmente disponível
           if (item.estado_pedido === "disponivel" && item.condicao === "bom") {
             contagens[item.id_material].disponivel += 1;
           }
         });
 
-        // 3️⃣ Atualizar cada material se houver diferenças
         for (const material of materiais) {
           const info = contagens[material.id] || { total: 0, disponivel: 0 };
-
           if (
             material.total !== info.total ||
             material.disponivel !== info.disponivel
@@ -94,7 +86,7 @@ export default function Material() {
     };
 
     atualizarEstoque();
-  }, [user.loggedIn, detalheMaterial]); // Atualiza quando se entra na página ou muda detalhe_material
+  }, [user.loggedIn, detalheMaterial]);
 
   // ---------------- PEDIDOS PENDENTES ----------------
   const pendentesPorItem = {};
@@ -191,37 +183,39 @@ ${listaMateriais}
     `;
 
     try {
-      const { data: emails, error } = await supabase
+      // E-mails admins
+      const { data: emailsAdmin, error: errEmails } = await supabase
         .from("emails_notificacao")
         .select("email");
+      if (errEmails) throw errEmails;
 
-      if (error) {
-        toast.error("Erro ao obter e-mails.");
-        return;
-      }
+      // Responsável da secção (opcional)
+      const { data: responsavel, error: errResp } = await supabase
+        .from("responsaveis_seccao")
+        .select("email")
+        .eq("seccao", user.seccao)
+        .single();
+      const emailResponsavel = responsavel?.email;
 
-      if (emails.length === 0) {
+      const listaEmails = emailsAdmin.map(e => e.email);
+      if (emailResponsavel) listaEmails.push(emailResponsavel);
+
+      if (listaEmails.length === 0) {
         toast.error("Não existe e-mail configurado para receber o pedido.");
         return;
       }
 
-      for (const { email } of emails) {
-        try {
-          await emailjs.send(
-            "service_pnn1l65",
-            "template_8ud9uk9",
-            { message: mensagem, to_email: email },
-            "largUwzgW7L95dduo"
-          );
-        } catch (err) {
-          console.error(`Erro ao enviar e-mail para ${email}:`, err);
-          toast.error(`Falha ao enviar e-mail para ${email}`);
-          return;
-        }
+      // Enviar e-mails
+      for (const email of listaEmails) {
+        await emailjs.send(
+          "service_pnn1l65",
+          "template_8ud9uk9",
+          { message: mensagem, to_email: email },
+          "largUwzgW7L95dduo"
+        );
       }
 
       await adicionarPedido(novoPedido);
-
       toast.success("Pedido enviado com sucesso!");
       setQuantidades({});
       setPatrulha("");
