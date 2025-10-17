@@ -180,6 +180,7 @@ export default function Pedidos() {
 
     let devolucaoTotal = true;
     const devolvidoAtualizado = { ...pedido.devolvido };
+    const materiaisDetalhadosAtualizados = { ...pedido.materiaisDetalhados };
 
     for (const [nome, unidades] of Object.entries(pedido.materiaisDetalhados)) {
       for (let i = 0; i < unidades.length; i++) {
@@ -188,6 +189,10 @@ export default function Pedidos() {
 
         if (devolvido) {
           devolvidoAtualizado[nome][i] = 1;
+
+          // Atualiza a condicao no pedido também
+          materiaisDetalhadosAtualizados[nome][i].condicao = unidade.condicao;
+
           const detalhe = detalheMaterial.find(
             (d) =>
               d.referencia === unidade.referencia &&
@@ -207,10 +212,29 @@ export default function Pedidos() {
     }
 
     const novoEstado = devolucaoTotal ? "Concluído" : "Aprovado";
-    await updatePedido(pedidoId, {
+
+    // Se devolução completa, define data_devolucao como hoje
+    const updateData = {
       estado: novoEstado,
       devolvido: devolvidoAtualizado,
-    });
+      materiaisDetalhados: materiaisDetalhadosAtualizados,
+    };
+    if (devolucaoTotal) updateData.data_devolucao = new Date().toISOString().split("T")[0]; // YYYY-MM-DD
+
+    // Atualiza pedido no Supabase
+    await updatePedido(pedidoId, updateData);
+
+    // Atualiza estado local
+    setPedidos((prev) =>
+      prev.map((p) =>
+        p.id === pedidoId
+          ? {
+              ...p,
+              ...updateData,
+            }
+          : p
+      )
+    );
 
     toast.success(
       devolucaoTotal
@@ -218,6 +242,8 @@ export default function Pedidos() {
         : "Pedido devolvido parcialmente!"
     );
   }
+
+
 
   return (
     <div className="pedidos-container">
@@ -308,7 +334,8 @@ function PedidoItem({
       <p><b>Atividade:</b> {pedido.atividade || "-"}</p>
       <p><b>Estado:</b> {pedido.estado}</p>
       {pedido.data_levantamento && <p><b>Levantamento:</b> {pedido.data_levantamento}</p>}
-
+      {pedido.data_devolucao && (<p><b>Devolução:</b> {pedido.data_devolucao}</p>)}
+      
       <table className="material-table">
         <thead>
           <tr>
