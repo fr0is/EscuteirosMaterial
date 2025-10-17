@@ -1,4 +1,4 @@
-import React, { useContext, useState, useEffect } from "react";
+import React, { useContext, useState, useEffect, useRef } from "react";
 import { AppContext } from "../context/AppContext";
 import { toast, ToastContainer } from "react-toastify";
 import { FaCheckCircle, FaExclamationTriangle, FaTools } from "react-icons/fa";
@@ -13,10 +13,9 @@ export default function DetalheMaterial() {
   const [materiais, setMateriais] = useState([]);
   const [loading, setLoading] = useState(true);
   const [editandoId, setEditandoId] = useState(null);
-  const [editData, setEditData] = useState({
-    descricao: "",
-    condicao: "",
-  });
+  const [editData, setEditData] = useState({ descricao: "", condicao: "" });
+  const [expandido, setExpandido] = useState({});
+  const conteudoRefs = useRef({});
 
   useEffect(() => {
     if (!user?.isAdmin) return;
@@ -38,19 +37,17 @@ export default function DetalheMaterial() {
         .order("referencia", { ascending: true });
       if (errDet) throw errDet;
 
-      const matsOrdenados = [...mats].sort((a, b) =>
-        a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" })
+      setMateriais(
+        mats.sort((a, b) => a.nome.localeCompare(b.nome, "pt", { sensitivity: "base" }))
       );
-
-      const detsOrdenados = [...dets].sort((a, b) =>
-        (a.referencia || "").localeCompare(b.referencia || "", "pt", {
-          numeric: true,
-          sensitivity: "base",
-        })
+      setDetalhes(
+        dets.sort((a, b) =>
+          (a.referencia || "").localeCompare(b.referencia || "", "pt", {
+            numeric: true,
+            sensitivity: "base",
+          })
+        )
       );
-
-      setMateriais(matsOrdenados);
-      setDetalhes(detsOrdenados);
     } catch (error) {
       toast.error("Erro ao carregar detalhes: " + error.message);
     } finally {
@@ -58,12 +55,27 @@ export default function DetalheMaterial() {
     }
   };
 
+  const toggleExpandido = (id, numItens) => {
+    setExpandido((prev) => {
+      const novo = { ...prev, [id]: !prev[id] };
+      const el = conteudoRefs.current[id];
+      if (el) {
+        if (novo[id]) {
+          const altura = el.scrollHeight;
+          el.style.height = altura + "px";
+          el.style.transitionDuration = `${0.1 * numItens + 0.3}s`;
+        } else {
+          el.style.height = "0px";
+          el.style.transitionDuration = `${0.1 * numItens + 0.3}s`;
+        }
+      }
+      return novo;
+    });
+  };
+
   const iniciarEdicao = (item) => {
     setEditandoId(item.id);
-    setEditData({
-      descricao: item.descricao || "",
-      condicao: item.condicao || "",
-    });
+    setEditData({ descricao: item.descricao || "", condicao: item.condicao || "" });
   };
 
   const cancelarEdicao = () => {
@@ -75,10 +87,7 @@ export default function DetalheMaterial() {
     try {
       const { error } = await supabase
         .from("detalhe_material")
-        .update({
-          descricao: editData.descricao,
-          condicao: editData.condicao,
-        })
+        .update({ descricao: editData.descricao, condicao: editData.condicao })
         .eq("id", id);
 
       if (error) throw error;
@@ -90,7 +99,6 @@ export default function DetalheMaterial() {
             : item
         )
       );
-
       toast.success("Detalhe atualizado com sucesso!");
       cancelarEdicao();
     } catch (error) {
@@ -102,22 +110,12 @@ export default function DetalheMaterial() {
     const confirmToastId = toast.warn(
       <div>
         <div>Tem a certeza que deseja eliminar este item?</div>
-        <div
-          style={{
-            display: "flex",
-            justifyContent: "center",
-            marginTop: "10px",
-            gap: "10px",
-          }}
-        >
+        <div style={{ display: "flex", justifyContent: "center", marginTop: "10px", gap: "10px" }}>
           <button
             onClick={async () => {
               toast.dismiss(confirmToastId);
               try {
-                const { error } = await supabase
-                  .from("detalhe_material")
-                  .delete()
-                  .eq("id", id);
+                const { error } = await supabase.from("detalhe_material").delete().eq("id", id);
                 if (error) throw error;
                 toast.success("Item eliminado!");
                 carregarMateriaisEDetalhes();
@@ -165,12 +163,9 @@ export default function DetalheMaterial() {
 
   const getIcone = (item) => {
     const iconStyle = { fontSize: "18px" };
-    if (item.condicao === "danificado")
-      return <FaExclamationTriangle style={{ ...iconStyle, color: "var(--color-danger)" }} />;
-    if (item.estado_pedido === "emUso")
-      return <FaTools style={{ ...iconStyle, color: "#FF5F15" }} />;
-    if (item.estado_pedido === "disponivel" && item.condicao === "bom")
-      return <FaCheckCircle style={{ ...iconStyle, color: "var(--color-primary)" }} />;
+    if (item.condicao === "danificado") return <FaExclamationTriangle style={{ ...iconStyle, color: "var(--color-danger)" }} />;
+    if (item.estado_pedido === "emUso") return <FaTools style={{ ...iconStyle, color: "#FF5F15" }} />;
+    if (item.estado_pedido === "disponivel" && item.condicao === "bom") return <FaCheckCircle style={{ ...iconStyle, color: "var(--color-primary)" }} />;
     return null;
   };
 
@@ -182,14 +177,21 @@ export default function DetalheMaterial() {
       {loading ? (
         <p>A carregar...</p>
       ) : (
-        <>
-          {materiais.map((mat) => {
-            const detalhesFiltrados = detalhes.filter((d) => d.id_material === mat.id);
-            const condicaoMap = { bom: "Bom", danificado: "Danificado" };
+        materiais.map((mat) => {
+          const detalhesFiltrados = detalhes.filter((d) => d.id_material === mat.id);
+          const condicaoMap = { bom: "Bom", danificado: "Danificado" };
 
-            return (
-              <div key={mat.id} className="material-detalhe-bloco">
-                <h3>{mat.nome}</h3>
+          return (
+            <div key={mat.id} className="material-detalhe-bloco">
+              <h3 onClick={() => toggleExpandido(mat.id, detalhesFiltrados.length)}>
+                {mat.nome}
+                <span>{expandido[mat.id] ? "▲" : "▼"}</span>
+              </h3>
+
+              <div
+                ref={(el) => (conteudoRefs.current[mat.id] = el)}
+                className={`material-detalhe-conteudo ${expandido[mat.id] ? "expanded" : ""}`}
+              >
                 {detalhesFiltrados.length === 0 ? (
                   <p style={{ marginLeft: "10px" }}>Sem detalhes registados.</p>
                 ) : (
@@ -206,10 +208,7 @@ export default function DetalheMaterial() {
                     <tbody>
                       {[...detalhesFiltrados]
                         .sort((a, b) =>
-                          (a.referencia || "").localeCompare(b.referencia || "", "pt", {
-                            numeric: true,
-                            sensitivity: "base",
-                          })
+                          (a.referencia || "").localeCompare(b.referencia || "", "pt", { numeric: true, sensitivity: "base" })
                         )
                         .map((item) => (
                           <tr key={item.id}>
@@ -220,17 +219,13 @@ export default function DetalheMaterial() {
                                 <td>
                                   <input
                                     value={editData.descricao}
-                                    onChange={(e) =>
-                                      setEditData({ ...editData, descricao: e.target.value })
-                                    }
+                                    onChange={(e) => setEditData({ ...editData, descricao: e.target.value })}
                                   />
                                 </td>
                                 <td>
                                   <select
                                     value={editData.condicao}
-                                    onChange={(e) =>
-                                      setEditData({ ...editData, condicao: e.target.value })
-                                    }
+                                    onChange={(e) => setEditData({ ...editData, condicao: e.target.value })}
                                   >
                                     <option value="bom">Bom</option>
                                     <option value="danificado">Danificado</option>
@@ -257,9 +252,9 @@ export default function DetalheMaterial() {
                   </table>
                 )}
               </div>
-            );
-          })}
-        </>
+            </div>
+          );
+        })
       )}
     </div>
   );

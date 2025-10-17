@@ -34,6 +34,24 @@
   padding: 10px 15px;
   margin: 0;
   font-size: 16px;
+  cursor: pointer;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+/* Container do conteúdo (com animação de abrir/fechar e fade) */
+.material-detalhe-conteudo {
+  height: 0;
+  overflow: hidden;
+  opacity: 0;
+  transition: height 0.4s ease, padding 0.4s ease, opacity 0.4s ease;
+  padding: 0 15px;
+}
+
+.material-detalhe-conteudo.expanded {
+  opacity: 1;
+  padding: 10px 15px;
 }
 
 /* Tabela de detalhes */
@@ -42,7 +60,7 @@
   border-collapse: collapse;
   font-size: 14px;
   margin-top: 5px;
-  table-layout: fixed; /* FIXA o tamanho das colunas */
+  table-layout: fixed;
 }
 
 .material-table th,
@@ -63,11 +81,11 @@
 /* Coluna de ícones */
 .material-table th:first-child,
 .material-table td:first-child {
-  width: 30px;       /* coluna estreita para os ícones */
+  width: 30px;
   text-align: center;
 }
 
-/* Definição de larguras fixas das colunas restantes */
+/* Larguras fixas das outras colunas */
 .material-table th.descricao,
 .material-table td.descricao {
   width: 40%;
@@ -107,37 +125,10 @@
   border-radius: var(--border-radius);
   border: 1px solid #ccc;
   box-sizing: border-box;
-  min-width: 0; /* evita expansão da coluna */
+  min-width: 0;
 }
 
-/* Container de edição — layout fixo */
-.material-editing {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  width: 100%;
-  gap: 16px; /* gap desktop */
-  flex-wrap: nowrap; /* mantém tudo na mesma linha */
-}
-
-/* Inputs da edição */
-.material-editing .inputs {
-  display: flex;
-  gap: 8px;
-  flex-grow: 1;
-  max-width: 60%;
-  align-items: center;
-}
-
-/* Botões de edição */
-.material-editing .buttons {
-  display: flex;
-  gap: 8px; /* gap desktop */
-  justify-content: flex-end;
-  flex-shrink: 0;
-}
-
-/* Botões de ação (editar, guardar, eliminar, cancelar) */
+/* Botões */
 .material-table button {
   font-size: 14px;
   padding: 6px 10px;
@@ -149,19 +140,17 @@
   min-width: 50px;
 }
 
-/* Botões verde (editar e guardar) */
 .material-table button:first-child {
   background-color: var(--color-primary);
   border-color: var(--color-primary-dark);
   color: white;
-  margin-right: 8px; /* desktop */
+  margin-right: 8px;
 }
 
 .material-table button:first-child:hover {
   background-color: var(--color-primary-dark);
 }
 
-/* Botões vermelho (eliminar/cancelar) */
 .material-table button:last-child {
   background-color: var(--color-danger);
   border-color: #b71c1c;
@@ -172,7 +161,7 @@
   background-color: #b71c1c;
 }
 
-/* Responsividade para mobile */
+/* Responsividade */
 @media (max-width: 480px) {
   .material-container {
     padding: 10px 5px;
@@ -194,28 +183,12 @@
   .material-table td {
     padding: 4px 6px;
     font-size: 12px;
-    white-space: normal; /* permite quebra de linha */
+    white-space: normal;
   }
 
-  /* Ajusta larguras das colunas para caber melhor */
   .material-table th.descricao,
   .material-table td.descricao {
     width: 45%;
-  }
-
-  .material-table th.referencia,
-  .material-table td.referencia {
-    width: 15%;
-  }
-
-  .material-table th.condicao,
-  .material-table td.condicao {
-    width: 15%;
-  }
-
-  .material-table th.estado,
-  .material-table td.estado {
-    width: 15%;
   }
 
   .material-table th.acoes,
@@ -225,36 +198,13 @@
 
   .material-table th:first-child,
   .material-table td:first-child {
-    width: 25px; /* coluna ícones ligeiramente mais estreita no mobile */
+    width: 25px;
   }
 
   .material-table button {
     padding: 4px 6px;
     font-size: 12px;
     min-width: unset;
-    margin-right: 6px; /* gap entre botões mobile */
-  }
-
-  .material-editing {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 8px;
-  }
-
-  .material-editing .inputs {
-    flex-wrap: wrap;
-    gap: 4px;
-  }
-
-  .material-editing .buttons {
-    gap: 6px;
-    justify-content: flex-start;
-    width: 100%;
-  }
-
-  .material-table input,
-  .material-table select {
-    font-size: 12px;
-    padding: 4px 6px;
+    margin-right: 6px;
   }
 }
