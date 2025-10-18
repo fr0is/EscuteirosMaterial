@@ -1,4 +1,5 @@
 import React, { useContext, useState, useEffect } from "react";
+import bcrypt from "bcryptjs";
 import { AppContext } from "../context/AppContext";
 import { useNavigate } from "react-router-dom";
 import { toast, ToastContainer } from "react-toastify";
@@ -289,7 +290,7 @@ export default function Configuracao() {
   };
 
 
-  const handleChangePassword = () => {
+  const handleChangePassword = async () => {
     const password = novaPassword.trim();
 
     if (!password) {
@@ -298,13 +299,37 @@ export default function Configuracao() {
     }
 
     if (!validarPassword(password)) {
-      toast.error("A palavra-passe deve ter mais de 6 caracteres e conter pelo menos um carácter especial.");
+      toast.error(
+        "A palavra-passe deve ter mais de 6 caracteres e conter pelo menos um carácter especial."
+      );
       return;
     }
 
-    toast.success("Password alterada com sucesso!");
-    setNovaPassword("");
+    try {
+      // 🔐 Gera o hash da nova password
+      const salt = bcrypt.genSaltSync(10);
+      const hashedPassword = bcrypt.hashSync(password, salt);
+
+      // 💾 Atualiza no Supabase
+      const { error } = await supabase
+        .from("users")
+        .update({ password: hashedPassword })
+        .eq("username", user.username);
+
+      if (error) {
+        console.error(error);
+        toast.error("Erro ao alterar a palavra-passe.");
+        return;
+      }
+
+      toast.success("Password alterada com sucesso!");
+      setNovaPassword("");
+    } catch (err) {
+      console.error(err);
+      toast.error("Erro inesperado ao alterar password.");
+    }
   };
+
 
   const handleAddUser = async () => {
     const username = usernameNovoUtilizador.trim();
@@ -601,94 +626,126 @@ export default function Configuracao() {
         {user.isAdmin && seccaoAtiva === "utilizadoresRegistados" && (
           <section>
             <h2>Utilizadores Registados</h2>
-            <ul className="user-list">
-            {users
-              .filter((u) => u.username !== "admin") // manténs este filtro para não mostrar "admin" na lista normal
-              .map((u) => {
-                const podeEditar = 
-                  (user.username === "CA127" || user.username === "admin") && // se o user logado é CA127 ou admin
-                  u.username !== "CA127"; // mas não pode editar CA127
-                
-                return (
-                  <li key={u.username} className="user-list-item">
-                    <div className="user-info">
-                      <b>{u.username}</b>{" "}
-                      {edicoesTipo[u.username] !== undefined ? (
-                        <>
-                          <select
-                            value={edicoesTipo[u.username]}
-                            onChange={(e) =>
-                              setEdicoesTipo((prev) => ({
-                                ...prev,
-                                [u.username]: e.target.value,
-                              }))
-                            }
-                            className="select-field"
-                          >
-                            <option value="user">user</option>
-                            <option value="admin">admin</option>
-                          </select>
-                          <button
-                            onClick={() => handleSalvarTipo(u.username)}
-                            className="btn btn-adicionar"
-                            style={{ marginLeft: "10px" }}
-                          >
-                            💾
-                          </button>
-                          <button
-                            onClick={() =>
-                              setEdicoesTipo((prev) => {
-                                const copy = { ...prev };
-                                delete copy[u.username];
-                                return copy;
-                              })
-                            }
-                            className="btn btn-remover"
-                          >
-                            🗙
-                          </button>
-                        </>
-                      ) : (
-                        <>
-                          ({u.tipo}) - {u.nome}
-                        </>
-                      )}
-                    </div>
 
-                    <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
-                      {/* Mostrar botão editar para CA127 e admin para qualquer user, exceto CA127 */}
-                      {podeEditar && !edicoesTipo[u.username] && (
-                        <button
-                          onClick={() =>
-                            setEdicoesTipo((prev) => ({
-                              ...prev,
-                              [u.username]: u.tipo,
-                            }))
-                          }
-                          className="btn btn-adicionar"
-                        >
-                          ✏️
-                        </button>
-                      )}
+            {/* Agrupa os utilizadores por secção */}
+            {(() => {
+              const utilizadoresPorSeccao = users
+                .filter((u) => u.username !== "admin") // ignora admin
+                .reduce((acc, u) => {
+                  const sec = u.seccao || "Sem secção";
+                  if (!acc[sec]) acc[sec] = [];
+                  acc[sec].push(u);
+                  return acc;
+                }, {});
 
-                      {/* Botão remover só aparece se não for CA127 e nem o próprio user */}
-                      {u.username !== "CA127" && u.username !== user.username ? (
-                        <button
-                          onClick={() => handleRemoveUser(u.username)}
-                          className="btn btn-remover"
-                        >
-                          🗑️
-                        </button>
-                      ) : (
-                        <span className="disabled-remover">(Não pode remover)</span>
-                      )}
-                    </div>
-                  </li>
-                );
-              })}
-          </ul>
+              const ordem = ["Lobitos", "Exploradores", "Pioneiros", "Caminheiros", "Dirigentes", "Sem secção"];
+              const secoesOrdenadas = Object.keys(utilizadoresPorSeccao).sort(
+                (a, b) => ordem.indexOf(a) - ordem.indexOf(b)
+              );
+
+              return secoesOrdenadas.map((secao) => (
+                <div key={secao} style={{ marginBottom: "2rem" }}>
+                  <h3
+                    style={{
+                      marginBottom: "0.5rem",
+                      borderBottom: "2px solid var(--color-primary-dark)",
+                      paddingBottom: "4px",
+                      color: "var(--color-primary-dark)",
+                    }}
+                  >
+                    {secao}
+                  </h3>
+
+                  <ul className="user-list">
+                    {utilizadoresPorSeccao[secao].map((u) => {
+                      const podeEditar =
+                        (user.username === "CA127" || user.username === "admin") &&
+                        u.username !== "CA127";
+
+                      return (
+                        <li key={u.username} className="user-list-item">
+                          <div className="user-info">
+                            <span>
+                              <b>{u.username}</b> - {u.nome}
+                            </span>
+                            {edicoesTipo[u.username] !== undefined && (
+                              <select
+                                value={edicoesTipo[u.username]}
+                                onChange={(e) =>
+                                  setEdicoesTipo((prev) => ({
+                                    ...prev,
+                                    [u.username]: e.target.value,
+                                  }))
+                                }
+                                className="select-field"
+                                style={{ marginLeft: "10px" }}
+                              >
+                                <option value="user">user</option>
+                                <option value="admin">admin</option>
+                              </select>
+                            )}
+                          </div>
+
+                          <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
+                            {edicoesTipo[u.username] !== undefined ? (
+                              <>
+                                <button
+                                  onClick={() => handleSalvarTipo(u.username)}
+                                  className="btn btn-adicionar"
+                                >
+                                  💾
+                                </button>
+                                <button
+                                  onClick={() =>
+                                    setEdicoesTipo((prev) => {
+                                      const copy = { ...prev };
+                                      delete copy[u.username];
+                                      return copy;
+                                    })
+                                  }
+                                  className="btn btn-remover"
+                                >
+                                  🗙
+                                </button>
+                              </>
+                            ) : (
+                              <>
+                                {/* Botão de edição permanece na mesma posição */}
+                                {podeEditar && (
+                                  <button
+                                    onClick={() =>
+                                      setEdicoesTipo((prev) => ({ ...prev, [u.username]: u.tipo }))
+                                    }
+                                    className="btn btn-adicionar"
+                                  >
+                                    ✏️
+                                  </button>
+                                )}
+                                {/* Botão de remover permanece */}
+                                {u.username !== "CA127" && u.username !== user.username ? (
+                                  <button
+                                    onClick={() => handleRemoveUser(u.username)}
+                                    className="btn btn-remover"
+                                  >
+                                    🗑️
+                                  </button>
+                                ) : (
+                                  <span className="disabled-remover">(Não pode remover)</span>
+                                )}
+                              </>
+                            )}
+                          </div>
+                        </li>
+
+                      );
+                    })}
+                  </ul>
+                </div>
+              ));
+            })()}
           </section>
         )}
+
 
         {user.isAdmin && seccaoAtiva === "adicionarUtilizador" && (
           <section>
