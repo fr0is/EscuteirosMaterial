@@ -28,10 +28,10 @@ export default function Material() {
   const [atividade, setAtividade] = useState("");
 
   const [novoMaterialNome, setNovoMaterialNome] = useState("");
-  const [novoMaterialTotal, setNovoMaterialTotal] = useState(0);
+  const [novoMaterialTotal, setNovoMaterialTotal] = useState(1);
   const [editandoMaterialId, setEditandoMaterialId] = useState(null);
   const [editandoNome, setEditandoNome] = useState("");
-  const [editandoTotal, setEditandoTotal] = useState(0);
+  const [editandoTotal, setEditandoTotal] = useState(1);
 
   if (!user.loggedIn) {
     navigate("/");
@@ -259,7 +259,7 @@ ${listaMateriais}
 
   const salvarEdicao = async () => {
     if (!editandoNome.trim() || editandoTotal <= 0) {
-      alert("Indica nome e quantidade total válidos para o material.");
+      toast.error("Indica nome e quantidade total válidos para o material.");
       return;
     }
 
@@ -268,7 +268,7 @@ ${listaMateriais}
     const novoDisponivel = materialAtual.disponivel + diferencaTotal;
 
     if (novoDisponivel < 0) {
-      alert("Não podes reduzir o total para menos do que o já emprestado.");
+      toast.error("Não podes reduzir o total para menos do que o já emprestado.");
       return;
     }
 
@@ -278,11 +278,14 @@ ${listaMateriais}
         total: editandoTotal,
         disponivel: novoDisponivel,
       });
+      toast.success(`${editandoNome} atualizado com sucesso!`);
       cancelarEdicao();
     } catch (error) {
-      alert("Erro ao atualizar material: " + error.message);
+      console.error("Erro ao atualizar material:", error);
+      toast.error("Erro ao atualizar material: " + error.message);
     }
   };
+
 
   const handleRemoverMaterial = (id) => {
     const confirmToastId = toast.warn(
@@ -363,6 +366,7 @@ ${listaMateriais}
                       type="number"
                       className="input-quantidade"
                       value={editandoTotal}
+                      min={1}
                       onChange={(e) =>
                         setEditandoTotal(parseInt(e.target.value) || 0)
                       }
@@ -440,7 +444,8 @@ ${listaMateriais}
             type="number"
             placeholder="Quantidade total"
             value={novoMaterialTotal}
-            onChange={(e) => setNovoMaterialTotal(parseInt(e.target.value) || 0)}
+            min={1}
+            onChange={(e) => setNovoMaterialTotal(parseInt(e.target.value) || 1)}
           />
           <button onClick={handleCriarMaterial}>Adicionar material</button>
         </div>

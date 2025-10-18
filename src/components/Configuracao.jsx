@@ -404,14 +404,15 @@ export default function Configuracao() {
   };
 
   const handleRemoveUser = (username) => {
-    if (username === "CA127") {
-      toast.warn("O utilizador CA127 não pode ser removido.");
-      return;
-    }
-    if (username === user.username) {
-      toast.warn("Você não pode remover a si mesmo.");
-      return;
-    }
+  if (username === user.username) {
+    toast.warn("Você não pode remover a si mesmo.");
+    return;
+  }
+
+  if (username === "CA127" && !(user.username === "admin" || user.username === "CA127")) {
+    toast.warn("Apenas 'admin' ou 'CA127' podem remover este utilizador.");
+    return;
+  }
 
     // Aqui captura o ID do toast de confirmação
     const confirmToastId = toast.warn(
@@ -658,15 +659,17 @@ export default function Configuracao() {
 
                   <ul className="user-list">
                     {utilizadoresPorSeccao[secao].map((u) => {
-                      const podeEditar =
-                        (user.username === "CA127" || user.username === "admin") &&
-                        u.username !== "CA127";
+                      const podeEditar = 
+                      u.username === "CA127"
+                        ? user.username === "CA127" || user.username === "admin"
+                        : user.isAdmin;
+
 
                       return (
                         <li key={u.username} className="user-list-item">
                           <div className="user-info">
                             <span>
-                              <b>{u.username}</b> - {u.nome}
+                              <b>{u.username}</b> - {u.nome} ({u.tipo}) 
                             </span>
                             {edicoesTipo[u.username] !== undefined && (
                               <select
@@ -722,13 +725,11 @@ export default function Configuracao() {
                                   </button>
                                 )}
                                 {/* Botão de remover permanece */}
-                                {u.username !== "CA127" && u.username !== user.username ? (
-                                  <button
-                                    onClick={() => handleRemoveUser(u.username)}
-                                    className="btn btn-remover"
-                                  >
-                                    🗑️
-                                  </button>
+                                {(u.username === "CA127"
+                                    ? user.username === "admin" || user.username === "CA127"
+                                    : u.username !== user.username && user.isAdmin
+                                ) ? (
+                                  <button onClick={() => handleRemoveUser(u.username)} className="btn btn-remover">🗑️</button>
                                 ) : (
                                   <span className="disabled-remover">(Não pode remover)</span>
                                 )}
