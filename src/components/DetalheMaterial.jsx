@@ -311,8 +311,8 @@ export default function DetalheMaterial() {
                                   </select>
                                 </td>
                                 <td>
-                                  <button onClick={() => guardarEdicao(item.id)}>💾</button>
-                                  <button onClick={cancelarEdicao}>🗙</button>
+                                  <button title="Guardar" onClick={() => guardarEdicao(item.id)}>💾</button>
+                                  <button title="Cancelar" onClick={cancelarEdicao}>🗙</button>
                                 </td>
                               </>
                             ) : (

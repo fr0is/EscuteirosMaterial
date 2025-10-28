@@ -692,13 +692,8 @@ export default function Configuracao() {
                           <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
                             {edicoesTipo[u.username] !== undefined ? (
                               <>
-                                <button
-                                  onClick={() => handleSalvarTipo(u.username)}
-                                  className="btn btn-adicionar"
-                                >
-                                  💾
-                                </button>
-                                <button
+                                <button title="Guardar" onClick={() => handleSalvarTipo(u.username)} className="btn btn-adicionar">💾</button>
+                                <button title="Cancelar"
                                   onClick={() =>
                                     setEdicoesTipo((prev) => {
                                       const copy = { ...prev };
@@ -715,7 +710,7 @@ export default function Configuracao() {
                               <>
                                 {/* Botão de edição permanece na mesma posição */}
                                 {podeEditar && (
-                                  <button
+                                  <button title="Editar"
                                     onClick={() =>
                                       setEdicoesTipo((prev) => ({ ...prev, [u.username]: u.tipo }))
                                     }
@@ -729,7 +724,7 @@ export default function Configuracao() {
                                     ? user.username === "admin" || user.username === "CA127"
                                     : u.username !== user.username && user.isAdmin
                                 ) ? (
-                                  <button onClick={() => handleRemoveUser(u.username)} className="btn btn-remover">🗑️</button>
+                                  <button title="Eliminar" onClick={() => handleRemoveUser(u.username)} className="btn btn-remover">🗑️</button>
                                 ) : (
                                   <span className="disabled-remover">(Não pode remover)</span>
                                 )}
@@ -814,7 +809,7 @@ export default function Configuracao() {
                   {emailsNotificacao.map(({ email }) => (
                     <li key={email} className="user-list-item">
                       {email}{" "}
-                      <button
+                      <button title="Eliminar"
                         onClick={() => handleRemoverEmail(email)}
                         className="btn btn-remover"
                         disabled={loadingEmails}
@@ -902,7 +897,7 @@ export default function Configuracao() {
                           <div style={{ display: "flex", gap: "10px", marginTop: "5px" }}>
                             {isEditing ? (
                               <>
-                                <button
+                                <button title="Guardar"
                                   className="btn btn-adicionar"
                                   onClick={async () => {
                                     const { id, nome, email } = d;
@@ -929,7 +924,7 @@ export default function Configuracao() {
                                 >
                                   💾
                                 </button>
-                                <button
+                                <button title="Cancelar"
                                   className="btn btn-remover"
                                   onClick={() => setEditandoDirigente(null)}
                                 >
@@ -937,7 +932,7 @@ export default function Configuracao() {
                                 </button>
                               </>
                             ) : (
-                              <button
+                              <button title="Editar"
                                 className="btn btn-adicionar"
                                 onClick={() => setEditandoDirigente(d.id)}
                               >

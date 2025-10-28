@@ -374,10 +374,10 @@ ${listaMateriais}
                     />
                   </div>
                   <div className="buttons">
-                    <button className="guardar" onClick={salvarEdicao}>
+                    <button title="Guardar" className="guardar" onClick={salvarEdicao}>
                       💾
                     </button>
-                    <button className="cancelar" onClick={cancelarEdicao}>
+                    <button title="Cancelar" className="cancelar" onClick={cancelarEdicao}>
                       🗙
                     </button>
                   </div>
@@ -393,10 +393,10 @@ ${listaMateriais}
                     {pendente > 0 && <em>(Pendentes: {pendente})</em>}
                   </div>
                   <div className="material-actions">
-                    <button className="editar" onClick={() => iniciarEdicao(item)}>
+                    <button  title="Editar" className="editar" onClick={() => iniciarEdicao(item)}>
                       ✏️
                     </button>
-                    <button
+                    <button title="Eliminar"
                       className="remover"
                       onClick={() => handleRemoverMaterial(item.id)}
                     >

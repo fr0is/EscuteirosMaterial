@@ -519,7 +519,7 @@ function PedidoItem({
         )}
 
         {pedido.estado === "Concluído" && isAdmin && (
-          <button
+          <button title="Eliminar"
             className="btn-eliminar-pedido"
             onClick={() => onEliminar(pedido.id)}
           >
