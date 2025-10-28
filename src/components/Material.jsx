@@ -28,10 +28,10 @@ export default function Material() {
   const [atividade, setAtividade] = useState("");
 
   const [novoMaterialNome, setNovoMaterialNome] = useState("");
-  const [novoMaterialTotal, setNovoMaterialTotal] = useState(1);
+  const [novoMaterialTotal, setNovoMaterialTotal] = useState(0);
   const [editandoMaterialId, setEditandoMaterialId] = useState(null);
   const [editandoNome, setEditandoNome] = useState("");
-  const [editandoTotal, setEditandoTotal] = useState(1);
+  const [editandoTotal, setEditandoTotal] = useState(0);
 
   if (!user.loggedIn) {
     navigate("/");
@@ -238,6 +238,7 @@ ${listaMateriais}
         total: novoMaterialTotal,
         disponivel: novoMaterialTotal,
       });
+      toast.success(`${novoMaterialNome} adicionado com sucesso!`);
       setNovoMaterialNome("");
       setNovoMaterialTotal(0);
     } catch (error) {
@@ -366,7 +367,7 @@ ${listaMateriais}
                       type="number"
                       className="input-quantidade"
                       value={editandoTotal}
-                      min={1}
+                      min={0}
                       onChange={(e) =>
                         setEditandoTotal(parseInt(e.target.value) || 0)
                       }
@@ -444,8 +445,8 @@ ${listaMateriais}
             type="number"
             placeholder="Quantidade total"
             value={novoMaterialTotal}
-            min={1}
-            onChange={(e) => setNovoMaterialTotal(parseInt(e.target.value) || 1)}
+            min={0}
+            onChange={(e) => setNovoMaterialTotal(parseInt(e.target.value) || 0)}
           />
           <button onClick={handleCriarMaterial}>Adicionar material</button>
         </div>

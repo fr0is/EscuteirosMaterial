@@ -128,7 +128,10 @@
   min-width: 0;
 }
 
-/* Botões */
+/* ===========================
+   BOTÕES DE AÇÃO
+   =========================== */
+
 .material-table button {
   font-size: 14px;
   padding: 6px 10px;
@@ -138,30 +141,46 @@
   user-select: none;
   transition: background-color 0.3s ease, border-color 0.3s ease;
   min-width: 50px;
-}
-
-.material-table button:first-child {
-  background-color: var(--color-primary);
-  border-color: var(--color-primary-dark);
-  color: white;
   margin-right: 8px;
 }
 
-.material-table button:first-child:hover {
+/* Botão Editar */
+.material-table button.btn-editar {
+  background-color: var(--color-primary);
+  border-color: var(--color-primary-dark);
+  color: white;
+}
+
+.material-table button.btn-editar:hover {
   background-color: var(--color-primary-dark);
 }
 
-.material-table button:last-child {
+/* Botão Eliminar */
+.material-table button.btn-eliminar {
   background-color: var(--color-danger);
   border-color: #b71c1c;
   color: white;
 }
 
-.material-table button:last-child:hover {
+.material-table button.btn-eliminar:hover {
   background-color: #b71c1c;
 }
 
-/* Responsividade */
+/* Botão Excel */
+.material-table button.btn-excel {
+  background-color: #1d6f42; /* verde estilo Excel */
+  border-color: #145a32;
+  color: white;
+}
+
+.material-table button.btn-excel:hover {
+  background-color: #145a32;
+}
+
+/* ===========================
+   RESPONSIVIDADE
+   =========================== */
+
 @media (max-width: 480px) {
   .material-container {
     padding: 10px 5px;

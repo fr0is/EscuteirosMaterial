@@ -2,6 +2,8 @@ import React, { useContext, useState, useEffect, useRef } from "react";
 import { AppContext } from "../context/AppContext";
 import { toast, ToastContainer } from "react-toastify";
 import { FaCheckCircle, FaExclamationTriangle, FaTools } from "react-icons/fa";
+import * as XLSX from "xlsx";
+import { saveAs } from "file-saver";
 import "react-toastify/dist/ReactToastify.css";
 import "../styles/DetalheMaterial.css";
 import "../styles/utilities.css";
@@ -60,18 +62,26 @@ export default function DetalheMaterial() {
       const novo = { ...prev, [id]: !prev[id] };
       const el = conteudoRefs.current[id];
       if (el) {
+        // Configuração de tempo de transição mais uniforme
+        const tempoMin = 0.3; // tempo mínimo em segundos
+        const tempoMax = 0.8; // tempo máximo em segundos
+        const fator = 0.03;   // incremento por item (30ms)
+        let duracao = tempoMin + numItens * fator;
+        if (duracao > tempoMax) duracao = tempoMax;
+
         if (novo[id]) {
           const altura = el.scrollHeight;
           el.style.height = altura + "px";
-          el.style.transitionDuration = `${0.1 * numItens + 0.3}s`;
         } else {
           el.style.height = "0px";
-          el.style.transitionDuration = `${0.1 * numItens + 0.3}s`;
         }
+        el.style.transitionDuration = `${duracao}s`;
+        el.style.transitionTimingFunction = "ease-in-out"; // suaviza ainda mais
       }
       return novo;
     });
   };
+
 
   const iniciarEdicao = (item) => {
     setEditandoId(item.id);
@@ -151,6 +161,75 @@ export default function DetalheMaterial() {
       </div>,
       { position: "top-center", autoClose: false, draggable: false }
     );
+  };
+
+  const exportarExcel = async (nomeMaterialOriginal, referenciaFiltro) => {
+    try {
+      const normalizar = (str) =>
+        str?.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+
+      const nomeMaterial = normalizar(nomeMaterialOriginal);
+
+      const { data: pedidos, error } = await supabase
+        .from("pedidos")
+        .select("id, nome, data_devolucao, materiais, materiaisDetalhados, estado")
+        .order("data_devolucao", { ascending: false });
+
+      if (error) throw error;
+
+      // Filtra apenas pedidos concluídos
+      const pedidosConcluidos = (pedidos || []).filter(
+        (p) => normalizar(p.estado) === "concluido"
+      );
+
+      // Filtra pedidos que contenham o material desejado
+      const pedidosFiltrados = pedidosConcluidos.filter((p) => {
+        const nomesMateriais = Object.keys(p.materiais || {}).map(normalizar);
+        return nomesMateriais.includes(nomeMaterial);
+      });
+
+      // Cria linhas para o Excel
+      const linhas = pedidosFiltrados.flatMap((pedido) => {
+      const detalhes = pedido.materiaisDetalhados || {};
+      const chave = Object.keys(detalhes || {}).find(
+        (m) => normalizar(m) === nomeMaterial
+      );
+      const lista = detalhes[chave] || [];
+
+      // Agora filtramos também pela referência
+      return lista
+        .filter((item) => !referenciaFiltro || item.referencia === referenciaFiltro)
+        .map((item) => ({
+          Material: nomeMaterialOriginal,
+          Referência: item.referencia || "-",
+          Condição: item.condicao || "-",
+          "Pedido por": pedido.nome || "-",
+          "Data de devolução": pedido.data_devolucao
+            ? new Date(pedido.data_devolucao).toLocaleDateString("pt-PT")
+            : "-",
+        }));
+    });
+
+      if (linhas.length === 0) {
+        toast.info("Sem dados para exportar.");
+        return;
+      }
+
+      // Cria o Excel
+      const worksheet = XLSX.utils.json_to_sheet(linhas);
+      const workbook = XLSX.utils.book_new();
+      XLSX.utils.book_append_sheet(workbook, worksheet, "Histórico");
+
+      const excelBuffer = XLSX.write(workbook, { bookType: "xlsx", type: "array" });
+      const blob = new Blob([excelBuffer], {
+        type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+      });
+      saveAs(blob, `Historico_${nomeMaterialOriginal}#${referenciaFiltro}.xlsx`);
+
+      toast.success(`Exportado com sucesso: ${nomeMaterialOriginal}#${referenciaFiltro}`);
+    } catch (error) {
+      toast.error("Erro ao exportar Excel: " + error.message);
+    }
   };
 
   if (!user?.isAdmin) {
@@ -240,9 +319,10 @@ export default function DetalheMaterial() {
                               <>
                                 <td>{item.descricao || "-"}</td>
                                 <td>{condicaoMap[item.condicao] || item.condicao}</td>
-                                <td>
-                                  <button onClick={() => iniciarEdicao(item)}>✏️</button>
-                                  <button onClick={() => eliminarDetalhe(item.id)}>🗑️</button>
+                                <td className="acoes">
+                                  <button className="btn-editar" title="Editar" onClick={() => iniciarEdicao(item) }>✏️</button>
+                                  <button className="btn-eliminar" title="Eliminar" onClick={() => eliminarDetalhe(item.id)}>🗑️</button>
+                                  <button className="btn-excel" title="Exportar Histórico" onClick={() => exportarExcel(mat.nome, item.referencia)}>📄</button>
                                 </td>
                               </>
                             )}
