@@ -1,14 +1,8 @@
 import React, { createContext, useState, useEffect } from "react";
-import { createClient } from "@supabase/supabase-js";
+import { supabase } from "../lib/supabaseClient";
 import bcrypt from "bcryptjs";
 
 export const AppContext = createContext();
-
-const supabaseUrl = "https://mwwyfsyjdgppvapkhkos.supabase.co";
-const supabaseKey =
-  "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Im13d3lmc3lqZGdwcHZhcGtoa29zIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NDgyNjA4OTUsImV4cCI6MjA2MzgzNjg5NX0.Ntu1ypad2EDtx-lkeDHcrr1alwivQXbgRgD5cnl4AMU";
-
-const supabase = createClient(supabaseUrl, supabaseKey);
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(() => {
