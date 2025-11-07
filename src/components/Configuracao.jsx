@@ -742,56 +742,73 @@ export default function Configuracao() {
           </section>
         )}
 
-
         {user.isAdmin && seccaoAtiva === "adicionarUtilizador" && (
           <section>
             <h2>Adicionar Utilizador</h2>
-            <div className="form-group">
-              <input
-                placeholder="Username"
-                value={usernameNovoUtilizador}
-                onChange={(e) => setUsernameNovoUtilizador(e.target.value)}
-                className="input-field"
-              />
-              <input
-                type="Password"
-                placeholder="Password"
-                value={passwordNovoUtilizador}
-                onChange={(e) => setPasswordNovoUtilizador(e.target.value)}
-                className="input-field"
-              />
-              <input
-                placeholder="Nome do encarregado de material"
-                value={nomeNovoUtilizador}
-                onChange={(e) => setNomeNovoUtilizador(e.target.value)}
-                className="input-field"
-              />
-              <input
-                type="email"
-                placeholder="Email do encarregado de material"
-                value={emailNovoUtilizador}
-                onChange={(e) => setEmailNovoUtilizador(e.target.value)}
-                className="input-field"
-              />
-              <select
-                value={seccaoNovoUtilizador}
-                onChange={(e) => setSeccaoNovoUtilizador(e.target.value)}
-                className="select-field"
-              >
-                <option value="Lobitos">Lobitos</option>
-                <option value="Exploradores">Exploradores</option>
-                <option value="Pioneiros">Pioneiros</option>
-                <option value="Caminheiros">Caminheiros</option>
-                <option value="Dirigentes">Dirigentes</option>
-              </select>
-              <select
-                value={tipoNovoUtilizador}
-                onChange={(e) => setTipoNovoUtilizador(e.target.value)}
-                className="select-field"
-              >
-                <option value="user">User</option>
-                <option value="admin">Admin</option>
-              </select>
+            <div className="adicionar-user-form">
+              <label>
+                Username
+                <input
+                  placeholder="Username"
+                  value={usernameNovoUtilizador}
+                  onChange={(e) => setUsernameNovoUtilizador(e.target.value)}
+                  className="input-field"
+                />
+              </label>
+              <label>
+                Password
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={passwordNovoUtilizador}
+                  onChange={(e) => setPasswordNovoUtilizador(e.target.value)}
+                  className="input-field"
+                />
+              </label>
+              <label>
+                Nome
+                <input
+                  placeholder="Nome do encarregado de material"
+                  value={nomeNovoUtilizador}
+                  onChange={(e) => setNomeNovoUtilizador(e.target.value)}
+                  className="input-field"
+                />
+              </label>
+              <label>
+                Email
+                <input
+                  type="email"
+                  placeholder="Email do encarregado de material"
+                  value={emailNovoUtilizador}
+                  onChange={(e) => setEmailNovoUtilizador(e.target.value)}
+                  className="input-field"
+                />
+              </label>
+              <label>
+                Secção
+                <select
+                  value={seccaoNovoUtilizador}
+                  onChange={(e) => setSeccaoNovoUtilizador(e.target.value)}
+                  className="select-field"
+                >
+                  <option value="Lobitos">Lobitos</option>
+                  <option value="Exploradores">Exploradores</option>
+                  <option value="Pioneiros">Pioneiros</option>
+                  <option value="Caminheiros">Caminheiros</option>
+                  <option value="Dirigentes">Dirigentes</option>
+                </select>
+              </label>
+              <label>
+                Tipo Utilizador
+                <select
+                  value={tipoNovoUtilizador}
+                  onChange={(e) => setTipoNovoUtilizador(e.target.value)}
+                  className="select-field"
+                >
+                  <option value="user">User</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </label>
               <button onClick={handleAddUser} className="btn btn-adicionar">
                 Adicionar
               </button>
