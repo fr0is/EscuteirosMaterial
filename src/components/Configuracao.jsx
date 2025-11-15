@@ -43,6 +43,31 @@ export default function Configuracao() {
     nome: "",
     email: "",
   });
+
+  const [gruposSecao, setGruposSecao] = useState([]);
+
+  const carregarGruposSecao = async (secao) => {
+    if (!secao) {
+      setGruposSecao([]);
+      return;
+    }
+
+    const { data, error } = await supabase
+      .from("BandosPatrulhasEquipasTribos")
+      .select("nome")
+      .eq("seccao", secao)
+      .order("nome", { ascending: true });
+
+    if (error) {
+      console.error(error);
+      toast.error("Erro ao carregar grupos da secção.");
+      setGruposSecao([]);
+    } else {
+      setGruposSecao(data.map(d => d.nome));
+    }
+  };
+
+
   const [editandoDirigente, setEditandoDirigente] = useState(null);
 
   async function carregarDirigentes() {
@@ -130,6 +155,10 @@ export default function Configuracao() {
       }
     );
   }
+
+  useEffect(() => {
+    carregarGruposSecao("Lobitos");
+  }, []);
 
   useEffect(() => {
     if (!user.loggedIn) {
@@ -330,6 +359,9 @@ export default function Configuracao() {
     }
   };
 
+  const [grupoSecao, setGrupoSecao] = useState("");
+  const [novoGrupo, setNovoGrupo] = useState("");
+
 
   const handleAddUser = async () => {
     const username = usernameNovoUtilizador.trim();
@@ -337,6 +369,7 @@ export default function Configuracao() {
     const password = passwordNovoUtilizador.trim();
     const email = emailNovoUtilizador.trim();
     const seccao = seccaoNovoUtilizador.trim();
+    let grupo = grupoSecao.trim();
 
     if (!username || !nome || !password || !email) {
       toast.warn("Preencha todos os campos.");
@@ -344,7 +377,9 @@ export default function Configuracao() {
     }
 
     if (!validarPassword(password)) {
-      toast.error("A palavra-passe deve ter mais de 6 caracteres e conter pelo menos um carácter especial.");
+      toast.error(
+        "A palavra-passe deve ter mais de 6 caracteres e conter pelo menos um carácter especial."
+      );
       return;
     }
 
@@ -353,32 +388,45 @@ export default function Configuracao() {
       return;
     }
 
+    // Se selecionou criar novo grupo
+    if (grupo === "__novo__") {
+      if (!novoGrupo.trim()) {
+        toast.warn("Insira o nome do novo grupo.");
+        return;
+      }
+      grupo = novoGrupo.trim();
+      // Insere na tabela de grupos
+      const { error: grupoError } = await supabase
+        .from("BandosPatrulhasEquipasTribos")
+        .insert([{ seccao, nome: grupo }]);
+      if (grupoError) {
+        console.error(grupoError);
+        toast.error("Erro ao criar novo grupo.");
+        return;
+      }
+    }
+
     try {
-      // Verifica se o username já existe
-      const { data: existingUsername, error: usernameError } = await supabase
+      const { data: existingUsername } = await supabase
         .from("users")
         .select("username")
         .eq("username", username);
 
-      if (usernameError) throw usernameError;
       if (existingUsername.length > 0) {
         toast.error("O nome de utilizador já existe.");
         return;
       }
 
-      // Verifica se o email já existe
-      const { data: existingEmail, error: emailError } = await supabase
+      const { data: existingEmail } = await supabase
         .from("users")
         .select("email")
         .eq("email", email);
 
-      if (emailError) throw emailError;
       if (existingEmail.length > 0) {
         toast.error("O email já está associado a outra conta.");
         return;
       }
 
-      // Cria o utilizador
       await adicionarUsuario({
         username,
         nome,
@@ -386,22 +434,26 @@ export default function Configuracao() {
         password,
         email,
         seccao,
+        banpatequtri: grupo,
       });
 
-      // Limpa os inputs
+      // Limpa inputs
       setUsernameNovoUtilizador("");
       setNomeNovoUtilizador("");
       setPasswordNovoUtilizador("");
       setEmailNovoUtilizador("");
       setSeccaoNovoUtilizador("Lobitos");
       setTipoNovoUtilizador("user");
+      setGrupoSecao("");
+      setNovoGrupo("");
 
       toast.success("Utilizador adicionado com sucesso!");
     } catch (error) {
-      toast.error("Erro ao adicionar utilizador.");
       console.error(error);
+      toast.error("Erro ao adicionar utilizador.");
     }
   };
+
 
   const handleRemoveUser = (username) => {
   if (username === user.username) {
@@ -788,7 +840,11 @@ export default function Configuracao() {
                 Secção
                 <select
                   value={seccaoNovoUtilizador}
-                  onChange={(e) => setSeccaoNovoUtilizador(e.target.value)}
+                  onChange={(e) => {
+                    const secao = e.target.value;
+                    setSeccaoNovoUtilizador(secao);
+                    carregarGruposSecao(secao); // <-- aqui
+                  }}
                   className="select-field"
                 >
                   <option value="Lobitos">Lobitos</option>
@@ -798,6 +854,48 @@ export default function Configuracao() {
                   <option value="Dirigentes">Dirigentes</option>
                 </select>
               </label>
+              {seccaoNovoUtilizador &&
+                ["Lobitos","Exploradores","Pioneiros","Caminheiros"].includes(seccaoNovoUtilizador) && (
+                  <label>
+                    {seccaoNovoUtilizador === "Lobitos" && "Bando"}
+                    {seccaoNovoUtilizador === "Exploradores" && "Patrulha"}
+                    {seccaoNovoUtilizador === "Pioneiros" && "Equipa"}
+                    {seccaoNovoUtilizador === "Caminheiros" && "Tribo"}
+
+                    <select
+                      value={grupoSecao}
+                      onChange={(e) => setGrupoSecao(e.target.value)}
+                      className="select-field"
+                    >
+                      <option value="">-- Seleciona --</option>
+                      {gruposSecao.map((nomeGrupo) => (
+                        <option key={nomeGrupo} value={nomeGrupo}>
+                          {nomeGrupo}
+                        </option>
+                      ))}
+                      <option value="__novo__">Criar novo...</option>
+                    </select>
+
+                    {grupoSecao === "__novo__" && (
+                      <input
+                        type="text"
+                        placeholder={`Nome do novo ${seccaoNovoUtilizador === "Lobitos"
+                          ? "Bando"
+                          : seccaoNovoUtilizador === "Exploradores"
+                          ? "Patrulha"
+                          : seccaoNovoUtilizador === "Pioneiros"
+                          ? "Equipa"
+                          : "Tribo"
+                        }`}
+                        value={novoGrupo}
+                        onChange={(e) => setNovoGrupo(e.target.value)}
+                        className="input-field"
+                      />
+                    )}
+                  </label>
+              )}
+
+
               <label>
                 Tipo Utilizador
                 <select

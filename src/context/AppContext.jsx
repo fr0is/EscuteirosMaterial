@@ -98,6 +98,7 @@ export function AppProvider({ children }) {
           password: hashedPassword,
           email: novoUser.email,
           seccao: novoUser.seccao,
+          banpatequtri: novoUser.banpatequtri,
         },
       ])
       .select()

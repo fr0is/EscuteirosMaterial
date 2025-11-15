@@ -198,7 +198,7 @@ ${listaMateriais}
       const emailResponsavel = responsavel?.email;
 
       const listaEmails = emailsAdmin.map(e => e.email);
-      if (emailResponsavel) listaEmails.push(emailResponsavel);
+      //if (emailResponsavel) listaEmails.push(emailResponsavel);
 
       if (listaEmails.length === 0) {
         toast.error("Não existe e-mail configurado para receber o pedido.");
