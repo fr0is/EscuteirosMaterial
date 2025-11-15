@@ -25,6 +25,13 @@ export default function Material() {
 
   const [quantidades, setQuantidades] = useState({});
   const [patrulha, setPatrulha] = useState("");
+
+  useEffect(() => {
+    if (user.banpatequtri) {
+      setPatrulha(user.banpatequtri);
+    }
+  }, [user.banpatequtri]);
+
   const [atividade, setAtividade] = useState("");
 
   const [novoMaterialNome, setNovoMaterialNome] = useState("");
@@ -124,10 +131,11 @@ export default function Material() {
 
   // ---------------- ENVIAR PEDIDO ----------------
   const handleSubmitPedido = async () => {
-    if (patrulha.trim() === "") {
-      toast.error("Por favor, indica o nome da patrulha/equipa/bando/tribo.");
+    if (user.seccao != "Dirigentes" && !patrulha) {
+      toast.error("Erro: não foi possível determinar a patrulha automaticamente.");
       return;
     }
+
     if (atividade.trim() === "") {
       toast.error("Por favor, indica a atividade.");
       return;
@@ -455,11 +463,8 @@ ${listaMateriais}
       {!user.isAdmin && (
         <div className="pedido-form">
           <h3>Pedido de material</h3>
-          <input
-            placeholder="Bando/Patrulha/Equipa/Tribo"
-            value={patrulha}
-            onChange={(e) => setPatrulha(e.target.value)}
-          />
+          {/* Patrulha agora é automática */}
+          {/* <input placeholder="Bando/Patrulha/Equipa/Tribo" value={patrulha} onChange={(e) => setPatrulha(e.target.value)} /> */}
           <input
             placeholder="Atividade"
             value={atividade}

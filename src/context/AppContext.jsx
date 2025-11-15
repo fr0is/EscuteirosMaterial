@@ -250,6 +250,7 @@ export function AppProvider({ children }) {
       isAdmin: userEncontrado.tipo === "admin",
       loggedIn: true,
       seccao: userEncontrado.seccao,
+      banpatequtri: userEncontrado.banpatequtri || "",
     });
   };
 
