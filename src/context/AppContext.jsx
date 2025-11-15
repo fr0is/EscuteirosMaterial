@@ -6,7 +6,7 @@ export const AppContext = createContext();
 
 export function AppProvider({ children }) {
   const [user, setUser] = useState(() => {
-    const storedUser = localStorage.getItem("user");
+    const storedUser = sessionStorage.getItem("user");
     return storedUser
       ? JSON.parse(storedUser)
       : { id: null, nome: "", username: "", isAdmin: false, loggedIn: false };
@@ -80,7 +80,11 @@ export function AppProvider({ children }) {
   }, []);
 
   useEffect(() => {
-    localStorage.setItem("user", JSON.stringify(user));
+    if (user?.loggedIn) {
+      sessionStorage.setItem("user", JSON.stringify(user));
+    } else {
+      sessionStorage.removeItem("user");
+    }
   }, [user]);
 
   // ---------------- USUÁRIOS ----------------
