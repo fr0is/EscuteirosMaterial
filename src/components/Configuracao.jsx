@@ -721,7 +721,7 @@ export default function Configuracao() {
                         <li key={u.username} className="user-list-item">
                           <div className="user-info">
                             <span>
-                              <b>{u.username}</b> - {u.nome} ({u.tipo}) 
+                              <b>{u.nome} ({u.tipo}) </b> -  {u.banpatequtri}
                             </span>
                             {edicoesTipo[u.username] !== undefined && (
                               <select
