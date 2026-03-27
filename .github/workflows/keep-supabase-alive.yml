@@ -2,17 +2,27 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    - cron: "0 */36 * * *"
-  workflow_dispatch:
+    # Executa todos os dias às 00:00 e 12:00 (Duas vezes por dia é o ideal)
+    - cron: "0 0,12 * * *"
+  workflow_dispatch: # Permite-te clicar no botão "Run workflow" para testar
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔔 Ping Supabase REST API
+      - name: 🔔 Real Query to Supabase
         run: |
-          echo "Mantendo Supabase ativo..."
-          curl -s -o /dev/null -w "%{http_code}\n" \
+          echo "Simulando atividade real na BD..."
+          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+            -X GET \
             -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/?select=now"
+            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
+            "${{ secrets.SUPABASE_URL }}/rest/v1/pedidos?select=*&limit=1")
+          
+          if [ "$STATUS_CODE" -eq 200 ]; then
+            echo "Sucesso! Código HTTP: $STATUS_CODE"
+          else
+            echo "Erro! Código HTTP: $STATUS_CODE"
+            exit 1
+          fi
