@@ -2,27 +2,32 @@ name: Keep Supabase Alive
 
 on:
   schedule:
-    # Executa todos os dias às 00:00 e 12:00 (Duas vezes por dia é o ideal)
-    - cron: "0 0,12 * * *"
-  workflow_dispatch: # Permite-te clicar no botão "Run workflow" para testar
+    - cron: "17 0,12 * * *"
+
+  workflow_dispatch:
 
 jobs:
   ping-supabase:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🔔 Real Query to Supabase
+      - name: 🔔 Ping Supabase via Vercel
         run: |
-          echo "Simulando atividade real na BD..."
-          STATUS_CODE=$(curl -s -o /dev/null -w "%{http_code}" \
+          echo "A chamar o endpoint /api/ping..."
+
+          STATUS_CODE=$(curl -s -o response.txt -w "%{http_code}" \
             -X GET \
-            -H "apikey: ${{ secrets.SUPABASE_ANON_KEY }}" \
-            -H "Authorization: Bearer ${{ secrets.SUPABASE_ANON_KEY }}" \
-            "${{ secrets.SUPABASE_URL }}/rest/v1/pedidos?select=*&limit=1")
-          
+            -H "Authorization: Bearer ${{ secrets.PING_TOKEN }}" \
+            "${{ secrets.PING_URL }}")
+
+          echo "HTTP Status: $STATUS_CODE"
+          cat response.txt
+
           if [ "$STATUS_CODE" -eq 200 ]; then
-            echo "Sucesso! Código HTTP: $STATUS_CODE"
+            echo ""
+            echo "✅ Supabase keep-alive executado com sucesso!"
           else
-            echo "Erro! Código HTTP: $STATUS_CODE"
+            echo ""
+            echo "❌ Erro no keep-alive."
             exit 1
           fi
